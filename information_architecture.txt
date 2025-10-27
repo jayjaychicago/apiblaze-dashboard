@@ -1,0 +1,159 @@
+This is the information architecture for dashboard.apiblaze.com
+
+- Main Menu
+   + Create team
+   + Find project
+   + Claim project ownership
+   + Feedback
+   + Alerts
+   + docs
+   + profile
+        . Account settings
+            - General
+                + Default team
+                + Email
+                + phone
+                + delete account
+            - Authentication
+            - Billing information
+            - Invoices
+            - tokens
+        . Log out
+        . Upgrade
+- Navigation menu (allows the user to choose a single project. By default, shows across all projects)
+    - Team picker
+    - Project picker
+- Projects menu (when it spans across all projets, ie a specific project hasn't been selected)
+    + Overview (landing page)
+        . Search and Filter projects
+        . Add new button (Main use case)
+            - Project (Main use case)
+                + In a new screen this should allow the user to input elegantly all the details needed to spin up a new proxy.
+                Whether they choose to upload the openapi spec, find it in their github account or simply refer to a target backend
+                and build the spec later.
+                The github openapi spec finder should be advanced and great as this is the main use case.
+                + Import button
+                    . New project
+                        - General
+                            + Import from (the details of the selected github repo or file uploaded)
+                            + APIblaze Team owner 
+                            + API Project name
+                            + API version (extracted from the openapi spec)
+                            + A checkbox "Enable MCP"
+                        - Authentication
+                            - Enable API Key Authentication / Enable oAuth Authentication selector
+                                - Bring my own oAuth identity Provider
+                                    + OAuth Provider (dropdown select between Google, Github, Microsoft, Auth0 or SAML) that auto-populates Identity Provider Domain
+                                    + Identity Provider Domain text input
+                                    + Identity Provider Client ID text input
+                                    + Identity Provider Client Secret secret input
+                                    + Authorized Scopes (a series of text input with an add scope button that allows the user to add more and x buttons to remove some. It has by default unremovable email, openid and profile)
+                                    + A warning message to add https://callback.apiblaze.com as an authorized callback URL in their oauth provider
+                                    + An explanation on how to get all these details and add the callback that changes for each oAuth provider
+                        - Target servers
+                            - A table of target servers and the corresponding API proxy that will be created
+                                + Stage (e.g. https://feedslap.myInstantAPI.com/1.0.0/prod) where apiVersion and stage is extracted from the openapi spec (stage is based on the description of the list of targets)
+                                + Target server URL (the literal target server in the openapi spec)
+                                + Configuration
+                                    A tool to encode in json either headers, params or body variables that will always be passed to that target server by the proxy. Add however many the tenant wants.
+                        - Portal
+                            - A checkbox to "Create an API dev portal"
+                            - A checkbox allow new user registration approval without review.
+                            - Icon URL input field
+                            - Color theme hexadecimal color selector
+                        - Throttling and quotas
+                            + Throttling Rate (requests per second)
+                            + Throttling Burst
+                            + Quota 
+                                . Quota value input text (default locked in 1000)
+                                . Quota frequency drop down (per day, per week, per month, default locked in per day)
+                                . Upgrade button
+            - Domain
+                + A tool to link a user's custom domain to the api project
+                    . salesAPI.customer1.com -> salesAPIcustomer1.apiblaze.com
+                    . salesAPI.auth.customer1.com -> salesAPIcustomer1.auth.apiblaze.com
+                    . salesAPI.admin.customer1.com -> salesAPIcustomer1.admin.apiblaze.com
+                    . salesAPI.portal.customer1.com -> salesAPIcustomer1.portal.apiblaze.com
+                    . salesAPI.groups.customer1.com -> salesAPIcustomer1.groups.apiblaze.com
+            - Team member
+        . Boxes of projects (same box of information per project as vercel)
+            - Avatar
+            - Project name
+            - API url (tenantapi123.apiblaze.com)
+            - Link to github repo of openapi spec (or stored file)
+            - comment of last github commit
+            - Date and branch of last commit    
+            - Link to analytics
+            - Project Menu
+                + Add to favorites
+                + View logs
+                + Manage domains
+                + settings
+    + deployments
+        . Select date range
+        . Filter
+        . Status filter
+        . List of deployments capable to showing live deployments
+            - Deployment ID
+            - Environments
+            - Tag of whether or not this is the current deployment
+            - Status light
+            - Status
+            - Time it took to deploy
+            - How long ago it was deployed (rounded)
+            - Avatar of deployer
+            - github branch
+            - github commit
+            - github commit comment
+            - Date of deployment
+            - deployer
+            - deployer Avatar
+    + Domains
+        . Add existing (Select a project to add your domain to)
+        . List of managed domains
+        . Usage
+        . Observability
+    + Support
+        . Create cases
+        . Link to community
+    + settings
+            - General
+                + Default team
+                + Email
+                + phone
+                + delete account
+            - Authentication
+            - Billing information
+            - Invoices
+            - tokens
+- Projects menu (when 1 single projet has been selected)
+    + Overview
+        - name of the project
+        - Github Repository link button
+        - Usage link button
+        - Domain link button
+        - Visit button (links to the api dev portal e.g. tenantproject123.portal.apiblaze.com)
+        - Build log
+        - Runtime log
+        - Instant rollback
+        - API deployment
+            . API URLs
+                + for all API versions
+                + for all environments
+            . API Dev Portal 
+                + for all API versions
+            . Domains
+            . Status and status light
+            . Created by
+                + Date
+                + Creator 
+            . Source
+                + Github branch
+                + Github commit
+                + Github commit comment
+        - Throttling and rate limiting
+        - Observability card 
+        - Analytics card    
+    + deployments
+     (same as above but limited to the selected project)
+    + all same as above but limited to the selected project

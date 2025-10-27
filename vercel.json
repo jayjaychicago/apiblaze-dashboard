@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_GITHUB_CLIENT_ID": "@github_client_id",
+    "GITHUB_CLIENT_SECRET": "@github_client_secret",
+    "NEXT_PUBLIC_AUTH_WORKER_URL": "@auth_worker_url",
+    "INTERNAL_API_URL": "@internal_api_url",
+    "INTERNAL_API_KEY": "@internal_api_key",
+    "NEXT_PUBLIC_APP_URL": "@app_url"
+  }
+}
+

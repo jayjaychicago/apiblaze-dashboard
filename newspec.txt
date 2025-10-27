@@ -1,0 +1,32 @@
+
+The goal is to create dashboard.apiblaze.com which is the tenant dashboard for the service described in the folder v2APIblaze. You should read that folder
+We want to create the vercel for APIs and this is the dashboard for tenants of that service. You can learn about this service in the folder v2APIblaze/
+
+You will create this dashboard in nextjs and host it on vercel (token: DiOjYwr2UfTZyF2CWNmH8wQ2) but pushing to github is enough
+You will just have to push to github user jayjaychicago repository apiblaze-dashboard which has already be init'ed on the directory v2APIblaze/dashboard where this spec is. So you can just let me know when you're ready for me to do a git commit and test it.
+
+We want to allow the tenants to spin up api proxies (e.g. tenantAPIproject123.apiblaze.com) via a UI.
+
+They can create *.apiblaze.com tenant proxies using either an openapi spec or a target server (in which case the openapi spec will be a dummy ANY *)
+The openapi spec can be shared via upload or from github (so an advanced tool to find it is necessary once they user has added the app to their account)
+
+You need to update the cloudflare worker tied to auth.apiblaze.com on github to mediate all oauth activity with the github app below (not just for this dashboard but for all tenant auth needs in general). Its code should be in v2APIblaze/workers/apiblaze-auth-worker/
+
+Tenants log in using a github app (that will ask them for their github credentials to authenticate them first and will only ask them for github permissions if they try and pull the openapi spec for their proxy from their github repo)
+Client ID: Iv23liwZOuwO0lPP9R9P
+Private key: D8ijGHyp1AKWS1Ikly+BjyxD8K3vDGIZagUV5hHxCv0=
+Client secret: 0d73085efb4261f76fd42ad1c2f37434d2c044c1
+PEM is in ../apiblaze.2025-10-07.private-key
+
+All the actions on this UI will then be processed by the vercel backend that will send them to internalapi.apiblaze.com for proxy creation or to get data back.
+That means the vercel backend will have an env variable with the api key of internalapi.
+X-API-KEY: 2f74b48a4880ec418eab2e1e30fed513ba3242dfb3ab04cc5ee2ad4df0bedc0d
+That does mean that you will have to modify the internalapi (in v2APIblaze) so that it can do more (that was created in phase1 and phase2 so check out the docs in these folders before)
+
+It should have the same functionalities as vercel but for deploying APIs rather than websites
+
+
+
+
+
+
