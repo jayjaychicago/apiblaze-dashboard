@@ -18,23 +18,29 @@ export interface AuthTokens {
 }
 
 /**
- * Generate login URL for GitHub OAuth flow
- * This redirects to the auth worker which handles the OAuth dance
+ * Generate OAuth 2.0 authorization URL
+ * Uses standard OAuth 2.0 /authorize endpoint
  */
 export function getLoginUrl(returnUrl?: string): string {
   const authWorkerUrl = process.env.NEXT_PUBLIC_AUTH_WORKER_URL || 'https://auth.apiblaze.com';
+  const redirectUri = returnUrl || `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`;
   
-  // State includes dashboard identifier
-  const state = JSON.stringify({
-    tenant: 'dashboard',
-    version: 'v1',
-    returnUrl: returnUrl || `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
-  });
+  // Build standard OAuth 2.0 authorize URL
+  const authorizeUrl = new URL(`${authWorkerUrl}/authorize`);
+  authorizeUrl.searchParams.set('response_type', 'code');
+  authorizeUrl.searchParams.set('client_id', 'apiblaze-dashboard');
+  authorizeUrl.searchParams.set('redirect_uri', redirectUri);
+  authorizeUrl.searchParams.set('scope', 'openid profile email');
+  authorizeUrl.searchParams.set('state', generateRandomState());
   
-  const encodedState = btoa(state);
-  const encodedReturnUrl = encodeURIComponent(returnUrl || `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`);
-  
-  return `${authWorkerUrl}/login?state=${encodedState}&redirect_uri=${encodedReturnUrl}`;
+  return authorizeUrl.toString();
+}
+
+/**
+ * Generate random state for CSRF protection
+ */
+function generateRandomState(): string {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
 /**
@@ -93,12 +99,47 @@ export async function verifyGitHubToken(token: string): Promise<User | null> {
  * Parse callback parameters from URL
  */
 export function parseCallbackParams(searchParams: URLSearchParams): {
-  accessToken: string | null;
+  code: string | null;
   error: string | null;
+  state: string | null;
 } {
   return {
-    accessToken: searchParams.get('access_token'),
-    error: searchParams.get('error')
+    code: searchParams.get('code'),
+    error: searchParams.get('error'),
+    state: searchParams.get('state')
   };
+}
+
+/**
+ * Exchange OAuth authorization code for access token
+ */
+export async function exchangeCodeForToken(code: string, redirectUri: string): Promise<string | null> {
+  try {
+    const authWorkerUrl = process.env.NEXT_PUBLIC_AUTH_WORKER_URL || 'https://auth.apiblaze.com';
+    
+    const response = await fetch(`${authWorkerUrl}/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: redirectUri,
+        client_id: 'apiblaze-dashboard',
+      }),
+    });
+    
+    if (!response.ok) {
+      console.error('Token exchange failed:', await response.text());
+      return null;
+    }
+    
+    const data = await response.json();
+    return data.access_token;
+  } catch (error) {
+    console.error('Error exchanging code for token:', error);
+    return null;
+  }
 }
 

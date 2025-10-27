@@ -21,22 +21,13 @@ function LoginContent() {
   }, [isAuthenticated, router, searchParams]);
   
   const handleLogin = () => {
-    const authWorkerUrl = process.env.NEXT_PUBLIC_AUTH_WORKER_URL || 'https://auth.apiblaze.com';
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dashboard.apiblaze.com';
-    const returnUrl = searchParams.get('returnUrl') || '/dashboard';
+    const { getLoginUrl } = require('@/lib/auth');
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const redirectUri = `${appUrl}/auth/callback`;
     
-    // State includes dashboard identifier and return URL
-    const state = JSON.stringify({
-      tenant: 'dashboard',
-      version: 'v1',
-      returnUrl: `${appUrl}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`
-    });
-    
-    const encodedState = btoa(state);
-    const callbackUrl = `${appUrl}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`;
-    
-    // Redirect to auth worker login endpoint
-    window.location.href = `${authWorkerUrl}/login?state=${encodedState}&redirect_uri=${encodeURIComponent(callbackUrl)}`;
+    // Use standard OAuth 2.0 flow
+    const loginUrl = getLoginUrl(redirectUri);
+    window.location.href = loginUrl;
   };
   
   return (

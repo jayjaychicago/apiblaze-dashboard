@@ -19,8 +19,8 @@ function CallbackContent() {
       try {
         setLoading(true);
         
-        // Extract access_token from URL parameters
-        const accessToken = searchParams.get('access_token');
+        // Extract code and error from URL parameters (OAuth 2.0 standard)
+        const code = searchParams.get('code');
         const errorParam = searchParams.get('error');
         const returnUrl = searchParams.get('returnUrl') || '/dashboard';
         
@@ -30,8 +30,19 @@ function CallbackContent() {
           return;
         }
         
+        if (!code) {
+          setError('No authorization code received. Please try logging in again.');
+          setLoading(false);
+          return;
+        }
+        
+        // Exchange code for access token
+        const { exchangeCodeForToken } = await import('@/lib/auth');
+        const redirectUri = `${window.location.origin}/auth/callback`;
+        const accessToken = await exchangeCodeForToken(code, redirectUri);
+        
         if (!accessToken) {
-          setError('No access token received. Please try logging in again.');
+          setError('Failed to exchange authorization code. Please try again.');
           setLoading(false);
           return;
         }
@@ -48,8 +59,8 @@ function CallbackContent() {
         // Store auth state
         setAuth(accessToken, user);
         
-        // Redirect to dashboard or return URL
-        router.push(returnUrl);
+        // Redirect to dashboard
+        router.push('/dashboard');
         
       } catch (err) {
         console.error('Callback error:', err);
