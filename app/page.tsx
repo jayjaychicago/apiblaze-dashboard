@@ -2,25 +2,25 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/auth';
+import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { data: session, status } = useSession();
   
   useEffect(() => {
-    if (!isLoading) {
-      if (isAuthenticated) {
-        router.push('/dashboard');
-      } else {
-        router.push('/auth/login');
-      }
+    if (status === 'loading') return;
+    
+    if (status === 'authenticated') {
+      router.push('/dashboard');
+    } else {
+      router.push('/auth/login');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [status, router]);
   
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
     </div>
   );
