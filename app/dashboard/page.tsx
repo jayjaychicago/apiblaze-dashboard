@@ -23,26 +23,42 @@ export default function DashboardPage() {
 
   // Check for GitHub App installation callback
   useEffect(() => {
+    console.log('[Dashboard] Checking for GitHub return parameters...');
+    console.log('[Dashboard] Current URL:', window.location.href);
+    
     const urlParams = new URLSearchParams(window.location.search);
+    const allParams: Record<string, string> = {};
+    urlParams.forEach((value, key) => {
+      allParams[key] = value;
+    });
+    console.log('[Dashboard] All URL parameters:', allParams);
     
     // Check for GitHub app installation callback (setup_action=install)
     const setupAction = urlParams.get('setup_action');
     const installationId = urlParams.get('installation_id');
     const openDialog = urlParams.get('open_create_dialog');
+    const code = urlParams.get('code');
     
+    console.log('[Dashboard] GitHub params:', { setupAction, installationId, openDialog, code });
+    
+    // If we have GitHub installation parameters OR explicit open request
     if (setupAction === 'install' || installationId || openDialog === 'true') {
-      console.log('[Dashboard] GitHub app installed! Opening create dialog');
-      console.log('[Dashboard] Parameters:', { setupAction, installationId });
+      console.log('[Dashboard] 🎉 GitHub app detected! Opening create dialog');
       
       // Set flags
       localStorage.setItem('github_app_installed', 'true');
       localStorage.setItem('github_app_just_installed', 'true');
       
-      // Open create dialog
-      setCreateDialogOpen(true);
+      // Open create dialog with slight delay to ensure component is ready
+      setTimeout(() => {
+        console.log('[Dashboard] Setting createDialogOpen to true');
+        setCreateDialogOpen(true);
+      }, 100);
       
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
+    } else {
+      console.log('[Dashboard] No GitHub parameters detected, normal dashboard load');
     }
   }, []);
 
