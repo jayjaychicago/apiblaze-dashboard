@@ -15,9 +15,10 @@ import { GitHubAppInstallModal } from './github-app-install-modal';
 interface GeneralSectionProps {
   config: ProjectConfig;
   updateConfig: (updates: Partial<ProjectConfig>) => void;
+  validationError?: 'project-name' | 'github-source' | 'target-url' | 'upload-file' | null;
 }
 
-export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
+export function GeneralSection({ config, updateConfig, validationError }: GeneralSectionProps) {
   const [checkingName, setCheckingName] = useState(false);
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
   const [repoSelectorOpen, setRepoSelectorOpen] = useState(false);
@@ -196,7 +197,7 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
               value={config.projectName}
               onChange={(e) => updateConfig({ projectName: e.target.value })}
               onBlur={handleProjectNameBlur}
-              className="pr-10"
+              className={`pr-10 ${validationError === 'project-name' ? 'border-red-500 ring-2 ring-red-500 ring-offset-2' : ''}`}
             />
             {checkingName && (
               <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -359,7 +360,9 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50">
+              <Card className={`border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50 ${
+                validationError === 'github-source' ? 'ring-2 ring-red-500 ring-offset-2 border-red-500' : ''
+              }`}>
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -421,7 +424,7 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
                 placeholder="https://api.example.com"
                 value={config.targetUrl}
                 onChange={(e) => updateConfig({ targetUrl: e.target.value })}
-                className="mt-1"
+                className={`mt-1 ${validationError === 'target-url' ? 'border-red-500 ring-2 ring-red-500 ring-offset-2' : ''}`}
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Enter the URL of your backend API that this proxy will forward requests to
@@ -432,11 +435,17 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
 
         {/* Upload Source */}
         {config.sourceType === 'upload' && (
-          <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+          <div className={`space-y-4 p-4 border rounded-lg bg-muted/30 ${
+            validationError === 'upload-file' ? 'ring-2 ring-red-500 ring-offset-2 border-red-500' : ''
+          }`}>
             <div>
               <Label htmlFor="uploadFile" className="text-sm">OpenAPI Specification File</Label>
               <div className="mt-2 flex items-center gap-3">
-                <Button variant="outline" size="sm" asChild>
+                <Button 
+                  variant={validationError === 'upload-file' ? 'destructive' : 'outline'} 
+                  size="sm" 
+                  asChild
+                >
                   <label htmlFor="uploadFile" className="cursor-pointer">
                     <Upload className="mr-2 h-4 w-4" />
                     Choose File

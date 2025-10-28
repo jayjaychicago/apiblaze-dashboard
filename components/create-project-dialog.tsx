@@ -113,6 +113,29 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
   };
 
+  // Get validation error type
+  const getValidationError = (): 'project-name' | 'github-source' | 'target-url' | 'upload-file' | null => {
+    if (!config.projectName) return 'project-name';
+    
+    switch (config.sourceType) {
+      case 'github':
+        if (!config.githubUser || !config.githubRepo || !config.githubPath) {
+          return 'github-source';
+        }
+        break;
+      case 'targetUrl':
+        if (!config.targetUrl) return 'target-url';
+        break;
+      case 'upload':
+        if (!config.uploadedFile) return 'upload-file';
+        break;
+    }
+    
+    return null;
+  };
+
+  const validationError = getValidationError();
+
   const handleDeploy = async () => {
     setIsDeploying(true);
     try {
@@ -179,7 +202,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
           <div className="flex-1 overflow-y-auto mt-4">
             <TabsContent value="general" className="mt-0">
-              <GeneralSection config={config} updateConfig={updateConfig} />
+              <GeneralSection config={config} updateConfig={updateConfig} validationError={validationError} />
             </TabsContent>
 
             <TabsContent value="auth" className="mt-0">

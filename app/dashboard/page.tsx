@@ -23,11 +23,24 @@ export default function DashboardPage() {
 
   // Check for GitHub App installation callback
   useEffect(() => {
-    // Check URL parameter for open_create_dialog
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('open_create_dialog') === 'true') {
-      console.log('[Dashboard] Opening create dialog after GitHub return');
+    
+    // Check for GitHub app installation callback (setup_action=install)
+    const setupAction = urlParams.get('setup_action');
+    const installationId = urlParams.get('installation_id');
+    const openDialog = urlParams.get('open_create_dialog');
+    
+    if (setupAction === 'install' || installationId || openDialog === 'true') {
+      console.log('[Dashboard] GitHub app installed! Opening create dialog');
+      console.log('[Dashboard] Parameters:', { setupAction, installationId });
+      
+      // Set flags
+      localStorage.setItem('github_app_installed', 'true');
+      localStorage.setItem('github_app_just_installed', 'true');
+      
+      // Open create dialog
       setCreateDialogOpen(true);
+      
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
     }
