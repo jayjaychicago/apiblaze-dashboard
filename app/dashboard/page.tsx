@@ -32,7 +32,7 @@ export default function DashboardPage() {
               <Zap className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold">APIBlaze v3.0</h1>
+              <h1 className="text-xl font-bold">APIBlaze v3</h1>
               <p className="text-xs text-muted-foreground">Vercel for APIs</p>
             </div>
           </div>
