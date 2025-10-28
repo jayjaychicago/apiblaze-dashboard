@@ -94,46 +94,26 @@ export function GitHubRepoSelectorModal({
   const loadRepositories = async () => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call to backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockRepos: GitHubRepo[] = [
-        {
-          id: 1,
-          name: 'api-specs',
-          full_name: 'mycompany/api-specs',
-          description: 'OpenAPI specifications for all our APIs',
-          default_branch: 'main',
-          updated_at: new Date().toISOString(),
-          language: 'YAML',
-          stargazers_count: 15,
+      // Call backend API to get user's GitHub repositories
+      const response = await fetch('/api/github/repos', {
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          id: 2,
-          name: 'customer-api',
-          full_name: 'mycompany/customer-api',
-          description: 'Customer management API',
-          default_branch: 'main',
-          updated_at: new Date().toISOString(),
-          language: 'JavaScript',
-          stargazers_count: 8,
-        },
-        {
-          id: 3,
-          name: 'payment-service',
-          full_name: 'mycompany/payment-service',
-          description: 'Payment processing microservice',
-          default_branch: 'master',
-          updated_at: new Date().toISOString(),
-          language: 'TypeScript',
-          stargazers_count: 23,
-        },
-      ];
-      
-      setRepos(mockRepos);
-      setFilteredRepos(mockRepos);
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to load repositories');
+      }
+
+      const data = await response.json();
+      setRepos(data);
+      setFilteredRepos(data);
     } catch (error) {
       console.error('Error loading repositories:', error);
+      // Show error to user
+      setRepos([]);
+      setFilteredRepos([]);
     } finally {
       setIsLoading(false);
     }
@@ -146,33 +126,24 @@ export function GitHubRepoSelectorModal({
     setSelectedSpec(null);
     
     try {
-      // TODO: Replace with actual API call to scan repo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const mockSpecs: OpenAPIFile[] = [
-        {
-          name: 'openapi.yaml',
-          path: 'specs/openapi.yaml',
-          type: 'openapi',
-          version: '3.0.0',
+      // Call backend API to scan repository for OpenAPI specs
+      const [owner, repoName] = repo.full_name.split('/');
+      const response = await fetch(`/api/github/repos/${owner}/${repoName}/openapi-specs`, {
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          name: 'api-v2.yaml',
-          path: 'docs/api-v2.yaml',
-          type: 'openapi',
-          version: '3.1.0',
-        },
-        {
-          name: 'swagger.json',
-          path: 'api/swagger.json',
-          type: 'swagger',
-          version: '2.0',
-        },
-      ];
-      
-      setDetectedSpecs(mockSpecs);
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to detect OpenAPI specs');
+      }
+
+      const specs = await response.json();
+      setDetectedSpecs(specs);
     } catch (error) {
       console.error('Error detecting specs:', error);
+      setDetectedSpecs([]);
     } finally {
       setIsDetecting(false);
     }
@@ -183,9 +154,37 @@ export function GitHubRepoSelectorModal({
     
     // Parse spec and populate config
     try {
-      const owner = selectedRepo!.full_name.split('/')[0];
-      const repoName = selectedRepo!.name;
-      const apiVersion = spec.version || '1.0.0';
+      const [owner, repoName] = selectedRepo!.full_name.split('/');
+      
+      // Fetch and parse the OpenAPI spec to extract version and other details
+      const response = await fetch('/api/openapi/parse', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          owner,
+          repo: repoName,
+          path: spec.path,
+          branch: selectedRepo!.default_branch,
+        }),
+      });
+
+      let apiVersion = spec.version || '1.0.0';
+      let suggestedProjectName = repoName.replace(/-/g, '');
+
+      if (response.ok) {
+        const parsedSpec = await response.json();
+        // Extract version from spec if available
+        if (parsedSpec.info?.version) {
+          apiVersion = parsedSpec.info.version;
+        }
+        // Use title as project name if available
+        if (parsedSpec.info?.title) {
+          suggestedProjectName = parsedSpec.info.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+      }
       
       // Update config with selected spec
       updateConfig({
@@ -194,11 +193,21 @@ export function GitHubRepoSelectorModal({
         githubPath: spec.path,
         githubBranch: selectedRepo!.default_branch,
         apiVersion: apiVersion,
-        projectName: config.projectName || repoName.replace(/-/g, ''),
+        projectName: config.projectName || suggestedProjectName,
       });
       
     } catch (error) {
       console.error('Error parsing spec:', error);
+      // Still update with basic info even if parsing fails
+      const [owner, repoName] = selectedRepo!.full_name.split('/');
+      updateConfig({
+        githubUser: owner,
+        githubRepo: repoName,
+        githubPath: spec.path,
+        githubBranch: selectedRepo!.default_branch,
+        apiVersion: spec.version || '1.0.0',
+        projectName: config.projectName || repoName.replace(/-/g, ''),
+      });
     }
   };
 

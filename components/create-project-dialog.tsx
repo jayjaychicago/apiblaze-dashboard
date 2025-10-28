@@ -85,6 +85,25 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
     setConfig(prev => ({ ...prev, ...updates }));
   };
 
+  // Validate if a valid source is configured
+  const isSourceConfigured = () => {
+    if (!config.projectName) return false;
+
+    switch (config.sourceType) {
+      case 'github':
+        // GitHub requires user, repo, and path
+        return !!(config.githubUser && config.githubRepo && config.githubPath);
+      case 'targetUrl':
+        // Target URL requires a URL
+        return !!config.targetUrl;
+      case 'upload':
+        // Upload requires a file
+        return !!config.uploadedFile;
+      default:
+        return false;
+    }
+  };
+
   const handleDeploy = async () => {
     setIsDeploying(true);
     try {
@@ -181,14 +200,35 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreatePro
         </Tabs>
 
         <DialogFooter className="flex items-center justify-between border-t pt-4">
-          <p className="text-sm text-muted-foreground">
-            All sections have defaults. Deploy now or customize first.
-          </p>
+          <div className="flex-1">
+            {!isSourceConfigured() ? (
+              <p className="text-sm text-orange-600">
+                {!config.projectName 
+                  ? 'Enter a project name to continue'
+                  : config.sourceType === 'github' && (!config.githubUser || !config.githubRepo || !config.githubPath)
+                  ? 'Select a GitHub repository to continue'
+                  : config.sourceType === 'targetUrl' && !config.targetUrl
+                  ? 'Enter a target URL to continue'
+                  : config.sourceType === 'upload' && !config.uploadedFile
+                  ? 'Upload an OpenAPI spec to continue'
+                  : 'Configure a source to deploy'
+                }
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Ready to deploy! Customize other sections or deploy now.
+              </p>
+            )}
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeploying}>
               Cancel
             </Button>
-            <Button onClick={handleDeploy} disabled={isDeploying}>
+            <Button 
+              onClick={handleDeploy} 
+              disabled={isDeploying || !isSourceConfigured()}
+              className={!isSourceConfigured() ? 'opacity-50 cursor-not-allowed' : ''}
+            >
               {isDeploying ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
