@@ -9,7 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { GitBranch, Upload, Globe, Check, X, Loader2, Github } from 'lucide-react';
 import { ProjectConfig, SourceType } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GitHubSpecSelector } from './github-spec-selector';
+import { GitHubRepoSelectorModal } from './github-repo-selector-modal';
+import { GitHubAppInstallModal } from './github-app-install-modal';
 
 interface GeneralSectionProps {
   config: ProjectConfig;
@@ -20,6 +21,43 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
   const [checkingName, setCheckingName] = useState(false);
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
   const [showManualGitHub, setShowManualGitHub] = useState(false);
+  const [repoSelectorOpen, setRepoSelectorOpen] = useState(false);
+  const [installModalOpen, setInstallModalOpen] = useState(false);
+  const [githubAppInstalled, setGithubAppInstalled] = useState(false);
+
+  useEffect(() => {
+    // Check if GitHub App is installed
+    checkGitHubInstallation();
+  }, []);
+
+  const checkGitHubInstallation = async () => {
+    try {
+      // TODO: Replace with actual API call to check installation
+      // For now, check localStorage or URL parameters
+      const installed = localStorage.getItem('github_app_installed') === 'true';
+      
+      // Also check URL parameter (from GitHub callback)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('github_app_installed') === 'true') {
+        localStorage.setItem('github_app_installed', 'true');
+        setGithubAppInstalled(true);
+        // Clean up URL
+        window.history.replaceState({}, '', window.location.pathname);
+      } else {
+        setGithubAppInstalled(installed);
+      }
+    } catch (error) {
+      console.error('Error checking GitHub installation:', error);
+    }
+  };
+
+  const handleBrowseGitHub = () => {
+    if (githubAppInstalled) {
+      setRepoSelectorOpen(true);
+    } else {
+      setInstallModalOpen(true);
+    }
+  };
 
   const handleProjectNameBlur = async () => {
     if (!config.projectName) return;
@@ -164,10 +202,65 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
         {/* GitHub Source */}
         {config.sourceType === 'github' && (
           <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-            {/* GitHub Spec Selector */}
-            {!showManualGitHub && (
+            {!showManualGitHub ? (
               <>
-                <GitHubSpecSelector config={config} updateConfig={updateConfig} />
+                {/* GitHub Spec Selected Summary */}
+                {config.githubUser && config.githubRepo && config.githubPath ? (
+                  <Card className="border-green-200 bg-green-50/50">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Check className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-medium text-green-900">
+                              OpenAPI Spec Selected
+                            </span>
+                          </div>
+                          <p className="text-xs text-green-700 font-mono">
+                            {config.githubUser}/{config.githubRepo}/{config.githubPath}
+                          </p>
+                          <p className="text-xs text-green-700 mt-1">
+                            Branch: {config.githubBranch}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleBrowseGitHub}
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card className="border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50">
+                    <CardHeader>
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                          <Github className="w-7 h-7 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <CardTitle className="text-base mb-2">
+                            {githubAppInstalled ? 'Select from GitHub' : 'Connect GitHub'}
+                          </CardTitle>
+                          <CardDescription className="text-xs">
+                            {githubAppInstalled 
+                              ? 'Browse your repositories and select an OpenAPI specification'
+                              : 'Install the GitHub App to browse repositories and import specs'
+                            }
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <Button onClick={handleBrowseGitHub} className="w-full">
+                        <Github className="mr-2 h-4 w-4" />
+                        {githubAppInstalled ? 'Browse Repositories' : 'Install GitHub App'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
                 
                 <div className="flex items-center justify-center">
                   <Button
@@ -180,10 +273,7 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
                   </Button>
                 </div>
               </>
-            )}
-
-            {/* Manual GitHub Input */}
-            {showManualGitHub && (
+            ) : (
               <>
                 <div className="flex items-center justify-between mb-3">
                   <Label className="text-sm font-medium">Manual GitHub Configuration</Label>
@@ -193,7 +283,7 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
                     onClick={() => setShowManualGitHub(false)}
                     className="text-xs"
                   >
-                    Use GitHub Selector
+                    ← Back to GitHub Selector
                   </Button>
                 </div>
 
@@ -249,6 +339,19 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
                 )}
               </>
             )}
+
+            {/* Modals */}
+            <GitHubRepoSelectorModal
+              open={repoSelectorOpen}
+              onOpenChange={setRepoSelectorOpen}
+              config={config}
+              updateConfig={updateConfig}
+            />
+            
+            <GitHubAppInstallModal
+              open={installModalOpen}
+              onOpenChange={setInstallModalOpen}
+            />
           </div>
         )}
 

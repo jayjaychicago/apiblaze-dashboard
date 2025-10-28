@@ -19,27 +19,12 @@ interface GitHubAppInstallModalProps {
 
 export function GitHubAppInstallModal({ open, onOpenChange }: GitHubAppInstallModalProps) {
   const handleInstall = () => {
-    // Open GitHub App installation in a new window
-    const installUrl = 'https://github.com/apps/apiblaze/installations/new';
-    const width = 800;
-    const height = 800;
-    const left = (window.screen.width - width) / 2;
-    const top = (window.screen.height - height) / 2;
+    // Redirect to GitHub App installation with callback to dashboard
+    const callbackUrl = `${window.location.origin}/dashboard?github_app_installed=true`;
+    const installUrl = `https://github.com/apps/apiblaze/installations/new?state=${encodeURIComponent(callbackUrl)}`;
     
-    const popup = window.open(
-      installUrl,
-      'GitHub App Installation',
-      `width=${width},height=${height},left=${left},top=${top}`
-    );
-
-    // Poll for window close
-    const checkPopup = setInterval(() => {
-      if (popup?.closed) {
-        clearInterval(checkPopup);
-        // Refresh the page or check installation status
-        window.location.reload();
-      }
-    }, 1000);
+    // Redirect to GitHub (will come back to dashboard after installation)
+    window.location.href = installUrl;
   };
 
   return (
