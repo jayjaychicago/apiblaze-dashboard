@@ -32,29 +32,82 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
 
   const checkGitHubInstallation = async () => {
     try {
-      // TODO: Replace with actual API call to check installation
-      // For now, check localStorage or URL parameters
-      const installed = localStorage.getItem('github_app_installed') === 'true';
-      
-      // Also check URL parameter (from GitHub callback)
+      // Check URL parameter first (from GitHub callback)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('github_app_installed') === 'true') {
         localStorage.setItem('github_app_installed', 'true');
         setGithubAppInstalled(true);
         // Clean up URL
         window.history.replaceState({}, '', window.location.pathname);
+        return;
+      }
+
+      // Check actual installation status via API
+      const response = await fetch('/api/github/installation-status', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const isInstalled = data.installed === true;
+        
+        // Update localStorage to match actual status
+        if (isInstalled) {
+          localStorage.setItem('github_app_installed', 'true');
+        } else {
+          localStorage.removeItem('github_app_installed');
+        }
+        
+        setGithubAppInstalled(isInstalled);
       } else {
-        setGithubAppInstalled(installed);
+        // If API fails, fall back to localStorage but assume not installed
+        localStorage.removeItem('github_app_installed');
+        setGithubAppInstalled(false);
       }
     } catch (error) {
       console.error('Error checking GitHub installation:', error);
+      // On error, assume not installed to be safe
+      localStorage.removeItem('github_app_installed');
+      setGithubAppInstalled(false);
     }
   };
 
-  const handleBrowseGitHub = () => {
-    if (githubAppInstalled) {
-      setRepoSelectorOpen(true);
-    } else {
+  const handleBrowseGitHub = async () => {
+    // Re-check installation status before opening
+    try {
+      const response = await fetch('/api/github/installation-status', {
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const isInstalled = data.installed === true;
+        
+        // Update localStorage
+        if (isInstalled) {
+          localStorage.setItem('github_app_installed', 'true');
+          setGithubAppInstalled(true);
+          setRepoSelectorOpen(true);
+        } else {
+          localStorage.removeItem('github_app_installed');
+          setGithubAppInstalled(false);
+          setInstallModalOpen(true);
+        }
+      } else {
+        // On error, show install modal
+        localStorage.removeItem('github_app_installed');
+        setGithubAppInstalled(false);
+        setInstallModalOpen(true);
+      }
+    } catch (error) {
+      console.error('Error checking installation:', error);
+      // On error, show install modal
+      localStorage.removeItem('github_app_installed');
+      setGithubAppInstalled(false);
       setInstallModalOpen(true);
     }
   };

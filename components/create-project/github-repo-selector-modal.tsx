@@ -72,6 +72,14 @@ export function GitHubRepoSelectorModal({
   useEffect(() => {
     if (open) {
       loadRepositories();
+    } else {
+      // Reset state when modal closes
+      setRepos([]);
+      setFilteredRepos([]);
+      setSelectedRepo(null);
+      setDetectedSpecs([]);
+      setSelectedSpec(null);
+      setSearchQuery('');
     }
   }, [open]);
 
@@ -103,10 +111,39 @@ export function GitHubRepoSelectorModal({
       });
 
       if (!response.ok) {
+        // If we get 401/403, GitHub app likely not installed
+        if (response.status === 401 || response.status === 403) {
+          // Close modal and trigger reinstall
+          onOpenChange(false);
+          // Clear installation status
+          localStorage.removeItem('github_app_installed');
+          // User will need to reinstall
+          throw new Error('GitHub App not installed or access revoked');
+        }
         throw new Error('Failed to load repositories');
       }
 
       const data = await response.json();
+      
+      // If we get an empty array, might be installation issue
+      if (!data || data.length === 0) {
+        // Double-check installation status
+        const statusResponse = await fetch('/api/github/installation-status', {
+          credentials: 'include',
+        });
+        
+        if (statusResponse.ok) {
+          const status = await statusResponse.json();
+          if (!status.installed) {
+            // App not installed - close modal and show install prompt
+            localStorage.removeItem('github_app_installed');
+            onOpenChange(false);
+            // Parent component will handle showing install modal
+            return;
+          }
+        }
+      }
+      
       setRepos(data);
       setFilteredRepos(data);
     } catch (error) {
