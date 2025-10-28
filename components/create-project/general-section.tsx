@@ -29,34 +29,45 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
 
   useEffect(() => {
     // Check if GitHub App is installed
+    console.log('[General Section] Component mounted, checking GitHub installation');
     checkGitHubInstallation();
   }, []);
 
   // Re-check if app was just installed
   useEffect(() => {
     const justInstalled = localStorage.getItem('github_app_just_installed');
+    console.log('[General Section] Checking just_installed flag:', justInstalled);
     if (justInstalled === 'true') {
+      console.log('[General Section] App was just installed! Re-checking status...');
       // Clear the flag
       localStorage.removeItem('github_app_just_installed');
       // Re-check installation status
-      checkGitHubInstallation();
+      setTimeout(() => {
+        checkGitHubInstallation();
+      }, 500); // Small delay to ensure token is ready
     }
   }, []);
 
   // Re-check when access token becomes available
   useEffect(() => {
+    console.log('[General Section] Access token changed:', !!accessToken, 'checking:', checkingInstallation);
     if (accessToken && !checkingInstallation) {
+      console.log('[General Section] Access token available, re-checking installation');
       checkGitHubInstallation();
     }
   }, [accessToken]);
 
   const checkGitHubInstallation = async () => {
+    console.log('[General Section] checkGitHubInstallation called, accessToken:', !!accessToken);
+    
     if (!accessToken) {
+      console.log('[General Section] No access token, skipping check');
       setCheckingInstallation(false);
       return;
     }
 
     setCheckingInstallation(true);
+    console.log('[General Section] Starting installation check...');
     try {
       // Check URL parameter first (from GitHub callback)
       const urlParams = new URLSearchParams(window.location.search);
