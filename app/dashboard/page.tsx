@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Zap, Plus, GitBranch, Globe, Users } from 'lucide-react';
-import { useAuthStore } from '@/store/auth';
 import { UserMenu } from '@/components/user-menu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,22 +11,22 @@ import { CreateProjectDialog } from '@/components/create-project-dialog';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, accessToken } = useAuthStore();
+  const { data: session, status } = useSession();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
   
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (status === 'unauthenticated') {
       router.push('/auth/login?returnUrl=/dashboard');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [status, router]);
 
   // Check for GitHub App installation callback
   useEffect(() => {
     // Check URL parameter for open_create_dialog
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('open_create_dialog') === 'true') {
-      console.log('Opening create dialog after GitHub return');
+      console.log('[Dashboard] Opening create dialog after GitHub return');
       setCreateDialogOpen(true);
       // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
@@ -47,9 +47,11 @@ export default function DashboardPage() {
     loadProjects(); // Refresh the project list
   };
   
-  if (isLoading || !isAuthenticated) {
+  if (status === 'loading' || status === 'unauthenticated') {
     return null;
   }
+  
+  const user = session?.user;
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
@@ -75,7 +77,7 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2">
-            Welcome back, {user?.name || user?.username}! 👋
+            Welcome back, {user?.name || user?.githubHandle}! 👋
           </h2>
           <p className="text-muted-foreground">
             You haven't created any API proxies yet. Let's get started!

@@ -27,7 +27,6 @@ import {
   X,
 } from 'lucide-react';
 import { ProjectConfig } from './types';
-import { useAuthStore } from '@/store/auth';
 
 interface GitHubRepoSelectorModalProps {
   open: boolean;
@@ -60,7 +59,6 @@ export function GitHubRepoSelectorModal({
   config, 
   updateConfig 
 }: GitHubRepoSelectorModalProps) {
-  const { accessToken } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
   const [filteredRepos, setFilteredRepos] = useState<GitHubRepo[]>([]);
@@ -104,13 +102,9 @@ export function GitHubRepoSelectorModal({
   const loadRepositories = async () => {
     setIsLoading(true);
     try {
-      // Call backend API to get user's GitHub repositories
+      // Call backend API to get user's GitHub repositories (using NextAuth session)
       const response = await fetch('/api/github/repos', {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        credentials: 'include',
+        credentials: 'include', // Include session cookie
       });
 
       if (!response.ok) {
@@ -132,10 +126,7 @@ export function GitHubRepoSelectorModal({
       if (!data || data.length === 0) {
         // Double-check installation status
         const statusResponse = await fetch('/api/github/installation-status', {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          },
-          credentials: 'include',
+          credentials: 'include', // Include session cookie
         });
         
         if (statusResponse.ok) {
@@ -169,14 +160,10 @@ export function GitHubRepoSelectorModal({
     setSelectedSpec(null);
     
     try {
-      // Call backend API to scan repository for OpenAPI specs
+      // Call backend API to scan repository for OpenAPI specs (using NextAuth session)
       const [owner, repoName] = repo.full_name.split('/');
       const response = await fetch(`/api/github/repos/${owner}/${repoName}/openapi-specs`, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        credentials: 'include',
+        credentials: 'include', // Include session cookie
       });
 
       if (!response.ok) {
@@ -200,14 +187,13 @@ export function GitHubRepoSelectorModal({
     try {
       const [owner, repoName] = selectedRepo!.full_name.split('/');
       
-      // Fetch and parse the OpenAPI spec to extract version and other details
+      // Fetch and parse the OpenAPI spec to extract version and other details (using NextAuth session)
       const response = await fetch('/api/openapi/parse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
         },
-        credentials: 'include',
+        credentials: 'include', // Include session cookie
         body: JSON.stringify({
           owner,
           repo: repoName,

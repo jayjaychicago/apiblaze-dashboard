@@ -20,7 +20,7 @@ INTERNAL_API_URL=https://internalapi.apiblaze.com
 INTERNAL_API_KEY=your-internal-api-key
 ```
 
-### GitHub App Configuration
+### GitHub OAuth Configuration (NextAuth)
 ```bash
 # The numeric ID of your GitHub App
 GITHUB_APP_ID=1093969
@@ -28,9 +28,15 @@ GITHUB_APP_ID=1093969
 # URL where users install the app
 GITHUB_APP_INSTALL_URL=https://github.com/apps/apiblaze/installations/new
 
-# GitHub App OAuth credentials (for the app)
-GITHUB_APP_CLIENT_ID=your-github-app-client-id
-GITHUB_APP_CLIENT_SECRET=your-github-app-client-secret
+# GitHub OAuth App credentials (for NextAuth)
+GITHUB_CLIENT_ID=your-github-oauth-app-client-id
+GITHUB_CLIENT_SECRET=your-github-oauth-app-client-secret
+
+# NextAuth Configuration
+NEXTAUTH_URL=http://localhost:3000
+# In production: NEXTAUTH_URL=https://dashboard.apiblaze.com
+NEXTAUTH_SECRET=your-random-secret-string-here
+# Generate with: openssl rand -base64 32
 ```
 
 ## Optional Variables

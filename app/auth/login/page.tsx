@@ -2,32 +2,27 @@
 
 import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession, signIn } from 'next-auth/react';
 import { Github, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useAuthStore } from '@/store/auth';
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated } = useAuthStore();
+  const { data: session, status } = useSession();
   
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (status === 'authenticated') {
       const returnUrl = searchParams.get('returnUrl') || '/dashboard';
       router.push(returnUrl);
     }
-  }, [isAuthenticated, router, searchParams]);
+  }, [status, router, searchParams]);
   
   const handleLogin = () => {
-    const { getLoginUrl } = require('@/lib/auth');
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
-    const redirectUri = `${appUrl}/auth/callback`;
-    
-    // Use standard OAuth 2.0 flow
-    const loginUrl = getLoginUrl(redirectUri);
-    window.location.href = loginUrl;
+    const returnUrl = searchParams.get('returnUrl') || '/dashboard';
+    signIn('github', { callbackUrl: returnUrl });
   };
   
   return (

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/next-auth';
 
 export async function GET(
   request: Request,
@@ -8,17 +10,16 @@ export async function GET(
   try {
     const { owner, repo } = await params;
     
-    // Get GitHub access token from Authorization header
-    const authHeader = request.headers.get('Authorization');
-    const accessToken = authHeader?.replace('Bearer ', '');
-    
-    if (!accessToken) {
+    // Get and validate session (NextAuth)
+    const session = await getServerSession(authOptions);
+    if (!session?.accessToken) {
+      console.log('No valid session or access token found');
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    // Initialize Octokit
+    // Initialize Octokit with the GitHub access token from session
     const octokit = new Octokit({ 
-      auth: accessToken,
+      auth: session.accessToken,
       request: {
         timeout: 15000 // 15 second timeout for tree scan
       }

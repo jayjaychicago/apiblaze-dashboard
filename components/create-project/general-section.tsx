@@ -6,12 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { GitBranch, Upload, Globe, Check, X, Loader2, Github } from 'lucide-react';
+import { GitBranch, Upload, Globe, Check, X, Loader2, Github, AlertCircle } from 'lucide-react';
 import { ProjectConfig, SourceType } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { GitHubRepoSelectorModal } from './github-repo-selector-modal';
 import { GitHubAppInstallModal } from './github-app-install-modal';
-import { useAuthStore } from '@/store/auth';
 
 interface GeneralSectionProps {
   config: ProjectConfig;
@@ -19,13 +18,13 @@ interface GeneralSectionProps {
 }
 
 export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
-  const { accessToken } = useAuthStore();
   const [checkingName, setCheckingName] = useState(false);
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
   const [repoSelectorOpen, setRepoSelectorOpen] = useState(false);
   const [installModalOpen, setInstallModalOpen] = useState(false);
   const [githubAppInstalled, setGithubAppInstalled] = useState(false);
   const [checkingInstallation, setCheckingInstallation] = useState(true);
+  const [authError, setAuthError] = useState(false);
 
   useEffect(() => {
     // Check if GitHub App is installed
@@ -48,30 +47,16 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
     }
   }, []);
 
-  // Re-check when access token becomes available
-  useEffect(() => {
-    console.log('[General Section] Access token changed:', !!accessToken, 'checking:', checkingInstallation);
-    if (accessToken && !checkingInstallation) {
-      console.log('[General Section] Access token available, re-checking installation');
-      checkGitHubInstallation();
-    }
-  }, [accessToken]);
 
   const checkGitHubInstallation = async () => {
-    console.log('[General Section] checkGitHubInstallation called, accessToken:', !!accessToken);
-    
-    if (!accessToken) {
-      console.log('[General Section] No access token, skipping check');
-      setCheckingInstallation(false);
-      return;
-    }
+    console.log('[GitHub] checkGitHubInstallation called');
 
     setCheckingInstallation(true);
-    console.log('[General Section] Starting installation check...');
     try {
       // Check URL parameter first (from GitHub callback)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('github_app_installed') === 'true') {
+        console.log('[GitHub] Found github_app_installed in URL');
         localStorage.setItem('github_app_installed', 'true');
         setGithubAppInstalled(true);
         setCheckingInstallation(false);
@@ -80,19 +65,20 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
         return;
       }
 
-      // Always check actual installation status via API
+      // Always check actual installation status via API (using NextAuth session)
+      console.log('[GitHub] Calling API to check installation status');
       const response = await fetch('/api/github/installation-status', {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        credentials: 'include',
+        credentials: 'include', // Include session cookie
         cache: 'no-store', // Don't cache this, always get fresh status
       });
+
+      console.log('[GitHub] Installation API response status:', response.status);
 
       if (response.ok) {
         const data = await response.json();
         const isInstalled = data.installed === true;
+        
+        console.log('[GitHub] Installation check result:', data);
         
         // Update localStorage to match actual status
         if (isInstalled) {
@@ -102,35 +88,42 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
         }
         
         setGithubAppInstalled(isInstalled);
+      } else if (response.status === 401) {
+        // 401 = Not authenticated or token invalid
+        console.warn('[GitHub] 401 Unauthorized - Access token may be invalid');
+        const errorData = await response.json().catch(() => ({}));
+        console.warn('[GitHub] Error details:', errorData);
+        
+        // Set error state to show help message
+        setAuthError(true);
+        
+        // Assume not installed but don't clear auth
+        // User can still use other sources (Target URL, Upload)
+        localStorage.removeItem('github_app_installed');
+        setGithubAppInstalled(false);
       } else {
-        // If API fails, assume not installed to be safe
+        // Other errors - assume not installed
+        console.error('[GitHub] API check failed with status:', response.status);
         localStorage.removeItem('github_app_installed');
         setGithubAppInstalled(false);
       }
     } catch (error) {
-      console.error('Error checking GitHub installation:', error);
+      console.error('[GitHub] Error checking installation:', error);
       // On error, assume not installed to be safe
       localStorage.removeItem('github_app_installed');
       setGithubAppInstalled(false);
     } finally {
       setCheckingInstallation(false);
+      console.log('[GitHub] Installation check complete');
     }
   };
 
   const handleBrowseGitHub = async () => {
-    if (!accessToken) {
-      console.error('No access token available');
-      return;
-    }
-
-    // Re-check installation status before opening
+    // Re-check installation status before opening (using NextAuth session)
     try {
+      console.log('[GitHub] handleBrowseGitHub - checking installation');
       const response = await fetch('/api/github/installation-status', {
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        credentials: 'include',
+        credentials: 'include', // Include session cookie
         cache: 'no-store',
       });
 
@@ -308,6 +301,34 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
         {/* GitHub Source */}
         {config.sourceType === 'github' && (
           <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+            {/* Auth Error Message */}
+            {authError && (
+              <Card className="border-orange-200 bg-orange-50/50">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2 text-orange-900">
+                    <AlertCircle className="h-4 w-4" />
+                    GitHub Authentication Issue
+                  </CardTitle>
+                  <CardDescription className="text-xs text-orange-800">
+                    Your GitHub authentication may have expired. Please try logging out and logging back in, or use Target URL / Upload options instead.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      // Clear auth and redirect to login
+                      localStorage.clear();
+                      window.location.href = '/auth/login';
+                    }}
+                  >
+                    Re-authenticate with GitHub
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* GitHub Spec Selected Summary */}
             {config.githubUser && config.githubRepo && config.githubPath ? (
               <Card className="border-green-200 bg-green-50/50">

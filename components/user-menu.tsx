@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { LogOut, User, Settings } from 'lucide-react';
-import { useAuthStore } from '@/store/auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,12 +15,13 @@ import { Button } from '@/components/ui/button';
 
 export function UserMenu() {
   const router = useRouter();
-  const { user, clearAuth } = useAuthStore();
+  const { data: session } = useSession();
   
   const handleLogout = () => {
-    clearAuth();
-    router.push('/auth/login');
+    signOut({ callbackUrl: '/auth/login' });
   };
+  
+  const user = session?.user;
   
   if (!user) return null;
   
@@ -28,15 +29,15 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          {user.avatar_url ? (
+          {user.image ? (
             <img
-              src={user.avatar_url}
-              alt={user.name || user.username || 'User'}
+              src={user.image}
+              alt={user.name || user.githubHandle || 'User'}
               className="h-10 w-10 rounded-full"
             />
           ) : (
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold">
-              {user.name?.charAt(0) || user.username?.charAt(0) || 'U'}
+              {user.name?.charAt(0) || user.githubHandle?.charAt(0) || 'U'}
             </div>
           )}
         </Button>
@@ -45,7 +46,7 @@ export function UserMenu() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {user.name || user.username}
+              {user.name || user.githubHandle}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}

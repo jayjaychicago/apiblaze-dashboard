@@ -1,26 +1,26 @@
 import { NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/next-auth';
 
 // GitHub App ID - should be set in environment variables
 const GITHUB_APP_ID = process.env.GITHUB_APP_ID || '1093969'; // APIBlaze app ID
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    // Get GitHub access token from Authorization header
-    const authHeader = request.headers.get('Authorization');
-    const accessToken = authHeader?.replace('Bearer ', '');
-    
-    if (!accessToken) {
-      console.log('No access token provided');
+    // Get and validate session (NextAuth)
+    const session = await getServerSession(authOptions);
+    if (!session?.accessToken) {
+      console.log('No valid session or access token found');
       return NextResponse.json({ 
         installed: false,
         error: 'Not authenticated' 
       }, { status: 401 });
     }
 
-    // Initialize Octokit with the access token
+    // Initialize Octokit with the GitHub access token from session
     const octokit = new Octokit({ 
-      auth: accessToken,
+      auth: session.accessToken,
       request: {
         timeout: 5000 // 5 second timeout
       }
