@@ -11,6 +11,7 @@ import { ProjectConfig, SourceType } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { GitHubRepoSelectorModal } from './github-repo-selector-modal';
 import { GitHubAppInstallModal } from './github-app-install-modal';
+import { useAuthStore } from '@/store/auth';
 
 interface GeneralSectionProps {
   config: ProjectConfig;
@@ -18,6 +19,7 @@ interface GeneralSectionProps {
 }
 
 export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
+  const { accessToken } = useAuthStore();
   const [checkingName, setCheckingName] = useState(false);
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
   const [repoSelectorOpen, setRepoSelectorOpen] = useState(false);
@@ -48,6 +50,7 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
       const response = await fetch('/api/github/installation-status', {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         credentials: 'include',
         cache: 'no-store', // Don't cache this, always get fresh status
@@ -84,8 +87,12 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
     // Re-check installation status before opening
     try {
       const response = await fetch('/api/github/installation-status', {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
         credentials: 'include',
+        cache: 'no-store',
       });
 
       if (response.ok) {

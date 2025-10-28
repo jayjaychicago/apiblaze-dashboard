@@ -27,6 +27,7 @@ import {
   X,
 } from 'lucide-react';
 import { ProjectConfig } from './types';
+import { useAuthStore } from '@/store/auth';
 
 interface GitHubRepoSelectorModalProps {
   open: boolean;
@@ -59,6 +60,7 @@ export function GitHubRepoSelectorModal({
   config, 
   updateConfig 
 }: GitHubRepoSelectorModalProps) {
+  const { accessToken } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
   const [filteredRepos, setFilteredRepos] = useState<GitHubRepo[]>([]);
@@ -106,6 +108,7 @@ export function GitHubRepoSelectorModal({
       const response = await fetch('/api/github/repos', {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         credentials: 'include',
       });
@@ -129,6 +132,9 @@ export function GitHubRepoSelectorModal({
       if (!data || data.length === 0) {
         // Double-check installation status
         const statusResponse = await fetch('/api/github/installation-status', {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
           credentials: 'include',
         });
         
@@ -168,6 +174,7 @@ export function GitHubRepoSelectorModal({
       const response = await fetch(`/api/github/repos/${owner}/${repoName}/openapi-specs`, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         credentials: 'include',
       });
@@ -198,6 +205,7 @@ export function GitHubRepoSelectorModal({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         credentials: 'include',
         body: JSON.stringify({
