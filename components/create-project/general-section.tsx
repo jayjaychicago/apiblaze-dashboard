@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { GitBranch, Upload, Globe, Check, X, Loader2, Github } from 'lucide-react';
 import { ProjectConfig, SourceType } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { GitHubSpecSelector } from './github-spec-selector';
 
 interface GeneralSectionProps {
   config: ProjectConfig;
@@ -18,7 +19,7 @@ interface GeneralSectionProps {
 export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
   const [checkingName, setCheckingName] = useState(false);
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
-  const [githubAppInstalled, setGithubAppInstalled] = useState(true); // TODO: Check actual status
+  const [showManualGitHub, setShowManualGitHub] = useState(false);
 
   const handleProjectNameBlur = async () => {
     if (!config.projectName) return;
@@ -162,77 +163,91 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
 
         {/* GitHub Source */}
         {config.sourceType === 'github' && (
-          <div className="p-4 border rounded-lg bg-muted/30">
-            {!githubAppInstalled && (
-              <Card className="border-blue-200 bg-blue-50/50 mb-4">
-                <CardHeader>
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Github className="h-4 w-4" />
-                    Install GitHub App
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    To import from GitHub, you need to authorize the APIBlaze GitHub App. 
-                    This allows us to securely access your repositories and OpenAPI specs.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button size="sm" variant="default">
-                    <Github className="mr-2 h-4 w-4" />
-                    Authorize GitHub App
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+            {/* GitHub Spec Selector */}
+            {!showManualGitHub && (
+              <>
+                <GitHubSpecSelector config={config} updateConfig={updateConfig} />
+                
+                <div className="flex items-center justify-center">
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => setShowManualGitHub(true)}
+                    className="text-xs"
+                  >
+                    Or enter GitHub details manually
                   </Button>
-                </CardContent>
-              </Card>
+                </div>
+              </>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="githubUser" className="text-sm">GitHub User/Org</Label>
-                <Input
-                  id="githubUser"
-                  placeholder="mycompany"
-                  value={config.githubUser}
-                  onChange={(e) => updateConfig({ githubUser: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="githubRepo" className="text-sm">Repository</Label>
-                <Input
-                  id="githubRepo"
-                  placeholder="my-api-specs"
-                  value={config.githubRepo}
-                  onChange={(e) => updateConfig({ githubRepo: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="githubPath" className="text-sm">Path to OpenAPI Spec</Label>
-                <Input
-                  id="githubPath"
-                  placeholder="specs/openapi.yaml"
-                  value={config.githubPath}
-                  onChange={(e) => updateConfig({ githubPath: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="githubBranch" className="text-sm">Branch</Label>
-                <Input
-                  id="githubBranch"
-                  placeholder="main"
-                  value={config.githubBranch}
-                  onChange={(e) => updateConfig({ githubBranch: e.target.value })}
-                  className="mt-1"
-                />
-              </div>
-            </div>
+            {/* Manual GitHub Input */}
+            {showManualGitHub && (
+              <>
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-sm font-medium">Manual GitHub Configuration</Label>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => setShowManualGitHub(false)}
+                    className="text-xs"
+                  >
+                    Use GitHub Selector
+                  </Button>
+                </div>
 
-            {config.githubUser && config.githubRepo && (
-              <p className="text-xs text-muted-foreground mt-3">
-                Will import from: <span className="font-mono text-blue-600">
-                  github.com/{config.githubUser}/{config.githubRepo}/{config.githubPath || 'openapi.yaml'} ({config.githubBranch})
-                </span>
-              </p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="githubUser" className="text-sm">GitHub User/Org</Label>
+                    <Input
+                      id="githubUser"
+                      placeholder="mycompany"
+                      value={config.githubUser}
+                      onChange={(e) => updateConfig({ githubUser: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="githubRepo" className="text-sm">Repository</Label>
+                    <Input
+                      id="githubRepo"
+                      placeholder="my-api-specs"
+                      value={config.githubRepo}
+                      onChange={(e) => updateConfig({ githubRepo: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="githubPath" className="text-sm">Path to OpenAPI Spec</Label>
+                    <Input
+                      id="githubPath"
+                      placeholder="specs/openapi.yaml"
+                      value={config.githubPath}
+                      onChange={(e) => updateConfig({ githubPath: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="githubBranch" className="text-sm">Branch</Label>
+                    <Input
+                      id="githubBranch"
+                      placeholder="main"
+                      value={config.githubBranch}
+                      onChange={(e) => updateConfig({ githubBranch: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+
+                {config.githubUser && config.githubRepo && (
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Will import from: <span className="font-mono text-blue-600">
+                      github.com/{config.githubUser}/{config.githubRepo}/{config.githubPath || 'openapi.yaml'} ({config.githubBranch})
+                    </span>
+                  </p>
+                )}
+              </>
             )}
           </div>
         )}
