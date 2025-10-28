@@ -11,7 +11,7 @@ import { CreateProjectDialog } from '@/components/create-project-dialog';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading } = useAuthStore();
+  const { user, isAuthenticated, isLoading, accessToken } = useAuthStore();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
   
@@ -27,12 +27,15 @@ export default function DashboardPage() {
       // Check if user just came back from GitHub installation
       const installInitiated = sessionStorage.getItem('github_install_initiated');
       
-      if (installInitiated) {
+      if (installInitiated && isAuthenticated && accessToken) {
         // User attempted installation, verify it completed
         sessionStorage.removeItem('github_install_initiated');
         
         try {
           const response = await fetch('/api/github/installation-status', {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+            },
             credentials: 'include',
             cache: 'no-store',
           });
@@ -42,6 +45,7 @@ export default function DashboardPage() {
             if (data.installed) {
               // Installation successful!
               localStorage.setItem('github_app_installed', 'true');
+              localStorage.setItem('github_app_just_installed', 'true');
               // Open create dialog automatically
               setCreateDialogOpen(true);
             }
@@ -55,13 +59,14 @@ export default function DashboardPage() {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('github_app_installed') === 'true') {
         localStorage.setItem('github_app_installed', 'true');
+        localStorage.setItem('github_app_just_installed', 'true');
         setCreateDialogOpen(true);
         window.history.replaceState({}, '', window.location.pathname);
       }
     };
     
     checkInstallationReturn();
-  }, []);
+  }, [isAuthenticated, accessToken]);
 
   const loadProjects = async () => {
     try {
@@ -208,6 +213,7 @@ export default function DashboardPage() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         onSuccess={handleProjectCreated}
+        openToGitHub={localStorage.getItem('github_app_just_installed') === 'true'}
       />
     </div>
   );

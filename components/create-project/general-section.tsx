@@ -32,7 +32,30 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
     checkGitHubInstallation();
   }, []);
 
+  // Re-check if app was just installed
+  useEffect(() => {
+    const justInstalled = localStorage.getItem('github_app_just_installed');
+    if (justInstalled === 'true') {
+      // Clear the flag
+      localStorage.removeItem('github_app_just_installed');
+      // Re-check installation status
+      checkGitHubInstallation();
+    }
+  }, []);
+
+  // Re-check when access token becomes available
+  useEffect(() => {
+    if (accessToken && !checkingInstallation) {
+      checkGitHubInstallation();
+    }
+  }, [accessToken]);
+
   const checkGitHubInstallation = async () => {
+    if (!accessToken) {
+      setCheckingInstallation(false);
+      return;
+    }
+
     setCheckingInstallation(true);
     try {
       // Check URL parameter first (from GitHub callback)
@@ -84,6 +107,11 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
   };
 
   const handleBrowseGitHub = async () => {
+    if (!accessToken) {
+      console.error('No access token available');
+      return;
+    }
+
     // Re-check installation status before opening
     try {
       const response = await fetch('/api/github/installation-status', {
@@ -98,6 +126,8 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
       if (response.ok) {
         const data = await response.json();
         const isInstalled = data.installed === true;
+        
+        console.log('Installation check result:', data);
         
         // Update localStorage
         if (isInstalled) {

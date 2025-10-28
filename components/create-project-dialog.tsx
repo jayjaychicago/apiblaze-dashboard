@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Dialog, 
   DialogContent, 
@@ -27,12 +27,21 @@ interface CreateProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  openToGitHub?: boolean;
 }
 
-export function CreateProjectDialog({ open, onOpenChange, onSuccess }: CreateProjectDialogProps) {
+export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHub }: CreateProjectDialogProps) {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const [isDeploying, setIsDeploying] = useState(false);
+
+  // When dialog opens with openToGitHub flag, ensure we're on General tab and GitHub source
+  useEffect(() => {
+    if (open && openToGitHub) {
+      setActiveTab('general');
+      setConfig(prev => ({ ...prev, sourceType: 'github' }));
+    }
+  }, [open, openToGitHub]);
   const [config, setConfig] = useState<ProjectConfig>({
     // General
     projectName: '',
