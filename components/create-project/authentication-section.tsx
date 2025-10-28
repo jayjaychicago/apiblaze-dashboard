@@ -187,51 +187,33 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
               />
             </div>
 
-            {/* Provider Configuration */}
+            {/* Provider Configuration - Two Column Layout */}
             {config.bringOwnProvider && (
-              <div className="space-y-4">
-                <Card className="border-orange-200 bg-orange-50/50">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start gap-2">
-                      <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5" />
-                      <div>
-                        <CardTitle className="text-sm">Important</CardTitle>
-                        <CardDescription className="text-xs mt-1">
-                          Don't forget to add this authorized callback URL to your OAuth provider:
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <code className="text-xs bg-white px-2 py-1 rounded border block">
-                      https://apiportal.myInstantAPI.com
-                    </code>
-                  </CardContent>
-                </Card>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column - Configuration Fields */}
+                <div className="space-y-4">
+                  {/* Provider Selection */}
+                  <div>
+                    <Label htmlFor="socialProvider" className="text-sm">OAuth Provider</Label>
+                    <Select
+                      value={config.socialProvider}
+                      onValueChange={(value) => handleProviderChange(value as SocialProvider)}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="google">Google</SelectItem>
+                        <SelectItem value="microsoft">Microsoft</SelectItem>
+                        <SelectItem value="github">GitHub</SelectItem>
+                        <SelectItem value="facebook">Facebook</SelectItem>
+                        <SelectItem value="auth0">Auth0</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Provider Selection */}
-                <div>
-                  <Label htmlFor="socialProvider" className="text-sm">OAuth Provider</Label>
-                  <Select
-                    value={config.socialProvider}
-                    onValueChange={(value) => handleProviderChange(value as SocialProvider)}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="google">Google</SelectItem>
-                      <SelectItem value="microsoft">Microsoft</SelectItem>
-                      <SelectItem value="github">GitHub</SelectItem>
-                      <SelectItem value="facebook">Facebook</SelectItem>
-                      <SelectItem value="auth0">Auth0</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Provider Details */}
-                <div className="grid gap-3">
+                  {/* Provider Details */}
                   <div>
                     <Label htmlFor="identityProviderDomain" className="text-sm">
                       Identity Provider Domain
@@ -271,60 +253,83 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                       className="mt-1"
                     />
                   </div>
-                </div>
 
-                {/* Authorized Scopes */}
-                <div>
-                  <Label className="text-sm">Authorized Scopes</Label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Default mandatory scopes: email, openid, profile
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {config.authorizedScopes.map((scope) => (
-                      <Badge key={scope} variant="secondary" className="text-xs">
-                        {scope}
-                        {!['email', 'openid', 'profile'].includes(scope) && (
-                          <X
-                            className="ml-1 h-3 w-3 cursor-pointer"
-                            onClick={() => removeScope(scope)}
-                          />
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Add custom scope"
-                      value={newScope}
-                      onChange={(e) => setNewScope(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          addScope();
-                        }
-                      }}
-                    />
-                    <Button type="button" size="sm" onClick={addScope}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Setup Guide */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">
-                      {config.socialProvider.charAt(0).toUpperCase() + config.socialProvider.slice(1)} Setup Guide
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ol className="text-xs space-y-2 list-decimal list-inside text-muted-foreground">
-                      {PROVIDER_SETUP_GUIDES[config.socialProvider].map((step, index) => (
-                        <li key={index}>{step}</li>
+                  {/* Authorized Scopes */}
+                  <div>
+                    <Label className="text-sm">Authorized Scopes</Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Default mandatory scopes: email, openid, profile
+                    </p>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {config.authorizedScopes.map((scope) => (
+                        <Badge key={scope} variant="secondary" className="text-xs">
+                          {scope}
+                          {!['email', 'openid', 'profile'].includes(scope) && (
+                            <X
+                              className="ml-1 h-3 w-3 cursor-pointer"
+                              onClick={() => removeScope(scope)}
+                            />
+                          )}
+                        </Badge>
                       ))}
-                    </ol>
-                  </CardContent>
-                </Card>
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Add custom scope"
+                        value={newScope}
+                        onChange={(e) => setNewScope(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addScope();
+                          }
+                        }}
+                      />
+                      <Button type="button" size="sm" onClick={addScope}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column - Important Messages & Setup Guide */}
+                <div className="space-y-4">
+                  {/* Important Callback URL */}
+                  <Card className="border-orange-200 bg-orange-50/50">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5" />
+                        <div>
+                          <CardTitle className="text-sm">Important</CardTitle>
+                          <CardDescription className="text-xs mt-1">
+                            Don't forget to add this authorized callback URL to your OAuth provider:
+                          </CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <code className="text-xs bg-white px-2 py-1 rounded border block">
+                        https://apiportal.myInstantAPI.com
+                      </code>
+                    </CardContent>
+                  </Card>
+
+                  {/* Setup Guide */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">
+                        {config.socialProvider.charAt(0).toUpperCase() + config.socialProvider.slice(1)} Setup Guide
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ol className="text-xs space-y-2 list-decimal list-inside text-muted-foreground">
+                        {PROVIDER_SETUP_GUIDES[config.socialProvider].map((step, index) => (
+                          <li key={index}>{step}</li>
+                        ))}
+                      </ol>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             )}
           </div>

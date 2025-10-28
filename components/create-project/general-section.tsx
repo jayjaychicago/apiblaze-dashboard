@@ -162,9 +162,9 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
 
         {/* GitHub Source */}
         {config.sourceType === 'github' && (
-          <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+          <div className="p-4 border rounded-lg bg-muted/30">
             {!githubAppInstalled && (
-              <Card className="border-blue-200 bg-blue-50/50">
+              <Card className="border-blue-200 bg-blue-50/50 mb-4">
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Github className="h-4 w-4" />
@@ -184,7 +184,7 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
               </Card>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="githubUser" className="text-sm">GitHub User/Org</Label>
                 <Input
@@ -205,9 +205,6 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
                   className="mt-1"
                 />
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="githubPath" className="text-sm">Path to OpenAPI Spec</Label>
                 <Input
@@ -231,7 +228,7 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
             </div>
 
             {config.githubUser && config.githubRepo && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground mt-3">
                 Will import from: <span className="font-mono text-blue-600">
                   github.com/{config.githubUser}/{config.githubRepo}/{config.githubPath || 'openapi.yaml'} ({config.githubBranch})
                 </span>
