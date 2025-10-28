@@ -23,50 +23,15 @@ export default function DashboardPage() {
 
   // Check for GitHub App installation callback
   useEffect(() => {
-    const checkInstallationReturn = async () => {
-      // Check if user just came back from GitHub installation
-      const installInitiated = sessionStorage.getItem('github_install_initiated');
-      
-      if (installInitiated && isAuthenticated && accessToken) {
-        // User attempted installation, verify it completed
-        sessionStorage.removeItem('github_install_initiated');
-        
-        try {
-          const response = await fetch('/api/github/installation-status', {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-            },
-            credentials: 'include',
-            cache: 'no-store',
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.installed) {
-              // Installation successful!
-              localStorage.setItem('github_app_installed', 'true');
-              localStorage.setItem('github_app_just_installed', 'true');
-              // Open create dialog automatically
-              setCreateDialogOpen(true);
-            }
-          }
-        } catch (error) {
-          console.error('Error checking installation after return:', error);
-        }
-      }
-      
-      // Also check URL parameter (backup method)
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('github_app_installed') === 'true') {
-        localStorage.setItem('github_app_installed', 'true');
-        localStorage.setItem('github_app_just_installed', 'true');
-        setCreateDialogOpen(true);
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-    };
-    
-    checkInstallationReturn();
-  }, [isAuthenticated, accessToken]);
+    // Check URL parameter for open_create_dialog
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('open_create_dialog') === 'true') {
+      console.log('Opening create dialog after GitHub return');
+      setCreateDialogOpen(true);
+      // Clean up URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const loadProjects = async () => {
     try {

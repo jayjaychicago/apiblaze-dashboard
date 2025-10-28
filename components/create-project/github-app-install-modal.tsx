@@ -19,15 +19,12 @@ interface GitHubAppInstallModalProps {
 
 export function GitHubAppInstallModal({ open, onOpenChange }: GitHubAppInstallModalProps) {
   const handleInstall = () => {
-    // Save that we're attempting installation
-    sessionStorage.setItem('github_install_initiated', 'true');
-    
     // Redirect to GitHub App installation
-    // Note: GitHub doesn't support custom redirect URLs via 'state' for app installations
-    // Instead, we'll configure the app's callback URL on GitHub to point to our dashboard
+    // GitHub will redirect to the callback URL configured in the app settings
+    // We've set it to: https://dashboard.apiblaze.com/github/callback
     const installUrl = 'https://github.com/apps/apiblaze/installations/new';
     
-    // Redirect to GitHub (will come back to dashboard after installation)
+    // Redirect to GitHub (will come back to /github/callback after installation)
     window.location.href = installUrl;
   };
 

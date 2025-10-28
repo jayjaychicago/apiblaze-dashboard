@@ -46,8 +46,10 @@ The GitHub App at https://github.com/apps/apiblaze should be configured with:
 
 ### Callback URLs
 - Homepage URL: `https://dashboard.apiblaze.com`
-- Callback URL: `https://dashboard.apiblaze.com/dashboard`
-- Setup URL: `https://dashboard.apiblaze.com`
+- **Setup URL**: `https://dashboard.apiblaze.com/github/callback` ← IMPORTANT!
+- Callback URL: `https://dashboard.apiblaze.com/github/callback`
+
+**Note**: The Setup URL is where GitHub redirects users after they install the app. This MUST be set to `/github/callback` for the auto-open flow to work.
 
 ### Permissions Required
 - **Repository contents**: Read-only
