@@ -1,0 +1,97 @@
+The configurator is the interface that allows the tenant to configure the API project before deploying it. All the configuration should have defaults so that the user can just hit a 'Deploy API' button without changing anything and it will deploy.
+There are 7 sections (extensible) that can be configured: General, Authentication, Target servers, Portal, Throttling and Quotas, Pre/Post Processing, Domains
+DO NOT make this into a wizard where 1 section is blocking to move to the other section. The user should be able to only touch some sections and deploy from any section
+General
+-------
+* Project and API version picker:
+Allows the tenant to name the project and the version and therefore the url (e.g. tenant123ProjectABC.apiblaze.com/1.0.0) end users will use to query the api
+It should be presented as an input field with .apiblaze.com at the end to signify to the user that this name determines the URL they will use for their api.
+It should have a mechanism to automatically check whether or not the project name exist (and therefore reject the proposed name and block deployment) when the user exits the field. Only new project names should be allowed during project creation (although obviously it's okay to keep the same during an update)
+
+The API version should be another input field on the right hand side of that input field (separated by a slash) and have been extracted from the source openapi spec if there was one or default to 1.0.0 if there isn't
+Overall, the whole line should signify the url that will be used to query the api. So if the user types tenant123ProjectABC as a project name, the whole line will look like tenant123ProjectABC.apiblaze.com / 1.0.0
+Look at general.png as an example
+
+* Source
+The source should allow the user to choose between 'Target URL', 'Github' or 'File upload' with a widget for either.
+Once selected, it should show the source:
+Github: Github user, Github repo, Github path to the openapi file, Github branch
+Target URL: Target URL
+File Upload: A button to download the file
+
+* Authentication
+Allows the tenant to specify the type of authentication end users will use to access the api
+- UserGroup name: That's the name of the user group that will control RBAM for this api. It's useful because the name can be reused for other APIs so that multiple APIs can share the same user pools 
+- Enable API key authentication: If that's checked, then the api will require API keys and the portal will help users create them
+- Enable Social authentication (Github): If that's checked, then the api will require oauth tokens
+ONLY IF Enable Social authentication is checked then:
+- Bring my own Social authentication provider (Google, Auth0, ...) allows the user to provide the details of their oauth provider to replace the default apiblaze github auth.
+ONLY IF Bring my own Social authentication provider is checked
+- Social authentication provider dropdown with Google, facebook, github, Microsoft, Auth0, Others in the dropdown
+- Identity provider domain (prepopulated with https://accounts.google.com if Google was selected, https://login.microsoftonline.com for microsoft, ...)
+- Identity provider Client ID
+- Identity provider Client Secret
+- Authorized scopes: A table that presents to the user the default mandatory scopes: email, openid, profile, and gives them the ability to add more (and remove them)
+- A setup guide: Adapted to each provider (Google, Github, ... ) a text guide of how to create an oauth client. For example:
+
+Important
+Don't forget to add this authorized callback URL to your OAuth provider:
+https://apiportal.myInstantAPI.com
+
+Google Cloud Platform Setup
+Step 1: Go to Google Cloud Console
+1. Visit console.cloud.google.com
+2. Select your project or create a new one
+
+Step 2: Enable APIs
+1. Go to APIs & Services → Library
+2. Search for and enable: Google+ API, Gmail API (if using Gmail scopes)
+
+Step 3: Create OAuth 2.0 Credentials
+1. Go to APIs & Services → Credentials
+2. Click + CREATE CREDENTIALS → OAuth 2.0 Client IDs
+3. Choose Web application as application type
+
+Step 4: Configure OAuth Consent Screen
+1. Go to APIs & Services → OAuth consent screen
+2. Choose External user type
+3. Fill in app name, user support email, and developer contact
+
+Step 5: Add Authorized Redirect URIs
+1. In your OAuth 2.0 Client ID settings
+2. Under Authorized redirect URIs, click + ADD URI
+3. Paste the callback URL above and click Save
+
+Step 6: Copy Credentials
+1. Copy the Client ID and Client Secret
+2. Paste them in the fields on the left
+
+You can see an example of that interface at authentication.png
+
+* Target servers
+A table that allows tenants to setup a set of target servers, one per environment for the api proxy. 
+These are extracted from the openapi spec servers section or if there is no spec, defaulted to /dev /test and /prod all pointing to the target url inputed by the user
+The table contains three columns: Stage, Target server URL, Configuration
+Stage is simply the proxy URL, e.g. https://feedslap.myInstantAPI.com/1.0.0/prod
+Target server URL is the matching target server, e.g. https://feed-slap-api.vercel.app/prod
+Configuration is a widget that allows the user to add headers, parameters or body variable to any requests made to the proxy url (e.g. https://feedslap.myInstantAPI.com/1.0.0/prod). It allows the user to specify the type of hardcoded variable (header, parameter or bodyVar), the name of that variable (e.g X-API-KEY) and the hardcoded value e.g. 1234
+You can see an example of this interface in targetservers.png
+
+* Portal
+A checkbox to say whether or not this proxy will have an api dev portal
+An inputfield to provide the url of a logo for the portal
+
+* Throttling and quotas
+- Throttling Rate (requests per second)
+- Throttling Burst
+- Quota and Quota interval (per day, per week, per month)
+
+* Pre/Post Processing
+- Pre-processing: A github path to pre.mjs file with a github file selector widget
+- Post-processing: A github path to post.mjs file with a github file selector widget
+
+* Domains
+A widget similar to the domain widget in vercel that allows tenants to add a CNAME for
+   + their api proxy url (e.g. tenant123ProjectABC.apiblaze.com/1.0.0)
+   + their api proxy auth url (e.g. tenant123ProjectABC.auth.apiblaze.com/1.0.0)
+   + and does TXT verification and issues a certificate with cloudflare (although for now, just put UI placeholders and we'll implement this later)

@@ -1,22 +1,39 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zap, Plus, GitBranch, Globe, Users } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { UserMenu } from '@/components/user-menu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CreateProjectDialog } from '@/components/create-project-dialog';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading } = useAuthStore();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [projects, setProjects] = useState<any[]>([]);
   
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/login?returnUrl=/dashboard');
     }
   }, [isAuthenticated, isLoading, router]);
+
+  const loadProjects = async () => {
+    try {
+      // TODO: Implement project loading from API
+      // const projectList = await api.listProjects();
+      // setProjects(projectList);
+    } catch (error) {
+      console.error('Failed to load projects:', error);
+    }
+  };
+
+  const handleProjectCreated = () => {
+    loadProjects(); // Refresh the project list
+  };
   
   if (isLoading || !isAuthenticated) {
     return null;
@@ -65,7 +82,7 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center pb-6">
-            <Button size="lg" className="h-12 px-8">
+            <Button size="lg" className="h-12 px-8" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="mr-2 h-5 w-5" />
               Create Project
             </Button>
@@ -143,6 +160,13 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </main>
+
+      {/* Project Creation Dialog */}
+      <CreateProjectDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={handleProjectCreated}
+      />
     </div>
   );
 }

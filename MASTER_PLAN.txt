@@ -112,35 +112,31 @@
 - **Validation**: Real-time spec validation
 - **One-Click**: Create project from GitHub spec
 
-**Secondary**: Upload OpenAPI Spec
+**Secondary**: Manual Configuration
+- **Target Server**: Enter server URL
+
+
+**Tertiary UI ONLY/No backend for now**: Upload OpenAPI Spec
 - **Drag & Drop**: Upload spec files
-- **URL Import**: Import from URL
 - **Validation**: Real-time spec validation
 - **Preview**: Show parsed spec before creation
+- Save the file in cloudflare R2 (you will have to modify internalapi.apiblaze.com in v2APIblaze for that. You can punt this for now and just put the ui in place)
 
-**Tertiary**: Manual Configuration
-- **Target Server**: Enter server URL
-- **Basic Config**: Name, description, team
-- **Advanced**: Custom headers, auth, etc.
 
-#### 1.2 Project Configuration
-- **Environment Setup**: Dev, staging, production
-- **Authentication**: API keys, OAuth, custom
-- **Rate Limiting**: Configure limits and policies
-- **Caching**: Cache strategies and TTL
-- **Monitoring**: Analytics and logging setup
+#### 1.2 Project Configuration before creation
+Read and execute configurator.txt for specification
+
 
 #### 1.3 Success Flow
 - **Confirmation**: Clear success message
 - **Next Steps**: Guided onboarding
 - **Quick Actions**: Deploy, test, configure
-- **Documentation**: Links to guides and help
+- **List**: Once the first project is created, get out of zero state and present the tenant with a list of projects even if it's only just this one project and a CTA to add more
 
 **Success Criteria**:
-- User can create project in <2 minutes
+- User can create project in <10 seconds
 - GitHub integration feels native
-- Upload flow is intuitive
-- Manual config is comprehensive but not overwhelming
+- Manual config is comprehensive but not overwhelming and defaults allow to bypass and just deploy in 1 second
 
 ---
 
