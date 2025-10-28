@@ -21,6 +21,48 @@ export default function DashboardPage() {
     }
   }, [isAuthenticated, isLoading, router]);
 
+  // Check for GitHub App installation callback
+  useEffect(() => {
+    const checkInstallationReturn = async () => {
+      // Check if user just came back from GitHub installation
+      const installInitiated = sessionStorage.getItem('github_install_initiated');
+      
+      if (installInitiated) {
+        // User attempted installation, verify it completed
+        sessionStorage.removeItem('github_install_initiated');
+        
+        try {
+          const response = await fetch('/api/github/installation-status', {
+            credentials: 'include',
+            cache: 'no-store',
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.installed) {
+              // Installation successful!
+              localStorage.setItem('github_app_installed', 'true');
+              // Open create dialog automatically
+              setCreateDialogOpen(true);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking installation after return:', error);
+        }
+      }
+      
+      // Also check URL parameter (backup method)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('github_app_installed') === 'true') {
+        localStorage.setItem('github_app_installed', 'true');
+        setCreateDialogOpen(true);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    };
+    
+    checkInstallationReturn();
+  }, []);
+
   const loadProjects = async () => {
     try {
       // TODO: Implement project loading from API

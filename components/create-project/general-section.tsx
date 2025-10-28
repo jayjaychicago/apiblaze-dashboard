@@ -20,10 +20,10 @@ interface GeneralSectionProps {
 export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
   const [checkingName, setCheckingName] = useState(false);
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
-  const [showManualGitHub, setShowManualGitHub] = useState(false);
   const [repoSelectorOpen, setRepoSelectorOpen] = useState(false);
   const [installModalOpen, setInstallModalOpen] = useState(false);
   const [githubAppInstalled, setGithubAppInstalled] = useState(false);
+  const [checkingInstallation, setCheckingInstallation] = useState(true);
 
   useEffect(() => {
     // Check if GitHub App is installed
@@ -31,23 +31,26 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
   }, []);
 
   const checkGitHubInstallation = async () => {
+    setCheckingInstallation(true);
     try {
       // Check URL parameter first (from GitHub callback)
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('github_app_installed') === 'true') {
         localStorage.setItem('github_app_installed', 'true');
         setGithubAppInstalled(true);
+        setCheckingInstallation(false);
         // Clean up URL
         window.history.replaceState({}, '', window.location.pathname);
         return;
       }
 
-      // Check actual installation status via API
+      // Always check actual installation status via API
       const response = await fetch('/api/github/installation-status', {
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
+        cache: 'no-store', // Don't cache this, always get fresh status
       });
 
       if (response.ok) {
@@ -63,7 +66,7 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
         
         setGithubAppInstalled(isInstalled);
       } else {
-        // If API fails, fall back to localStorage but assume not installed
+        // If API fails, assume not installed to be safe
         localStorage.removeItem('github_app_installed');
         setGithubAppInstalled(false);
       }
@@ -72,6 +75,8 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
       // On error, assume not installed to be safe
       localStorage.removeItem('github_app_installed');
       setGithubAppInstalled(false);
+    } finally {
+      setCheckingInstallation(false);
     }
   };
 
@@ -255,142 +260,71 @@ export function GeneralSection({ config, updateConfig }: GeneralSectionProps) {
         {/* GitHub Source */}
         {config.sourceType === 'github' && (
           <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-            {!showManualGitHub ? (
-              <>
-                {/* GitHub Spec Selected Summary */}
-                {config.githubUser && config.githubRepo && config.githubPath ? (
-                  <Card className="border-green-200 bg-green-50/50">
-                    <CardContent className="pt-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Check className="h-4 w-4 text-green-600" />
-                            <span className="text-sm font-medium text-green-900">
-                              OpenAPI Spec Selected
-                            </span>
-                          </div>
-                          <p className="text-xs text-green-700 font-mono">
-                            {config.githubUser}/{config.githubRepo}/{config.githubPath}
-                          </p>
-                          <p className="text-xs text-green-700 mt-1">
-                            Branch: {config.githubBranch}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleBrowseGitHub}
-                        >
-                          Change
-                        </Button>
+            {/* GitHub Spec Selected Summary */}
+            {config.githubUser && config.githubRepo && config.githubPath ? (
+              <Card className="border-green-200 bg-green-50/50">
+                <CardContent className="pt-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Check className="h-4 w-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-900">
+                          OpenAPI Spec Selected
+                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card className="border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50">
-                    <CardHeader>
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                          <Github className="w-7 h-7 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <CardTitle className="text-base mb-2">
-                            {githubAppInstalled ? 'Select from GitHub' : 'Connect GitHub'}
-                          </CardTitle>
-                          <CardDescription className="text-xs">
-                            {githubAppInstalled 
-                              ? 'Browse your repositories and select an OpenAPI specification'
-                              : 'Install the GitHub App to browse repositories and import specs'
-                            }
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <Button onClick={handleBrowseGitHub} className="w-full">
-                        <Github className="mr-2 h-4 w-4" />
-                        {githubAppInstalled ? 'Browse Repositories' : 'Install GitHub App'}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-                
-                <div className="flex items-center justify-center">
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={() => setShowManualGitHub(true)}
-                    className="text-xs"
-                  >
-                    Or enter GitHub details manually
-                  </Button>
-                </div>
-              </>
+                      <p className="text-xs text-green-700 font-mono">
+                        {config.githubUser}/{config.githubRepo}/{config.githubPath}
+                      </p>
+                      <p className="text-xs text-green-700 mt-1">
+                        Branch: {config.githubBranch}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleBrowseGitHub}
+                    >
+                      Change
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
-              <>
-                <div className="flex items-center justify-between mb-3">
-                  <Label className="text-sm font-medium">Manual GitHub Configuration</Label>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    onClick={() => setShowManualGitHub(false)}
-                    className="text-xs"
-                  >
-                    ← Back to GitHub Selector
+              <Card className="border-blue-200 bg-gradient-to-br from-blue-50/50 to-purple-50/50">
+                <CardHeader>
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Github className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-base mb-2">
+                        Import API Spec from GitHub
+                      </CardTitle>
+                      <CardDescription className="text-xs">
+                        {githubAppInstalled 
+                          ? 'Browse your repositories and select an OpenAPI specification'
+                          : 'Import API specs in one click by linking to GitHub'
+                        }
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={handleBrowseGitHub} className="w-full" disabled={checkingInstallation}>
+                    {checkingInstallation ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Checking...
+                      </>
+                    ) : (
+                      <>
+                        <Github className="mr-2 h-4 w-4" />
+                        {githubAppInstalled ? 'Browse Repositories' : 'Import from GitHub'}
+                      </>
+                    )}
                   </Button>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="githubUser" className="text-sm">GitHub User/Org</Label>
-                    <Input
-                      id="githubUser"
-                      placeholder="mycompany"
-                      value={config.githubUser}
-                      onChange={(e) => updateConfig({ githubUser: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="githubRepo" className="text-sm">Repository</Label>
-                    <Input
-                      id="githubRepo"
-                      placeholder="my-api-specs"
-                      value={config.githubRepo}
-                      onChange={(e) => updateConfig({ githubRepo: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="githubPath" className="text-sm">Path to OpenAPI Spec</Label>
-                    <Input
-                      id="githubPath"
-                      placeholder="specs/openapi.yaml"
-                      value={config.githubPath}
-                      onChange={(e) => updateConfig({ githubPath: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="githubBranch" className="text-sm">Branch</Label>
-                    <Input
-                      id="githubBranch"
-                      placeholder="main"
-                      value={config.githubBranch}
-                      onChange={(e) => updateConfig({ githubBranch: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-
-                {config.githubUser && config.githubRepo && (
-                  <p className="text-xs text-muted-foreground mt-3">
-                    Will import from: <span className="font-mono text-blue-600">
-                      github.com/{config.githubUser}/{config.githubRepo}/{config.githubPath || 'openapi.yaml'} ({config.githubBranch})
-                    </span>
-                  </p>
-                )}
-              </>
+                </CardContent>
+              </Card>
             )}
 
             {/* Modals */}

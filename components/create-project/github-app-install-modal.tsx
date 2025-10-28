@@ -19,9 +19,13 @@ interface GitHubAppInstallModalProps {
 
 export function GitHubAppInstallModal({ open, onOpenChange }: GitHubAppInstallModalProps) {
   const handleInstall = () => {
-    // Redirect to GitHub App installation with callback to dashboard
-    const callbackUrl = `${window.location.origin}/dashboard?github_app_installed=true`;
-    const installUrl = `https://github.com/apps/apiblaze/installations/new?state=${encodeURIComponent(callbackUrl)}`;
+    // Save that we're attempting installation
+    sessionStorage.setItem('github_install_initiated', 'true');
+    
+    // Redirect to GitHub App installation
+    // Note: GitHub doesn't support custom redirect URLs via 'state' for app installations
+    // Instead, we'll configure the app's callback URL on GitHub to point to our dashboard
+    const installUrl = 'https://github.com/apps/apiblaze/installations/new';
     
     // Redirect to GitHub (will come back to dashboard after installation)
     window.location.href = installUrl;
@@ -62,11 +66,11 @@ export function GitHubAppInstallModal({ open, onOpenChange }: GitHubAppInstallMo
             <Card className="border-green-200 bg-green-50/50">
               <CardHeader className="pb-3">
                 <FileCode2 className="h-8 w-8 text-green-600 mb-2" />
-                <CardTitle className="text-sm">Auto-Detection</CardTitle>
+                <CardTitle className="text-sm">Auto-Deploy on Changes</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-xs">
-                  Automatically detect OpenAPI specs in your repositories
+                  When you update your API specs in git, we automatically redeploy your API. Control everything with simple git commands.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -144,7 +148,7 @@ export function GitHubAppInstallModal({ open, onOpenChange }: GitHubAppInstallMo
             </Button>
             <Button onClick={handleInstall}>
               <Github className="mr-2 h-4 w-4" />
-              Install GitHub App
+              Connect GitHub
             </Button>
           </div>
         </DialogFooter>
