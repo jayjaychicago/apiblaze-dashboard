@@ -12,8 +12,13 @@ export default function HomePage() {
   useEffect(() => {
     if (status === 'loading') return;
     
+    // Preserve URL parameters when redirecting
+    const searchParams = window.location.search;
+    console.log('[HomePage] URL parameters:', searchParams);
+    
     if (status === 'authenticated') {
-      router.push('/dashboard');
+      console.log('[HomePage] Authenticated, redirecting to /dashboard with params');
+      router.push(`/dashboard${searchParams}`);
     } else {
       router.push('/auth/login');
     }
