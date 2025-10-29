@@ -128,10 +128,14 @@ Read and execute configurator.txt for specification
 
 
 #### 1.3 Success Flow
-- **Confirmation**: Clear success message
-- **Next Steps**: Guided onboarding
-- **Quick Actions**: Deploy, test, configure
-- **List**: Once the first project is created, get out of zero state and present the tenant with a list of projects even if it's only just this one project and a CTA to add more
+- **Confirmation**: Clear "Deploying" message
+- CTA to Create a project (again)
+- **List**: Once the first project is created, get out of zero state and present the tenant with a list of projects even if it's only just this one project
+- ** Attributes of each project : Project name, api version, deployment status, github details, avatar and details of the deployer
+- ** buttons to update the config and re-release, access a modal to delete, open a new tab to the api dev portal  
+- ** deployment status of each project (Deploying xx seconds, Ready xx seconds (yy min ago)), red amber green light
+- and pagination amongst projects
+
 
 **Success Criteria**:
 - User can create project in <10 seconds
