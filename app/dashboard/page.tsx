@@ -103,7 +103,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold">APIBlaze v3.0</h1>
-                <p className="text-xs text-muted-foreground">Vercel for APIs</p>
+                <p className="text-xs text-muted-foreground">Host secure serverless APIs in seconds</p>
               </div>
             </div>
             
@@ -204,7 +204,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold">APIBlaze v3.0</h1>
-              <p className="text-xs text-muted-foreground">Vercel for APIs</p>
+              <p className="text-xs text-muted-foreground">Host secure serverless APIs in seconds</p>
             </div>
           </div>
           

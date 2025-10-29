@@ -50,7 +50,7 @@ function LoginContent() {
               Welcome to APIBlaze
             </CardTitle>
             <CardDescription className="text-base mt-2">
-              Vercel for APIs - Deploy and manage your API proxies
+              Host serverless APIs in seconds
             </CardDescription>
           </div>
         </CardHeader>

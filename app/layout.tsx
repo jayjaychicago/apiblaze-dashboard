@@ -7,8 +7,8 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "APIBlaze Dashboard - Vercel for APIs",
-  description: "Manage your API proxies with APIBlaze - The Vercel for APIs",
+  title: "APIBlaze Dashboard",
+  description: "Host secure serverless APIs in seconds",
 };
 
 export default function RootLayout({
