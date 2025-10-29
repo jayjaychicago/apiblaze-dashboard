@@ -1,3 +1,35 @@
+2025-10-29 22:45:25 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago [32m200[0m 48ms
+2025-10-29 22:45:25 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-10-29 22:45:25 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago
+2025-10-29 22:45:25 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago - Ok @ 10/29/2025, 10:45:25 PM
+2025-10-29 22:45:25 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago [32m200[0m 74ms
+2025-10-29 22:45:25 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-10-29 22:45:25 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago
+2025-10-29 22:45:25 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago - Ok @ 10/29/2025, 10:45:25 PM
+2025-10-29 22:45:25 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago [32m200[0m 175ms
+2025-10-29 22:45:25 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-10-29 22:45:25 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago
+2025-10-29 22:45:25 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago - Ok @ 10/29/2025, 10:45:25 PM
+2025-10-29 22:45:08 |   (log) --> POST / [32m201[0m 2s
+2025-10-29 22:45:08 |   (log) [CreateProxy] API keys generated: {"count":1}
+2025-10-29 22:45:08 |   (log) [CreateProxy] Project created successfully: {"tenantName":"poke4","apiVersion":"2.7.0","endpoints":["default"]}
+2025-10-29 22:45:08 |   (log) [CreateProxy] Using provided project name: {"name":"poke4","source":"subdomain"}
+2025-10-29 22:45:08 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
+2025-10-29 22:45:08 |   (log) [CreateProxy] GitHub fetch successful
+2025-10-29 22:45:08 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
+2025-10-29 22:45:08 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"api_key","hasGithub":true,"hasOpenapi":false}
+2025-10-29 22:45:08 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
+2025-10-29 22:45:08 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-10-29 22:45:08 |   (log) <-- POST /
+2025-10-29 22:45:08 | POST https://internalapi.apiblaze.com/ - Ok @ 10/29/2025, 10:45:06 PM
+2025-10-29 22:37:36 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago [32m200[0m 119ms
+2025-10-29 22:37:36 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-10-29 22:37:36 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago
+2025-10-29 22:37:36 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago - Ok @ 10/29/2025, 10:37:36 PM
+2025-10-29 22:37:36 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago [32m200[0m 323ms
+2025-10-29 22:37:36 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-10-29 22:37:36 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago
+2025-10-29 22:37:36 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago - Ok @ 10/29/2025, 10:37:36 PM
 2025-10-29 22:23:41 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago [32m200[0m 66ms
 2025-10-29 22:23:41 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
 2025-10-29 22:23:41 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago
