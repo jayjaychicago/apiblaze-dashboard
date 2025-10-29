@@ -114,9 +114,9 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   };
 
   // Get validation error type
+  // Priority: Check source first, then project name
   const getValidationError = (): 'project-name' | 'github-source' | 'target-url' | 'upload-file' | null => {
-    if (!config.projectName) return 'project-name';
-    
+    // Check if source is configured first
     switch (config.sourceType) {
       case 'github':
         if (!config.githubUser || !config.githubRepo || !config.githubPath) {
@@ -130,6 +130,9 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         if (!config.uploadedFile) return 'upload-file';
         break;
     }
+    
+    // Then check project name
+    if (!config.projectName) return 'project-name';
     
     return null;
   };
@@ -235,16 +238,11 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           <div className="flex-1">
             {!isSourceConfigured() ? (
               <p className="text-sm text-orange-600">
-                {!config.projectName 
-                  ? 'Enter a project name to continue'
-                  : config.sourceType === 'github' && (!config.githubUser || !config.githubRepo || !config.githubPath)
-                  ? 'Select a GitHub repository to continue'
-                  : config.sourceType === 'targetUrl' && !config.targetUrl
-                  ? 'Enter a target URL to continue'
-                  : config.sourceType === 'upload' && !config.uploadedFile
-                  ? 'Upload an OpenAPI spec to continue'
-                  : 'Configure a source to deploy'
-                }
+                {validationError === 'github-source' && 'Select a GitHub repository to continue'}
+                {validationError === 'target-url' && 'Enter a target URL to continue'}
+                {validationError === 'upload-file' && 'Upload an OpenAPI spec to continue'}
+                {validationError === 'project-name' && 'Enter a project name to continue'}
+                {!validationError && 'Configure a source to deploy'}
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">

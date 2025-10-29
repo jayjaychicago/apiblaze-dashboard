@@ -28,12 +28,12 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
           {user.image ? (
             <img
               src={user.image}
               alt={user.name || user.githubHandle || 'User'}
-              className="h-10 w-10 rounded-full"
+              className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-semibold">

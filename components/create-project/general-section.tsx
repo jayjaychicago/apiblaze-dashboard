@@ -349,13 +349,29 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
                         Branch: {config.githubBranch}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleBrowseGitHub}
-                    >
-                      Change
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          updateConfig({
+                            githubUser: '',
+                            githubRepo: '',
+                            githubPath: '',
+                            githubBranch: 'main',
+                          });
+                        }}
+                      >
+                        Clear
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleBrowseGitHub}
+                      >
+                        Change
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

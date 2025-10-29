@@ -14,10 +14,8 @@ export default function HomePage() {
     
     // Preserve URL parameters when redirecting
     const searchParams = window.location.search;
-    console.log('[HomePage] URL parameters:', searchParams);
     
     if (status === 'authenticated') {
-      console.log('[HomePage] Authenticated, redirecting to /dashboard with params');
       router.push(`/dashboard${searchParams}`);
     } else {
       router.push('/auth/login');

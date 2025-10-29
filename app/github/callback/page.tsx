@@ -10,13 +10,6 @@ function CallbackContent() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // User just returned from GitHub app installation
-    const setupAction = searchParams.get('setup_action');
-    const installationId = searchParams.get('installation_id');
-    
-    console.log('[GitHub Callback] Returned from GitHub app installation');
-    console.log('[GitHub Callback] Parameters:', { setupAction, installationId });
-    
     // Set flags to indicate installation
     localStorage.setItem('github_app_just_installed', 'true');
     localStorage.setItem('github_app_installed', 'true');
