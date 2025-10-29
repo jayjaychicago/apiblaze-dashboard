@@ -1,3 +1,99 @@
+2025-10-29 17:38:30 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago [32m200[0m 79ms
+2025-10-29 17:38:30 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago
+2025-10-29 17:38:30 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago - Ok @ 10/29/2025, 5:38:30 PM
+2025-10-29 17:38:30 |   (log) --> POST / [32m201[0m 1s
+2025-10-29 17:38:30 |   (log) [CreateProxy] API keys generated: {"count":2}
+2025-10-29 17:38:30 |   (log) [CreateProxy] Project created successfully: {"tenantName":"httpbinorg7l9","apiVersion":"1.0.0","endpoints":["dev","prod"]}
+2025-10-29 17:38:30 |   (log) [CreateProxy] Generated tenant name from target: {"hostname":"httpbin.org","tenantName":"httpbinorg7l9"}
+2025-10-29 17:38:30 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":false,"source":"none"}
+2025-10-29 17:38:30 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","target":"https://httpbin.org","auth_type":"api_key","hasGithub":false,"hasOpenapi":false}
+2025-10-29 17:38:30 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
+2025-10-29 17:38:30 |   (log) <-- POST /
+2025-10-29 17:38:30 | POST https://internalapi.apiblaze.com/ - Ok @ 10/29/2025, 5:38:28 PM
+2025-10-29 17:38:18 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago [32m200[0m 92ms
+2025-10-29 17:38:18 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago
+2025-10-29 17:38:18 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago - Ok @ 10/29/2025, 5:38:18 PM
+2025-10-29 17:38:03 |   (log) --> GET /debug/kv [32m200[0m 314ms
+2025-10-29 17:38:03 |   (log) <-- GET /debug/kv
+2025-10-29 17:38:03 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:38:03 PM
+2025-10-29 17:37:54 |   (log) --> POST /admin/cleanup [32m200[0m 770ms
+2025-10-29 17:37:54 | }
+2025-10-29 17:37:54 |   errors: []
+2025-10-29 17:37:54 |   d1: { deployments: 0, team_members: 0, projects: 0, teams: 0, users: 0 },
+2025-10-29 17:37:54 |   kv: { projects: 0, api_keys: 0, claim_codes: 0, users: 0, other: 0 },
+2025-10-29 17:37:54 |   (log) Cleanup complete: {
+2025-10-29 17:37:54 |   (log) Starting D1 cleanup...
+2025-10-29 17:37:54 |   (log) Found 0 keys in USERS
+2025-10-29 17:37:54 |   (log) Found 0 keys in CLAIM_CODES
+2025-10-29 17:37:54 |   (log) Found 0 keys in API_KEYS
+2025-10-29 17:37:54 |   (log) Found 2 keys in PROJECTS
+2025-10-29 17:37:53 |   (log) Starting KV cleanup...
+2025-10-29 17:37:53 |   (log) <-- POST /admin/cleanup
+2025-10-29 17:37:53 | POST https://internalapi.apiblaze.com/admin/cleanup - Ok @ 10/29/2025, 5:37:53 PM
+2025-10-29 17:37:48 |   (log) --> GET /debug/kv [32m200[0m 277ms
+2025-10-29 17:37:48 |   (log) <-- GET /debug/kv
+2025-10-29 17:37:48 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:37:48 PM
+2025-10-29 17:37:38 |   (log) --> GET /debug/kv [32m200[0m 173ms
+2025-10-29 17:37:38 |   (log) <-- GET /debug/kv
+2025-10-29 17:37:38 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:37:37 PM
+2025-10-29 17:37:23 |   (log) --> POST /admin/cleanup [32m200[0m 1s
+2025-10-29 17:37:23 | }
+2025-10-29 17:37:23 |   errors: []
+2025-10-29 17:37:23 |   d1: { deployments: 0, team_members: 0, projects: 0, teams: 0, users: 0 },
+2025-10-29 17:37:23 |   kv: { projects: 0, api_keys: 0, claim_codes: 0, users: 0, other: 0 },
+2025-10-29 17:37:23 |   (log) Cleanup complete: {
+2025-10-29 17:37:23 |   (log) Starting D1 cleanup...
+2025-10-29 17:37:23 |   (log) Found 0 keys in USERS
+2025-10-29 17:37:23 |   (log) Found 0 keys in CLAIM_CODES
+2025-10-29 17:37:23 |   (log) Found 0 keys in API_KEYS
+2025-10-29 17:37:23 |   (log) Found 4 keys in PROJECTS
+2025-10-29 17:37:23 |   (log) Starting KV cleanup...
+2025-10-29 17:37:23 |   (log) <-- POST /admin/cleanup
+2025-10-29 17:37:23 | POST https://internalapi.apiblaze.com/admin/cleanup - Ok @ 10/29/2025, 5:37:22 PM
+2025-10-29 17:37:18 |   (log) --> GET /debug/kv [32m200[0m 218ms
+2025-10-29 17:37:18 |   (log) <-- GET /debug/kv
+2025-10-29 17:37:18 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:37:17 PM
+2025-10-29 17:36:38 |   (log) --> POST /admin/cleanup [33m401[0m 0ms
+2025-10-29 17:36:38 |   (log) <-- POST /admin/cleanup
+2025-10-29 17:36:38 | POST https://internalapi.apiblaze.com/admin/cleanup - Ok @ 10/29/2025, 5:36:38 PM
+2025-10-29 17:36:34 |   (log) --> GET /debug/kv [32m200[0m 263ms
+2025-10-29 17:36:34 |   (log) <-- GET /debug/kv
+2025-10-29 17:36:34 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:36:33 PM
+2025-10-29 17:25:26 |   (log) --> GET /debug/kv [32m200[0m 277ms
+2025-10-29 17:25:26 |   (log) <-- GET /debug/kv
+2025-10-29 17:25:26 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:25:26 PM
+2025-10-29 17:25:08 |   (log) --> GET /debug/kv [32m200[0m 270ms
+2025-10-29 17:25:08 |   (log) <-- GET /debug/kv
+2025-10-29 17:25:08 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:25:08 PM
+2025-10-29 17:24:57 |   (log) --> POST /admin/cleanup [32m200[0m 28s
+2025-10-29 17:24:57 | }
+2025-10-29 17:24:57 |   errors: []
+2025-10-29 17:24:56 |   d1: { deployments: 0, team_members: 0, projects: 0, teams: 0, users: 0 },
+2025-10-29 17:24:56 |   kv: { projects: 38, api_keys: 44, claim_codes: 47, users: 10, other: 4 },
+2025-10-29 17:24:56 |   (log) Cleanup complete: {
+2025-10-29 17:24:56 |   (log) Starting D1 cleanup...
+2025-10-29 17:24:56 |   (log) Found 10 keys in USERS
+2025-10-29 17:24:56 |   (log) Found 47 keys in CLAIM_CODES
+2025-10-29 17:24:56 |   (log) Found 44 keys in API_KEYS
+2025-10-29 17:24:56 |   (log) Found 63 keys in PROJECTS
+2025-10-29 17:24:56 |   (log) Starting KV cleanup...
+2025-10-29 17:24:56 |   (log) <-- POST /admin/cleanup
+2025-10-29 17:24:56 | POST https://internalapi.apiblaze.com/admin/cleanup - Ok @ 10/29/2025, 5:24:28 PM
+2025-10-29 17:24:28 |   (log) --> GET /debug/kv [32m200[0m 297ms
+2025-10-29 17:24:28 |   (log) <-- GET /debug/kv
+2025-10-29 17:24:28 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:24:28 PM
+2025-10-29 17:23:41 |   (log) --> POST /admin/cleanup [33m401[0m 0ms
+2025-10-29 17:23:41 |   (log) <-- POST /admin/cleanup
+2025-10-29 17:23:41 | POST https://internalapi.apiblaze.com/admin/cleanup - Ok @ 10/29/2025, 5:23:41 PM
+2025-10-29 17:23:41 |   (log) --> GET /debug/kv [32m200[0m 238ms
+2025-10-29 17:23:41 |   (log) <-- GET /debug/kv
+2025-10-29 17:23:41 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:23:41 PM
+2025-10-29 17:21:31 |   (log) --> GET /debug/kv [32m200[0m 219ms
+2025-10-29 17:21:31 |   (log) <-- GET /debug/kv
+2025-10-29 17:21:31 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:21:31 PM
+2025-10-29 17:20:46 |   (log) --> GET /debug/kv [32m200[0m 364ms
+2025-10-29 17:20:46 |   (log) <-- GET /debug/kv
+2025-10-29 17:20:46 | GET https://api.apiblaze.com/debug/kv - Ok @ 10/29/2025, 5:20:45 PM
 2025-10-29 17:17:19 |   (log) --> POST / [32m201[0m 1s
 2025-10-29 17:17:19 |   (log) [CreateProxy] API keys generated: {"count":2}
 2025-10-29 17:17:19 |   (log) [CreateProxy] Project created successfully: {"tenantName":"httpbinorgw28","apiVersion":"1.0.0","endpoints":["dev","prod"]}

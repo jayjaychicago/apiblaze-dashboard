@@ -7,6 +7,9 @@ const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 /**
  * Get user claims from session for JWT
+ * 
+ * Security: This extracts claims from the verified NextAuth session.
+ * The session is encrypted and signed, so claims cannot be forged.
  */
 async function getUserClaims() {
   const session = await getServerSession(authOptions);
@@ -16,12 +19,29 @@ async function getUserClaims() {
   }
 
   // Use githubHandle (username) not name (display name)
-  const handle = session.user.githubHandle || session.user.email?.split('@')[0] || 'anonymous';
+  const handle = session.user.githubHandle || session.user.email?.split('@')[0];
+  
+  // Defensive validation: ensure handle exists and is legitimate
+  if (!handle || handle === 'anonymous' || handle.length < 2) {
+    console.error('Invalid user handle in session:', session.user);
+    throw new Error('Invalid user session - missing valid username');
+  }
+
+  // Defensive validation: ensure email is present (required by OAuth)
+  if (!session.user.email) {
+    console.error('No email in session:', session.user);
+    throw new Error('Invalid user session - missing email');
+  }
+
+  const userId = session.user.id || session.user.email || `github:${handle}`;
+
+  // Log for security auditing
+  console.log(`[Auth] Creating JWT for user: ${handle} (${userId})`);
 
   return {
-    sub: session.user.id || session.user.email || `user:${handle}`,
+    sub: userId,
     handle: handle,
-    email: session.user.email || undefined,
+    email: session.user.email,
     roles: ['admin'], // TODO: Get from actual user roles
   };
 }
