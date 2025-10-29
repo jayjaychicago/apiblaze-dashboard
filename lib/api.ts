@@ -3,8 +3,8 @@
  * Handles communication with internalapi.apiblaze.com
  */
 
-const INTERNAL_API_URL = process.env.INTERNAL_API_URL || 'https://internalapi.apiblaze.com';
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;
+const INTERNAL_API_URL = process.env.NEXT_PUBLIC_INTERNAL_API_URL || 'https://internalapi.apiblaze.com';
+const INTERNAL_API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 
 export interface ApiError {
   error: string;
@@ -84,10 +84,18 @@ class ApiClient {
     target_url?: string;
     openapi_spec?: any;
     team_id?: string;
-  }): Promise<Project> {
-    return this.request<Project>('/create-proxy', {
+    username?: string;
+  }): Promise<any> {
+    // Map frontend data to backend API format
+    const backendData: any = {
+      target: data.target_url,
+      openapi: data.openapi_spec,
+      username: data.username,
+    };
+
+    return this.request<any>('/', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(backendData),
     });
   }
   

@@ -159,6 +159,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         name: config.projectName,
         subdomain: config.projectName.toLowerCase().replace(/[^a-z0-9]/g, ''),
         target_url: config.targetUrl || config.targetServers[0]?.targetUrl,
+        username: config.githubUser || 'dashboard-user', // TODO: Get from session
         // TODO: Add full configuration when backend supports it
       });
 
