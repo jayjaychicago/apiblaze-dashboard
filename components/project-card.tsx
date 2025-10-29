@@ -115,7 +115,7 @@ export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardPr
 
         {/* Deployer Information */}
         <div className="flex items-center gap-2 pt-2 border-t">
-          {project.deployer.avatar_url ? (
+          {project.deployer?.avatar_url ? (
             <img
               src={project.deployer.avatar_url}
               alt={project.deployer.name || project.deployer.github_username || 'User'}
@@ -123,14 +123,14 @@ export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardPr
             />
           ) : (
             <div className="h-6 w-6 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-xs">
-              {(project.deployer.name || project.deployer.github_username || 'U').charAt(0).toUpperCase()}
+              {(project.deployer?.name || project.deployer?.github_username || 'U').charAt(0).toUpperCase()}
             </div>
           )}
           <div className="flex flex-col">
             <span className="text-xs font-medium">
-              {project.deployer.name || project.deployer.github_username || 'Unknown'}
+              {project.deployer?.name || project.deployer?.github_username || 'Unknown'}
             </span>
-            {project.deployer.email && (
+            {project.deployer?.email && (
               <span className="text-xs text-muted-foreground">{project.deployer.email}</span>
             )}
           </div>
@@ -152,4 +152,3 @@ export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardPr
     </Card>
   );
 }
-
