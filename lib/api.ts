@@ -101,9 +101,21 @@ class ApiClient {
     // Map frontend data to backend API format
     const backendData: any = {
       target: data.target_url,
+      target_url: data.target_url, // Support both formats
       openapi: data.openapi_spec,
       username: data.username,
     };
+
+    // Add project name fields (these are now required by the worker)
+    if (data.name) {
+      backendData.name = data.name;
+    }
+    if (data.display_name) {
+      backendData.display_name = data.display_name;
+    }
+    if (data.subdomain) {
+      backendData.subdomain = data.subdomain;
+    }
 
     // Add optional fields if provided
     if (data.github) {

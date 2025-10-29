@@ -71,7 +71,11 @@ export class APIBlazeClient {
   async createProxy(
     userClaims: UserAssertionClaims,
     proxyData: {
-      target: string;
+      target?: string;
+      target_url?: string;
+      name?: string;
+      display_name?: string;
+      subdomain?: string;
       auth_type?: 'none' | 'api_key' | 'oauth';
       openapi?: string;
       github?: {
