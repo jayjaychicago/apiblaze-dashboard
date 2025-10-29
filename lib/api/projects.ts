@@ -1,8 +1,5 @@
 import { Project, ProjectListResponse, ProjectStatusResponse } from '@/types/project';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_INTERNAL_API_URL || 'https://internalapi.apiblaze.com';
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || '';
-
 interface ListProjectsParams {
   team_id?: string;
   search?: string;
@@ -11,6 +8,7 @@ interface ListProjectsParams {
   limit?: number;
 }
 
+// Use Next.js API routes to proxy requests (keeps API key server-side)
 export async function listProjects(params: ListProjectsParams = {}): Promise<ProjectListResponse> {
   const queryParams = new URLSearchParams();
   
@@ -20,11 +18,10 @@ export async function listProjects(params: ListProjectsParams = {}): Promise<Pro
   if (params.page) queryParams.append('page', params.page.toString());
   if (params.limit) queryParams.append('limit', params.limit.toString());
 
-  const url = `${API_BASE_URL}/projects?${queryParams.toString()}`;
+  const url = `/api/projects?${queryParams.toString()}`;
   
   const response = await fetch(url, {
     headers: {
-      'X-API-KEY': API_KEY,
       'Content-Type': 'application/json',
     },
   });
@@ -38,11 +35,10 @@ export async function listProjects(params: ListProjectsParams = {}): Promise<Pro
 }
 
 export async function getProjectStatus(projectId: string): Promise<ProjectStatusResponse> {
-  const url = `${API_BASE_URL}/projects/${projectId}/status`;
+  const url = `/api/projects/${projectId}/status`;
   
   const response = await fetch(url, {
     headers: {
-      'X-API-KEY': API_KEY,
       'Content-Type': 'application/json',
     },
   });
@@ -56,12 +52,11 @@ export async function getProjectStatus(projectId: string): Promise<ProjectStatus
 }
 
 export async function deleteProject(projectId: string, apiVersion: string = '1.0.0'): Promise<void> {
-  const url = `${API_BASE_URL}/${projectId}/${apiVersion}`;
+  const url = `/api/projects/${projectId}/${apiVersion}`;
   
   const response = await fetch(url, {
     method: 'DELETE',
     headers: {
-      'X-API-KEY': API_KEY,
       'Content-Type': 'application/json',
     },
   });
@@ -73,12 +68,11 @@ export async function deleteProject(projectId: string, apiVersion: string = '1.0
 }
 
 export async function createProject(data: any): Promise<any> {
-  const url = `${API_BASE_URL}/`;
+  const url = `/api/projects`;
   
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      'X-API-KEY': API_KEY,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(data),

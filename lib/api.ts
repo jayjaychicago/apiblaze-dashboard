@@ -3,8 +3,8 @@
  * Handles communication with internalapi.apiblaze.com
  */
 
-const INTERNAL_API_URL = process.env.NEXT_PUBLIC_INTERNAL_API_URL || 'https://internalapi.apiblaze.com';
-const INTERNAL_API_KEY = process.env.NEXT_PUBLIC_API_KEY;
+// Use Next.js API routes to proxy requests (keeps API key server-side)
+const API_BASE_URL = '/api';
 
 export interface ApiError {
   error: string;
@@ -35,11 +35,9 @@ export interface Team {
  */
 class ApiClient {
   private baseUrl: string;
-  private apiKey: string;
   
   constructor() {
-    this.baseUrl = INTERNAL_API_URL;
-    this.apiKey = INTERNAL_API_KEY || '';
+    this.baseUrl = API_BASE_URL;
   }
   
   private async request<T>(
@@ -50,7 +48,6 @@ class ApiClient {
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      'X-API-KEY': this.apiKey,
       ...options.headers,
     };
     
@@ -93,7 +90,7 @@ class ApiClient {
       username: data.username,
     };
 
-    return this.request<any>('/', {
+    return this.request<any>('/projects', {
       method: 'POST',
       body: JSON.stringify(backendData),
     });
