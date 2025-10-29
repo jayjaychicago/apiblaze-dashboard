@@ -83,6 +83,20 @@ class ApiClient {
     openapi_spec?: any;
     team_id?: string;
     username?: string;
+    github?: {
+      owner: string;
+      repo: string;
+      path: string;
+      branch?: string;
+    };
+    auth_type?: string;
+    oauth_config?: {
+      provider_type: string;
+      client_id: string;
+      client_secret: string;
+      scopes: string;
+    };
+    environments?: Record<string, { target: string }>;
   }): Promise<any> {
     // Map frontend data to backend API format
     const backendData: any = {
@@ -90,6 +104,20 @@ class ApiClient {
       openapi: data.openapi_spec,
       username: data.username,
     };
+
+    // Add optional fields if provided
+    if (data.github) {
+      backendData.github = data.github;
+    }
+    if (data.auth_type) {
+      backendData.auth_type = data.auth_type;
+    }
+    if (data.oauth_config) {
+      backendData.oauth_config = data.oauth_config;
+    }
+    if (data.environments) {
+      backendData.environments = data.environments;
+    }
 
     return this.request<any>('/projects', {
       method: 'POST',

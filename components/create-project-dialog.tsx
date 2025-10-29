@@ -156,14 +156,44 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         return;
       }
 
+      // Prepare GitHub source data if applicable
+      const githubSource = config.sourceType === 'github' && config.githubUser && config.githubRepo && config.githubPath
+        ? {
+            owner: config.githubUser,
+            repo: config.githubRepo,
+            path: config.githubPath,
+            branch: config.githubBranch || 'main',
+          }
+        : undefined;
+
+      // Prepare environments from target servers
+      const environments: Record<string, { target: string }> = {};
+      config.targetServers.forEach(server => {
+        if (server.targetUrl) {
+          environments[server.stage] = { target: server.targetUrl };
+        }
+      });
+
+      // Prepare auth config
+      const authType = config.enableApiKey ? 'api_key' : (config.enableSocialAuth ? 'oauth' : 'none');
+      const oauthConfig = config.enableSocialAuth && config.bringOwnProvider ? {
+        provider_type: config.socialProvider,
+        client_id: config.identityProviderClientId,
+        client_secret: config.identityProviderClientSecret,
+        scopes: config.authorizedScopes.join(' '),
+      } : undefined;
+
       // Create the project
       const response = await api.createProject({
         name: config.projectName,
-        display_name: config.projectName, // Send the actual project name
+        display_name: config.projectName,
         subdomain: config.projectName.toLowerCase().replace(/[^a-z0-9]/g, ''),
-        target_url: config.targetUrl || config.targetServers[0]?.targetUrl,
+        target_url: config.targetUrl || config.targetServers.find(s => s.targetUrl)?.targetUrl,
         username: config.githubUser || session?.user?.githubHandle || session?.user?.email?.split('@')[0] || 'dashboard-user',
-        // TODO: Add full configuration when backend supports it
+        github: githubSource,
+        auth_type: authType,
+        oauth_config: oauthConfig,
+        environments: Object.keys(environments).length > 0 ? environments : undefined,
       });
       
       console.log('[CreateProject] Success:', response);
