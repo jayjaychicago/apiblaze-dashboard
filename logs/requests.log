@@ -1,0 +1,15 @@
+2025-10-29 15:37:36 |   (log) --> POST / [32m201[0m 949ms
+2025-10-29 15:37:36 |   (log) [CreateProxy] API keys generated: {"count":2}
+2025-10-29 15:37:36 |   (log) [CreateProxy] Project created successfully: {"tenantName":"httpbinorgyxf","apiVersion":"1.0.0","endpoints":["dev","prod"]}
+2025-10-29 15:37:36 |   (log) [CreateProxy] Generated tenant name from target: {"hostname":"httpbin.org","tenantName":"httpbinorgyxf"}
+2025-10-29 15:37:36 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":false,"source":"none"}
+2025-10-29 15:37:36 |   (log) [CreateProxy] Processing request: {"username":"testuser","target":"https://httpbin.org","auth_type":"api_key","hasGithub":false,"hasOpenapi":false}
+2025-10-29 15:37:36 |   (log) [CreateProxy] Creating project for user: {"username":"testuser"}
+2025-10-29 15:37:36 |   (log) <-- POST /
+2025-10-29 15:37:36 | POST https://api.apiblaze.com/ - Ok @ 10/29/2025, 3:37:34 PM
+2025-10-29 15:37:27 | Connected to apiblaze-v2-admin-api-production, waiting for logs...
+2025-10-29 15:37:27 | Successfully created tail, expires at 2025-10-29T21:37:26Z
+2025-10-29 15:37:25 | 
+2025-10-29 15:37:25 | -----------------------------------------------
+2025-10-29 15:37:25 |  ⛅️ wrangler 3.114.15 (update available 4.45.2)
+2025-10-29 15:37:25 | 
