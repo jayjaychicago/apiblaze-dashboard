@@ -77,6 +77,7 @@ class ApiClient {
   
   async createProject(data: {
     name: string;
+    display_name?: string;
     subdomain: string;
     target_url?: string;
     openapi_spec?: any;

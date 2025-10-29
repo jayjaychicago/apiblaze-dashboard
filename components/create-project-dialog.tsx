@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { 
   Dialog, 
   DialogContent, 
@@ -31,6 +32,7 @@ interface CreateProjectDialogProps {
 }
 
 export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHub }: CreateProjectDialogProps) {
+  const { data: session } = useSession();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const [isDeploying, setIsDeploying] = useState(false);
@@ -155,13 +157,16 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       }
 
       // Create the project
-      await api.createProject({
+      const response = await api.createProject({
         name: config.projectName,
+        display_name: config.projectName, // Send the actual project name
         subdomain: config.projectName.toLowerCase().replace(/[^a-z0-9]/g, ''),
         target_url: config.targetUrl || config.targetServers[0]?.targetUrl,
-        username: config.githubUser || 'dashboard-user', // TODO: Get from session
+        username: config.githubUser || session?.user?.githubHandle || session?.user?.email?.split('@')[0] || 'dashboard-user',
         // TODO: Add full configuration when backend supports it
       });
+      
+      console.log('[CreateProject] Success:', response);
 
       // Success!
       toast({
