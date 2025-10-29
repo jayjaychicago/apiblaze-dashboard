@@ -29,6 +29,7 @@ export async function GET(
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
+      jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
     
     const data = await client.getProjectStatus(userClaims, projectId);
