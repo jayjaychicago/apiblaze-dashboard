@@ -54,7 +54,12 @@ export default function DashboardPage() {
     try {
       setCheckingProjects(true);
       
+      // Get user's team ID from session
+      const githubHandle = session?.user?.githubHandle;
+      const teamId = githubHandle ? `team_${githubHandle}` : undefined;
+      
       const response = await listProjects({
+        team_id: teamId,
         page: 1,
         limit: 1, // Just check if any exist
       });
@@ -216,6 +221,7 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <ProjectList 
+          teamId={user?.githubHandle ? `team_${user.githubHandle}` : undefined}
           onRefresh={loadProjects}
           onUpdateConfig={(project) => {
             // TODO: Open config dialog with project

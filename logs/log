@@ -1,0 +1,22 @@
+#!/bin/bash
+cd /home/ubuntu/code/v2APIblaze/workers/admin-api
+
+# Log file path
+LOG_FILE="/home/ubuntu/code/dashboard-apiblazev3/logs/requests.log"
+
+# Clear/create the log file
+> "$LOG_FILE"
+
+echo "📝 Tailing logs from apiblaze-v2-admin-api (production)"
+echo "💾 Writing to: $LOG_FILE"
+echo "🔄 Press Ctrl+C to stop"
+echo ""
+
+# Tail the worker with pretty format to see console.log output
+npx wrangler tail apiblaze-v2-admin-api --env production --format=pretty | while IFS= read -r line; do
+    # Add timestamp and write to beginning of file
+    echo "$(date '+%Y-%m-%d %H:%M:%S') | $line" | cat - "$LOG_FILE" > "$LOG_FILE.tmp" && mv "$LOG_FILE.tmp" "$LOG_FILE"
+    
+    # Also print to console for real-time viewing
+    echo "$line"
+done
