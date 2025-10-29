@@ -119,6 +119,7 @@ class ApiClient {
       backendData.environments = data.environments;
     }
 
+    console.log('[API Client] Creating project:', data.name);
     return this.request<any>('/projects', {
       method: 'POST',
       body: JSON.stringify(backendData),

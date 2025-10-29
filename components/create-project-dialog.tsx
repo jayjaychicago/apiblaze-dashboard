@@ -184,7 +184,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       } : undefined;
 
       // Create the project
-      const response = await api.createProject({
+      const projectData = {
         name: config.projectName,
         display_name: config.projectName,
         subdomain: config.projectName.toLowerCase().replace(/[^a-z0-9]/g, ''),
@@ -194,7 +194,10 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         auth_type: authType,
         oauth_config: oauthConfig,
         environments: Object.keys(environments).length > 0 ? environments : undefined,
-      });
+      };
+
+      console.log('[CreateProject] Deploying project:', config.projectName);
+      const response = await api.createProject(projectData);
       
       console.log('[CreateProject] Success:', response);
 
