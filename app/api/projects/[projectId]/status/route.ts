@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { createAPIBlazeClient } from '@/lib/apiblaze-client';
+import { authOptions } from '@/lib/next-auth';
 
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 async function getUserClaims() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   
   if (!session?.user) {
     throw new Error('Unauthorized - no session');
   }
 
+  // Use githubHandle (username) not name (display name)
+  const handle = session.user.githubHandle || session.user.email?.split('@')[0] || 'anonymous';
+
   return {
-    sub: session.user.id || session.user.email || 'anonymous',
-    handle: session.user.name || session.user.email || 'anonymous',
+    sub: session.user.id || session.user.email || `user:${handle}`,
+    handle: handle,
     email: session.user.email || undefined,
     roles: ['admin'],
   };
