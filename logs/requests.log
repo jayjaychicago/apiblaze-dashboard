@@ -1,3 +1,9 @@
+2025-10-29 17:10:55 |   (log) --> GET /.git/ [33m404[0m 0ms
+2025-10-29 17:10:55 |   (log) <-- GET /.git/
+2025-10-29 17:10:55 | GET https://api.apiblaze.com/.git/ - Ok @ 10/29/2025, 5:10:53 PM
+2025-10-29 17:03:13 |   (log) --> GET / [33m404[0m 0ms
+2025-10-29 17:03:13 |   (log) <-- GET /
+2025-10-29 17:03:13 | GET https://internalapi.apiblaze.com/ - Ok @ 10/29/2025, 5:03:13 PM
 2025-10-29 16:32:26 | Connected to apiblaze-v2-admin-api-production, waiting for logs...
 2025-10-29 16:32:26 | Successfully created tail, expires at 2025-10-29T21:37:26Z
 2025-10-29 16:32:25 | 
