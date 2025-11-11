@@ -1,44 +1,6 @@
-2025-11-11 14:40:51 |   (log) --> POST / [33m400[0m 311ms
-2025-11-11 14:40:51 |   (log) [CreateProxy] Failed to parse OpenAPI spec: {"message":"Failed to parse OpenAPI spec as YAML (the stream contains non-printable characters)","format":"yaml","line":106,"column":54,"snippet":"104 |             examples:\n105 |               timed:\n106 |                 summary: Timed event (mon 4â6pm ET)\n      -----------------------------------------------------^\n107 |                 value:\n108 |                   summary: Meet & Greet Howarth Park"}
-2025-11-11 14:40:51 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
-2025-11-11 14:40:51 |   (log) [CreateProxy] GitHub fetch successful
-2025-11-11 14:40:51 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"gmailSender","path":"calendar_openapi.yaml"}
-2025-11-11 14:40:51 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"api_key","hasGithub":true,"hasOpenapi":false}
-2025-11-11 14:40:51 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
-2025-11-11 14:40:51 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-11-11 14:40:51 |   (log) <-- POST /
-2025-11-11 14:40:51 | POST https://internalapi.apiblaze.com/ - Ok @ 11/11/2025, 2:40:50 PM
-2025-11-11 14:37:25 |   (log) --> POST / [33m400[0m 302ms
-2025-11-11 14:37:25 |   (log) [CreateProxy] Failed to parse OpenAPI spec: {"message":"Failed to parse OpenAPI spec as YAML (the stream contains non-printable characters)","format":"yaml","line":106,"column":54,"snippet":"104 |             examples:\n105 |               timed:\n106 |                 summary: Timed event (mon 4â6pm ET)\n      -----------------------------------------------------^\n107 |                 value:\n108 |                   summary: Meet & Greet Howarth Park"}
-2025-11-11 14:37:25 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
-2025-11-11 14:37:25 |   (log) [CreateProxy] GitHub fetch successful
-2025-11-11 14:37:25 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"gmailSender","path":"calendar_openapi.yaml"}
-2025-11-11 14:37:25 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"api_key","hasGithub":true,"hasOpenapi":false}
-2025-11-11 14:37:25 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
-2025-11-11 14:37:25 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-11-11 14:37:25 |   (log) <-- POST /
-2025-11-11 14:37:25 | POST https://internalapi.apiblaze.com/ - Ok @ 11/11/2025, 2:37:25 PM
-2025-11-11 14:37:13 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago [32m200[0m 215ms
-2025-11-11 14:37:13 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-11-11 14:37:13 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago
-2025-11-11 14:37:13 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago - Ok @ 11/11/2025, 2:37:13 PM
-2025-11-11 14:37:12 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago [32m200[0m 484ms
-2025-11-11 14:37:12 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-11-11 14:37:12 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago
-2025-11-11 14:37:12 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago - Ok @ 11/11/2025, 2:37:12 PM
-2025-11-11 14:36:46 |   (log) --> POST / [33m400[0m 279ms
-2025-11-11 14:36:46 |   (log) [CreateProxy] Failed to parse OpenAPI spec: {"message":"Failed to parse OpenAPI spec as YAML (the stream contains non-printable characters)","format":"yaml","line":106,"column":54,"snippet":"104 |             examples:\n105 |               timed:\n106 |                 summary: Timed event (mon 4â6pm ET)\n      -----------------------------------------------------^\n107 |                 value:\n108 |                   summary: Meet & Greet Howarth Park"}
-2025-11-11 14:36:46 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
-2025-11-11 14:36:46 |   (log) [CreateProxy] GitHub fetch successful
-2025-11-11 14:36:46 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"gmailSender","path":"calendar_openapi.yaml"}
-2025-11-11 14:36:46 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"api_key","hasGithub":true,"hasOpenapi":false}
-2025-11-11 14:36:46 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
-2025-11-11 14:36:46 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-11-11 14:36:46 |   (log) <-- POST /
-2025-11-11 14:36:46 | POST https://internalapi.apiblaze.com/ - Ok @ 11/11/2025, 2:36:45 PM
-2025-11-11 14:33:52 | Connected to apiblaze-v2-admin-api-production, waiting for logs...
-2025-11-11 14:33:52 | Successfully created tail, expires at 2025-11-11T20:16:21Z
-2025-11-11 14:33:51 | 
-2025-11-11 14:33:51 | -----------------------------------------------
-2025-11-11 14:33:51 |  ⛅️ wrangler 3.114.15 (update available 4.46.0)
-2025-11-11 14:33:51 | 
+2025-11-11 19:00:14 | Connected to apiblaze-v2-admin-api-production, waiting for logs...
+2025-11-11 19:00:14 | Successfully created tail, expires at 2025-11-11T20:16:21Z
+2025-11-11 19:00:03 | 
+2025-11-11 19:00:03 | -----------------------------------------------
+2025-11-11 19:00:03 |  ⛅️ wrangler 3.114.15 (update available 4.47.0)
+2025-11-11 19:00:03 | 
