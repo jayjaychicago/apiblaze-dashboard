@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { APIBlazeError, createAPIBlazeClient } from '@/lib/apiblaze-client';
 import { getUserClaims } from '../../_utils';
 
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 export async function DELETE(
-  _request: NextRequest,
+  _request: Request,
   context: { params: { projectId: string; apiVersion: string } }
 ) {
   const { projectId, apiVersion } = context.params;
