@@ -4,11 +4,16 @@ import { getUserClaims } from '../../_utils';
 
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
+type RouteParams = {
+  projectId: string;
+  apiVersion: string;
+};
+
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { projectId: string; apiVersion: string } }
+  context: { params: RouteParams }
 ) {
-  const { projectId, apiVersion } = params;
+  const { projectId, apiVersion } = context.params;
 
   if (!projectId || !apiVersion) {
     return NextResponse.json(
