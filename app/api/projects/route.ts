@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
-import { createAPIBlazeClient } from '@/lib/apiblaze-client';
+import { APIBlazeError, createAPIBlazeClient } from '@/lib/apiblaze-client';
 import { authOptions } from '@/lib/next-auth';
 
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
@@ -99,7 +99,18 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Error creating project:', error);
     
-    if (error.message.includes('Unauthorized')) {
+    if (error instanceof APIBlazeError) {
+      return NextResponse.json(
+        {
+          error: error.body?.error || 'Failed to create project',
+          details: error.body?.details ?? error.body?.error,
+          suggestions: error.body?.suggestions,
+        },
+        { status: error.status }
+      );
+    }
+    
+    if (typeof error?.message === 'string' && error.message.includes('Unauthorized')) {
       return NextResponse.json(
         { error: 'Unauthorized', details: 'Please sign in' },
         { status: 401 }

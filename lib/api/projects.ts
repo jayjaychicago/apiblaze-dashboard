@@ -80,7 +80,37 @@ export async function createProject(data: any): Promise<any> {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(error.error || `Failed to create project: ${response.status}`);
+    const messageParts = [
+      error.error || `Failed to create project: ${response.status}`,
+    ];
+
+    if (error?.details) {
+      if (typeof error.details === 'string') {
+        messageParts.push(error.details);
+      } else if (typeof error.details === 'object') {
+        if (error.details.message) {
+          messageParts.push(error.details.message);
+        }
+        if (error.details.line !== undefined && error.details.column !== undefined) {
+          messageParts.push(`line ${error.details.line}, column ${error.details.column}`);
+        } else if (error.details.line !== undefined) {
+          messageParts.push(`line ${error.details.line}`);
+        }
+        if (error.details.snippet) {
+          messageParts.push(`\n${error.details.snippet}`);
+        }
+      }
+    }
+
+    if (Array.isArray(error?.suggestions) && error.suggestions.length > 0) {
+      messageParts.push(`Suggestions: ${error.suggestions.join('; ')}`);
+    }
+
+    const message = messageParts.filter(Boolean).join(' — ');
+    const err = new Error(message);
+    (err as any).details = error.details;
+    (err as any).suggestions = error.suggestions;
+    throw err;
   }
 
   return response.json();

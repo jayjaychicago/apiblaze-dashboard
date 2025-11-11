@@ -13,6 +13,18 @@ interface APIBlazeClientOptions {
   jwtPrivateKeyPath?: string;
 }
 
+export class APIBlazeError extends Error {
+  status: number;
+  body: any;
+
+  constructor(status: number, body: any) {
+    super(body?.error || `HTTP ${status}`);
+    this.name = 'APIBlazeError';
+    this.status = status;
+    this.body = body;
+  }
+}
+
 export class APIBlazeClient {
   private apiKey: string;
   private baseUrl: string;
@@ -58,8 +70,8 @@ export class APIBlazeClient {
     });
     
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-      throw new Error(error.error || `HTTP ${response.status}`);
+      const errorBody = await response.json().catch(() => ({ error: 'Unknown error' }));
+      throw new APIBlazeError(response.status, errorBody);
     }
     
     return response.json();
