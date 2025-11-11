@@ -6,9 +6,9 @@ const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 export async function DELETE(
   _request: Request,
-  context: { params: { projectId: string; apiVersion: string } }
+  { params }: { params: { projectId: string; apiVersion: string } }
 ) {
-  const { projectId, apiVersion } = context.params;
+  const { projectId, apiVersion } = params;
 
   if (!projectId || !apiVersion) {
     return NextResponse.json(
