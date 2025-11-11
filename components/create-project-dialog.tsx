@@ -232,7 +232,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       });
 
       // Prepare auth config
-      const authType = config.enableApiKey ? 'api_key' : (config.enableSocialAuth ? 'oauth' : 'none');
+      const authType = config.enableSocialAuth ? 'oauth' : (config.enableApiKey ? 'api_key' : 'none');
       const oauthConfig = config.enableSocialAuth && config.bringOwnProvider ? {
         provider_type: config.socialProvider,
         client_id: config.identityProviderClientId,
