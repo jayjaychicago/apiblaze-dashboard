@@ -22,7 +22,10 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardProps) {
   const handleOpenPortal = () => {
-    window.open(project.urls.portal, '_blank');
+    const portalUrl = project.api_version
+      ? `${project.urls.portal}/${project.api_version}`
+      : project.urls.portal;
+    window.open(portalUrl, '_blank');
   };
 
   return (
