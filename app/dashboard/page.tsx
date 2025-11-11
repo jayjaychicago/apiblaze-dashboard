@@ -227,10 +227,6 @@ export default function DashboardPage() {
             // TODO: Open config dialog with project
             console.log('Update config for:', project);
           }}
-          onDelete={(project) => {
-            // TODO: Show delete confirmation
-            console.log('Delete project:', project);
-          }}
         />
       </main>
 
