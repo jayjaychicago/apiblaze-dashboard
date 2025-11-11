@@ -10,10 +10,9 @@ import { ProjectConfig } from './types';
 
 interface DomainsSectionProps {
   config: ProjectConfig;
-  updateConfig: (updates: Partial<ProjectConfig>) => void;
 }
 
-export function DomainsSection({ config, updateConfig }: DomainsSectionProps) {
+export function DomainsSection({ config }: DomainsSectionProps) {
   return (
     <div className="space-y-6">
       <div>

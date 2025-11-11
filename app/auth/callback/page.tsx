@@ -60,9 +60,9 @@ function CallbackContent() {
         setAuth(accessToken, user);
         
         // Redirect to dashboard
-        router.push('/dashboard');
+        router.push(returnUrl);
         
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Callback error:', err);
         setError('An unexpected error occurred during authentication.');
         setLoading(false);

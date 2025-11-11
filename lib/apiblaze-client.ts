@@ -6,6 +6,35 @@
 
 import { createJWTSigner, UserAssertionClaims } from './jwt-signer';
 
+type APIErrorBody = {
+  error?: string;
+  details?: unknown;
+  suggestions?: unknown;
+};
+
+export interface CreateProxyPayload {
+  target?: string;
+  target_url?: string;
+  name?: string;
+  display_name?: string;
+  subdomain?: string;
+  auth_type?: 'none' | 'api_key' | 'oauth';
+  openapi?: string;
+  github?: {
+    owner: string;
+    repo: string;
+    path: string;
+    branch?: string;
+  };
+  oauth_config?: {
+    provider_type: string;
+    client_id: string;
+    client_secret: string;
+    scopes?: string;
+  };
+  environments?: Record<string, { target: string; description?: string }>;
+}
+
 interface APIBlazeClientOptions {
   apiKey: string;
   baseUrl?: string;
@@ -15,10 +44,10 @@ interface APIBlazeClientOptions {
 
 export class APIBlazeError extends Error {
   status: number;
-  body: any;
+  body: APIErrorBody;
 
-  constructor(status: number, body: any) {
-    super(body?.error || `HTTP ${status}`);
+  constructor(status: number, body: APIErrorBody) {
+    super(body?.error ?? `HTTP ${status}`);
     this.name = 'APIBlazeError';
     this.status = status;
     this.body = body;
@@ -43,7 +72,7 @@ export class APIBlazeClient {
   /**
    * Make an authenticated request to the admin API
    */
-  async request<T = any>(
+  async request<T = unknown>(
     path: string,
     options: RequestInit & {
       userClaims: UserAssertionClaims;
@@ -70,11 +99,17 @@ export class APIBlazeClient {
     });
     
     if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ error: 'Unknown error' }));
+      let errorBody: APIErrorBody = { error: 'Unknown error' };
+      try {
+        errorBody = (await response.json()) as APIErrorBody;
+      } catch (jsonError) {
+        console.error('Failed to parse error body from APIBlaze response:', jsonError);
+      }
       throw new APIBlazeError(response.status, errorBody);
     }
     
-    return response.json();
+    const responseBody = (await response.json()) as T;
+    return responseBody;
   }
 
   /**
@@ -82,28 +117,7 @@ export class APIBlazeClient {
    */
   async createProxy(
     userClaims: UserAssertionClaims,
-    proxyData: {
-      target?: string;
-      target_url?: string;
-      name?: string;
-      display_name?: string;
-      subdomain?: string;
-      auth_type?: 'none' | 'api_key' | 'oauth';
-      openapi?: string;
-      github?: {
-        owner: string;
-        repo: string;
-        path: string;
-        branch?: string;
-      };
-      oauth_config?: {
-        provider_type: string;
-        client_id: string;
-        client_secret: string;
-        scopes?: string;
-      };
-      environments?: Record<string, { target: string; description?: string }>;
-    }
+    proxyData: CreateProxyPayload
   ) {
     return this.request('/', {
       method: 'POST',

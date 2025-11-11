@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -24,7 +23,6 @@ import {
   AlertCircle,
   Star,
   GitBranch,
-  X,
 } from 'lucide-react';
 import { ProjectConfig } from './types';
 
@@ -53,6 +51,13 @@ interface OpenAPIFile {
   version?: string;
 }
 
+interface ParsedOpenAPISpec {
+  info?: {
+    title?: string;
+    version?: string;
+  };
+}
+
 export function GitHubRepoSelectorModal({ 
   open, 
   onOpenChange, 
@@ -67,21 +72,6 @@ export function GitHubRepoSelectorModal({
   const [detectedSpecs, setDetectedSpecs] = useState<OpenAPIFile[]>([]);
   const [selectedSpec, setSelectedSpec] = useState<OpenAPIFile | null>(null);
   const [isDetecting, setIsDetecting] = useState(false);
-
-  // Load repositories when modal opens
-  useEffect(() => {
-    if (open) {
-      loadRepositories();
-    } else {
-      // Reset state when modal closes
-      setRepos([]);
-      setFilteredRepos([]);
-      setSelectedRepo(null);
-      setDetectedSpecs([]);
-      setSelectedSpec(null);
-      setSearchQuery('');
-    }
-  }, [open]);
 
   // Filter repos based on search
   useEffect(() => {
@@ -99,7 +89,7 @@ export function GitHubRepoSelectorModal({
     }
   }, [searchQuery, repos]);
 
-  const loadRepositories = async () => {
+  const loadRepositories = useCallback(async () => {
     setIsLoading(true);
     try {
       // Call backend API to get user's GitHub repositories (using NextAuth session)
@@ -120,7 +110,7 @@ export function GitHubRepoSelectorModal({
         throw new Error('Failed to load repositories');
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as GitHubRepo[];
       
       // If we get an empty array, might be installation issue
       if (!data || data.length === 0) {
@@ -130,7 +120,7 @@ export function GitHubRepoSelectorModal({
         });
         
         if (statusResponse.ok) {
-          const status = await statusResponse.json();
+          const status = (await statusResponse.json()) as { installed?: boolean };
           if (!status.installed) {
             // App not installed - close modal and show install prompt
             localStorage.removeItem('github_app_installed');
@@ -151,7 +141,22 @@ export function GitHubRepoSelectorModal({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onOpenChange]);
+
+  // Load repositories when modal opens
+  useEffect(() => {
+    if (open) {
+      void loadRepositories();
+    } else {
+      // Reset state when modal closes
+      setRepos([]);
+      setFilteredRepos([]);
+      setSelectedRepo(null);
+      setDetectedSpecs([]);
+      setSelectedSpec(null);
+      setSearchQuery('');
+    }
+  }, [open, loadRepositories]);
 
   const detectOpenAPISpecs = async (repo: GitHubRepo) => {
     setIsDetecting(true);
@@ -170,7 +175,7 @@ export function GitHubRepoSelectorModal({
         throw new Error('Failed to detect OpenAPI specs');
       }
 
-      const specs = await response.json();
+      const specs = (await response.json()) as OpenAPIFile[];
       setDetectedSpecs(specs);
     } catch (error) {
       console.error('Error detecting specs:', error);
@@ -181,11 +186,15 @@ export function GitHubRepoSelectorModal({
   };
 
   const handleSpecSelect = async (spec: OpenAPIFile) => {
+    if (!selectedRepo) {
+      return;
+    }
+
     setSelectedSpec(spec);
     
     // Parse spec and populate config
     try {
-      const [owner, repoName] = selectedRepo!.full_name.split('/');
+      const [owner, repoName] = selectedRepo.full_name.split('/');
       
       // Fetch and parse the OpenAPI spec to extract version and other details (using NextAuth session)
       const response = await fetch('/api/openapi/parse', {
@@ -206,7 +215,7 @@ export function GitHubRepoSelectorModal({
       let suggestedProjectName = repoName.replace(/-/g, '');
 
       if (response.ok) {
-        const parsedSpec = await response.json();
+        const parsedSpec = (await response.json()) as ParsedOpenAPISpec;
         // Extract version from spec if available
         if (parsedSpec.info?.version) {
           apiVersion = parsedSpec.info.version;
@@ -222,7 +231,7 @@ export function GitHubRepoSelectorModal({
         githubUser: owner,
         githubRepo: repoName,
         githubPath: spec.path,
-        githubBranch: selectedRepo!.default_branch,
+        githubBranch: selectedRepo.default_branch,
         apiVersion: apiVersion,
         projectName: config.projectName || suggestedProjectName,
       });
@@ -230,12 +239,12 @@ export function GitHubRepoSelectorModal({
     } catch (error) {
       console.error('Error parsing spec:', error);
       // Still update with basic info even if parsing fails
-      const [owner, repoName] = selectedRepo!.full_name.split('/');
+      const [owner, repoName] = selectedRepo.full_name.split('/');
       updateConfig({
         githubUser: owner,
         githubRepo: repoName,
         githubPath: spec.path,
-        githubBranch: selectedRepo!.default_branch,
+        githubBranch: selectedRepo.default_branch,
         apiVersion: spec.version || '1.0.0',
         projectName: config.projectName || repoName.replace(/-/g, ''),
       });

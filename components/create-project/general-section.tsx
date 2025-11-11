@@ -167,7 +167,7 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
       // TODO: Implement actual name check against backend
       await new Promise(resolve => setTimeout(resolve, 500));
       setNameAvailable(true);
-    } catch (error) {
+    } catch {
       setNameAvailable(false);
     } finally {
       setCheckingName(false);

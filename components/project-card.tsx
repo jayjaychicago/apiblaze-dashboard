@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Project } from '@/types/project';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -116,9 +117,11 @@ export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardPr
         {/* Deployer Information */}
         <div className="flex items-center gap-2 pt-2 border-t">
           {project.deployer?.avatar_url ? (
-            <img
+            <Image
               src={project.deployer.avatar_url}
               alt={project.deployer.name || project.deployer.github_username || 'User'}
+              width={24}
+              height={24}
               className="h-6 w-6 rounded-full object-cover"
             />
           ) : (

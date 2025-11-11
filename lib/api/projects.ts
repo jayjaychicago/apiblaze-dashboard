@@ -1,4 +1,19 @@
-import { Project, ProjectListResponse, ProjectStatusResponse } from '@/types/project';
+import { ProjectListResponse, ProjectStatusResponse } from '@/types/project';
+import type { CreateProxyPayload } from '@/lib/apiblaze-client';
+
+type ErrorResponse = {
+  error?: string;
+  details?: unknown;
+  suggestions?: unknown;
+};
+
+type ErrorDetailsObject = {
+  message?: string;
+  line?: number;
+  column?: number;
+  snippet?: string;
+  format?: string;
+};
 
 interface ListProjectsParams {
   team_id?: string;
@@ -27,11 +42,11 @@ export async function listProjects(params: ListProjectsParams = {}): Promise<Pro
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await parseErrorResponse(response);
     throw new Error(error.error || `Failed to fetch projects: ${response.status}`);
   }
 
-  return response.json();
+  return (await response.json()) as ProjectListResponse;
 }
 
 export async function getProjectStatus(projectId: string): Promise<ProjectStatusResponse> {
@@ -44,11 +59,11 @@ export async function getProjectStatus(projectId: string): Promise<ProjectStatus
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await parseErrorResponse(response);
     throw new Error(error.error || `Failed to fetch project status: ${response.status}`);
   }
 
-  return response.json();
+  return (await response.json()) as ProjectStatusResponse;
 }
 
 export async function deleteProject(projectId: string, apiVersion: string = '1.0.0'): Promise<void> {
@@ -62,12 +77,12 @@ export async function deleteProject(projectId: string, apiVersion: string = '1.0
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await parseErrorResponse(response);
     throw new Error(error.error || `Failed to delete project: ${response.status}`);
   }
 }
 
-export async function createProject(data: any): Promise<any> {
+export async function createProject(data: CreateProxyPayload): Promise<unknown> {
   const url = `/api/projects`;
   
   const response = await fetch(url, {
@@ -79,40 +94,67 @@ export async function createProject(data: any): Promise<any> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    const error = await parseErrorResponse(response);
     const messageParts = [
       error.error || `Failed to create project: ${response.status}`,
     ];
 
-    if (error?.details) {
-      if (typeof error.details === 'string') {
-        messageParts.push(error.details);
-      } else if (typeof error.details === 'object') {
-        if (error.details.message) {
-          messageParts.push(error.details.message);
-        }
-        if (error.details.line !== undefined && error.details.column !== undefined) {
-          messageParts.push(`line ${error.details.line}, column ${error.details.column}`);
-        } else if (error.details.line !== undefined) {
-          messageParts.push(`line ${error.details.line}`);
-        }
-        if (error.details.snippet) {
-          messageParts.push(`\n${error.details.snippet}`);
-        }
+    if (typeof error.details === 'string') {
+      messageParts.push(error.details);
+    } else if (isErrorDetailsObject(error.details)) {
+      if (error.details.message) {
+        messageParts.push(error.details.message);
+      }
+      if (error.details.line !== undefined && error.details.column !== undefined) {
+        messageParts.push(`line ${error.details.line}, column ${error.details.column}`);
+      } else if (error.details.line !== undefined) {
+        messageParts.push(`line ${error.details.line}`);
+      }
+      if (error.details.snippet) {
+        messageParts.push(`\n${error.details.snippet}`);
       }
     }
 
-    if (Array.isArray(error?.suggestions) && error.suggestions.length > 0) {
-      messageParts.push(`Suggestions: ${error.suggestions.join('; ')}`);
+    const suggestions = Array.isArray(error.suggestions) ? error.suggestions : [];
+    if (suggestions.length > 0) {
+      messageParts.push(`Suggestions: ${suggestions.join('; ')}`);
     }
 
     const message = messageParts.filter(Boolean).join(' — ');
-    const err = new Error(message);
-    (err as any).details = error.details;
-    (err as any).suggestions = error.suggestions;
+    const err: ErrorWithContext = new Error(message);
+    err.details = error.details;
+    err.suggestions = error.suggestions;
     throw err;
   }
 
-  return response.json();
+  return response.json() as Promise<unknown>;
+}
+
+async function parseErrorResponse(response: Response): Promise<ErrorResponse> {
+  try {
+    return (await response.json()) as ErrorResponse;
+  } catch {
+    return { error: 'Unknown error' };
+  }
+}
+
+function isErrorDetailsObject(value: unknown): value is ErrorDetailsObject {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return (
+    ('message' in record ? typeof record.message === 'string' : true) &&
+    ('line' in record ? typeof record.line === 'number' : true) &&
+    ('column' in record ? typeof record.column === 'number' : true) &&
+    ('snippet' in record ? typeof record.snippet === 'string' : true) &&
+    ('format' in record ? typeof record.format === 'string' : true)
+  );
+}
+
+interface ErrorWithContext extends Error {
+  details?: unknown;
+  suggestions?: unknown;
 }
 

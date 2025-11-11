@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Zap, Plus, GitBranch, Globe, Users, Rocket } from 'lucide-react';
@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreateProjectDialog } from '@/components/create-project-dialog';
 import { ProjectList } from '@/components/project-list';
-import { Project } from '@/types/project';
 import { listProjects } from '@/lib/api/projects';
 
 export default function DashboardPage() {
@@ -50,7 +49,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       setCheckingProjects(true);
       
@@ -71,13 +70,13 @@ export default function DashboardPage() {
     } finally {
       setCheckingProjects(false);
     }
-  };
+  }, [session?.user?.githubHandle]);
 
   useEffect(() => {
     if (status === 'authenticated') {
       loadProjects();
     }
-  }, [status]);
+  }, [status, loadProjects]);
 
   const handleProjectCreated = () => {
     setCreateDialogOpen(false);
@@ -119,7 +118,7 @@ export default function DashboardPage() {
               Welcome back, {user?.name || user?.githubHandle}! 👋
             </h2>
             <p className="text-muted-foreground">
-              You haven't created any API proxies yet. Let's get started!
+              You haven&apos;t created any API proxies yet. Let&apos;s get started!
             </p>
           </div>
           

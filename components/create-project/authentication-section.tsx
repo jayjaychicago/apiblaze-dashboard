@@ -302,7 +302,7 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                         <div>
                           <CardTitle className="text-sm">Important</CardTitle>
                           <CardDescription className="text-xs mt-1">
-                            Don't forget to add this authorized callback URL to your OAuth provider:
+                            Don&apos;t forget to add this authorized callback URL to your OAuth provider:
                           </CardDescription>
                         </div>
                       </div>

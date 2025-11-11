@@ -17,6 +17,21 @@ export interface AuthTokens {
   scope?: string;
 }
 
+interface GithubUserResponse {
+  id: number;
+  login: string;
+  email: string | null;
+  name?: string | null;
+  avatar_url?: string | null;
+}
+
+interface GithubEmailResponse {
+  email: string;
+  primary: boolean;
+  verified: boolean;
+  visibility: 'public' | 'private' | null;
+}
+
 /**
  * Generate OAuth 2.0 authorization URL
  * Uses standard OAuth 2.0 /authorize endpoint
@@ -61,7 +76,7 @@ export async function verifyGitHubToken(token: string): Promise<User | null> {
       return null;
     }
     
-    const githubUser = await response.json();
+    const githubUser = (await response.json()) as GithubUserResponse;
     
     // Get user email if not public
     let email = githubUser.email;
@@ -75,9 +90,9 @@ export async function verifyGitHubToken(token: string): Promise<User | null> {
       });
       
       if (emailResponse.ok) {
-        const emails = await emailResponse.json();
-        const primaryEmail = emails.find((e: any) => e.primary);
-        email = primaryEmail?.email || emails[0]?.email;
+        const emails = (await emailResponse.json()) as GithubEmailResponse[];
+        const primaryEmail = emails.find((emailRecord) => emailRecord.primary);
+        email = primaryEmail?.email ?? emails[0]?.email ?? null;
       }
     }
     
@@ -85,11 +100,11 @@ export async function verifyGitHubToken(token: string): Promise<User | null> {
       id: `github:${githubUser.id}`,
       username: githubUser.login,
       email: email || `${githubUser.login}@github.com`,
-      name: githubUser.name,
-      avatar_url: githubUser.avatar_url
+      name: githubUser.name || undefined,
+      avatar_url: githubUser.avatar_url || undefined
     };
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error verifying GitHub token:', error);
     return null;
   }
@@ -135,9 +150,9 @@ export async function exchangeCodeForToken(code: string, redirectUri: string): P
       return null;
     }
     
-    const data = await response.json();
-    return data.access_token;
-  } catch (error) {
+    const data = (await response.json()) as Partial<AuthTokens>;
+    return data.access_token ?? null;
+  } catch (error: unknown) {
     console.error('Error exchanging code for token:', error);
     return null;
   }

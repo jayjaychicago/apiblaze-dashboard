@@ -1,17 +1,65 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuthStore } from '@/store/auth';
 import { Check, X, AlertCircle, RefreshCw } from 'lucide-react';
 
+type GitHubUser = {
+  login: string;
+  [key: string]: unknown;
+};
+
+type FetchError = {
+  message?: string;
+  [key: string]: unknown;
+};
+
+type GitHubCheckSuccess = {
+  success: true;
+  data: GitHubUser;
+  status: number;
+};
+
+type GitHubCheckFailure = {
+  success: false;
+  error: FetchError | string;
+  status?: number;
+};
+
+type GitHubCheckResult = GitHubCheckSuccess | GitHubCheckFailure | null;
+
+type InstallationStatusResponse = {
+  installed: boolean;
+  installation_id?: string;
+  [key: string]: unknown;
+};
+
+type InstallationCheckSuccess = {
+  success: true;
+  data: InstallationStatusResponse;
+  status: number;
+};
+
+type InstallationCheckFailure = {
+  success: false;
+  error: FetchError | string;
+  status?: number;
+};
+
+type InstallationCheckResult = InstallationCheckSuccess | InstallationCheckFailure | null;
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
+
 export default function GitHubTokenDebugPage() {
   const { accessToken, user } = useAuthStore();
   const [tokenType, setTokenType] = useState('');
-  const [githubUserCheck, setGithubUserCheck] = useState<any>(null);
-  const [installationCheck, setInstallationCheck] = useState<any>(null);
+  const [githubUserCheck, setGithubUserCheck] = useState<GitHubCheckResult>(null);
+  const [installationCheck, setInstallationCheck] = useState<InstallationCheckResult>(null);
   const [scopes, setScopes] = useState('');
 
   useEffect(() => {
@@ -25,7 +73,7 @@ export default function GitHubTokenDebugPage() {
     }
   }, [accessToken]);
 
-  const testGitHubAPI = async () => {
+  const testGitHubAPI = useCallback(async () => {
     if (!accessToken) return;
 
     try {
@@ -40,18 +88,18 @@ export default function GitHubTokenDebugPage() {
       setScopes(scopesHeader || 'No scopes header');
 
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as GitHubUser;
         setGithubUserCheck({ success: true, data, status: response.status });
       } else {
-        const error = await response.json().catch(() => ({ message: 'Unknown error' }));
+        const error = (await response.json().catch(() => ({ message: 'Unknown error' }))) as FetchError;
         setGithubUserCheck({ success: false, error, status: response.status });
       }
-    } catch (error: any) {
-      setGithubUserCheck({ success: false, error: error.message });
+    } catch (error: unknown) {
+      setGithubUserCheck({ success: false, error: getErrorMessage(error) });
     }
-  };
+  }, [accessToken]);
 
-  const testInstallationAPI = async () => {
+  const testInstallationAPI = useCallback(async () => {
     if (!accessToken) return;
 
     try {
@@ -64,23 +112,23 @@ export default function GitHubTokenDebugPage() {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as InstallationStatusResponse;
         setInstallationCheck({ success: true, data, status: response.status });
       } else {
-        const error = await response.json().catch(() => ({ message: 'Unknown error' }));
+        const error = (await response.json().catch(() => ({ message: 'Unknown error' }))) as FetchError;
         setInstallationCheck({ success: false, error, status: response.status });
       }
-    } catch (error: any) {
-      setInstallationCheck({ success: false, error: error.message });
+    } catch (error: unknown) {
+      setInstallationCheck({ success: false, error: getErrorMessage(error) });
     }
-  };
+  }, [accessToken]);
 
   useEffect(() => {
     if (accessToken) {
-      testGitHubAPI();
-      testInstallationAPI();
+      void testGitHubAPI();
+      void testInstallationAPI();
     }
-  }, [accessToken]);
+  }, [accessToken, testGitHubAPI, testInstallationAPI]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-8">

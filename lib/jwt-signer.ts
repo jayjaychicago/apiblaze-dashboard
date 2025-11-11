@@ -63,7 +63,7 @@ export class JWTUserAssertionSigner {
   /**
    * Create a signed JWT user assertion
    */
-  sign(claims: UserAssertionClaims, requestBody?: any): string {
+  sign(claims: UserAssertionClaims, requestBody?: unknown): string {
     const now = Math.floor(Date.now() / 1000);
     
     const payload: JWTPayload = {
@@ -115,7 +115,7 @@ export class JWTUserAssertionSigner {
   /**
    * Hash the request body for binding
    */
-  private hashBody(body: any): string {
+  private hashBody(body: unknown): string {
     const bodyString = typeof body === 'string' ? body : JSON.stringify(body);
     return crypto.createHash('sha256').update(bodyString).digest('hex');
   }
@@ -134,7 +134,7 @@ export class JWTUserAssertionSigner {
   /**
    * Create the X-User-Assertion header value
    */
-  createAuthHeader(claims: UserAssertionClaims, requestBody?: any): string {
+  createAuthHeader(claims: UserAssertionClaims, requestBody?: unknown): string {
     const token = this.sign(claims, requestBody);
     return `Bearer ${token}`;
   }

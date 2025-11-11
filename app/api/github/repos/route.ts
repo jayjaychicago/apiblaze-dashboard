@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
+import type { RestEndpointMethodTypes } from '@octokit/rest';
+import { RequestError } from '@octokit/request-error';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/next-auth';
 
@@ -23,9 +25,10 @@ export async function GET() {
     // Verify token validity
     try {
       await octokit.users.getAuthenticated();
-    } catch (error: any) {
-      console.error('GitHub authentication error:', error.message);
-      if (error.status === 401) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown GitHub authentication error';
+      console.error('GitHub authentication error:', message);
+      if (error instanceof RequestError && error.status === 401) {
         return NextResponse.json({ 
           error: 'Invalid or expired GitHub token'
         }, { status: 401 });
@@ -34,7 +37,10 @@ export async function GET() {
     }
 
     // Fetch user repositories with pagination
-    const repositories: any[] = [];
+    type AuthenticatedRepo =
+      RestEndpointMethodTypes['repos']['listForAuthenticatedUser']['response']['data'][number];
+
+    const repositories: AuthenticatedRepo[] = [];
     let page = 1;
     const perPage = 100;
 
@@ -59,7 +65,7 @@ export async function GET() {
       }
 
       // Format repositories for frontend
-      const formattedRepos = repositories.map(repo => ({
+      const formattedRepos = repositories.map((repo) => ({
         id: repo.id,
         name: repo.name,
         full_name: repo.full_name,
@@ -71,11 +77,12 @@ export async function GET() {
       }));
 
       return NextResponse.json(formattedRepos);
-    } catch (error: any) {
-      console.error('Error fetching repositories:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown repository fetch error';
+      console.error('Error fetching repositories:', message);
       throw error;
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in /api/github/repos:', error);
     return NextResponse.json(
       { error: 'Failed to fetch repositories' },

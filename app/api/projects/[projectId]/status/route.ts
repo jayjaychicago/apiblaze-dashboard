@@ -1,49 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
 import { createAPIBlazeClient } from '@/lib/apiblaze-client';
-import { authOptions } from '@/lib/next-auth';
+import { getUserClaims } from '../../_utils';
 
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
-async function getUserClaims() {
-  const session = await getServerSession(authOptions);
-  
-  if (!session?.user) {
-    throw new Error('Unauthorized - no session');
+function getRouteParams(context: unknown): { projectId: string } {
+  if (
+    typeof context === 'object' &&
+    context !== null &&
+    'params' in context &&
+    typeof (context as { params?: unknown }).params === 'object' &&
+    (context as { params: unknown }).params !== null
+  ) {
+    const { projectId } = (context as { params: Record<string, unknown> }).params;
+    if (typeof projectId === 'string') {
+      return { projectId };
+    }
   }
 
-  // Use githubHandle (username) not name (display name)
-  const handle = session.user.githubHandle || session.user.email?.split('@')[0];
-  
-  // Defensive validation: ensure handle exists and is legitimate
-  if (!handle || handle === 'anonymous' || handle.length < 2) {
-    console.error('Invalid user handle in session:', session.user);
-    throw new Error('Invalid user session - missing valid username');
-  }
-
-  // Defensive validation: ensure email is present (required by OAuth)
-  if (!session.user.email) {
-    console.error('No email in session:', session.user);
-    throw new Error('Invalid user session - missing email');
-  }
-
-  const userId = session.user.id || session.user.email || `github:${handle}`;
-
-  return {
-    sub: userId,
-    handle: handle,
-    email: session.user.email,
-    roles: ['admin'],
-  };
+  throw new Error('Invalid route parameters');
 }
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ projectId: string }> }
+  _request: NextRequest,
+  context: unknown
 ) {
   try {
     const userClaims = await getUserClaims();
-    const { projectId } = await params;
+    const { projectId } = getRouteParams(context);
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
@@ -53,10 +37,12 @@ export async function GET(
     const data = await client.getProjectStatus(userClaims, projectId);
     return NextResponse.json(data);
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching project status:', error);
     
-    if (error.message.includes('Unauthorized')) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+
+    if (message.includes('Unauthorized')) {
       return NextResponse.json(
         { error: 'Unauthorized', details: 'Please sign in' },
         { status: 401 }
@@ -64,7 +50,7 @@ export async function GET(
     }
     
     return NextResponse.json(
-      { error: 'Failed to fetch project status', details: error.message },
+      { error: 'Failed to fetch project status', details: message },
       { status: 500 }
     );
   }

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Octokit } from '@octokit/rest';
+import type { RestEndpointMethodTypes } from '@octokit/rest';
+import { RequestError } from '@octokit/request-error';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/next-auth';
 
@@ -29,9 +31,10 @@ export async function GET() {
     // Verify token validity
     try {
       await octokit.users.getAuthenticated();
-    } catch (error: any) {
-      console.error('GitHub authentication error:', error.message);
-      if (error.status === 401) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown GitHub authentication error';
+      console.error('GitHub authentication error:', message);
+      if (error instanceof RequestError && error.status === 401) {
         return NextResponse.json({ 
           installed: false,
           error: 'Invalid or expired GitHub token'
@@ -57,8 +60,11 @@ export async function GET() {
     }
 
     const githubAppIdNumber = parseInt(GITHUB_APP_ID, 10);
+    type Installation =
+      RestEndpointMethodTypes['apps']['listInstallationsForAuthenticatedUser']['response']['data']['installations'][number];
+
     const installation = installationsData.installations.find(
-      (inst: any) => inst.app_id === githubAppIdNumber && inst.target_type === 'User'
+      (inst: Installation) => inst.app_id === githubAppIdNumber && inst.target_type === 'User'
     );
 
     if (!installation) {
@@ -75,7 +81,7 @@ export async function GET() {
       installation_id: installation.id.toString(),
       repository_selection: installation.repository_selection || 'selected',
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error checking GitHub installation status:', error);
     return NextResponse.json(
       { installed: false, error: 'Failed to check installation status' },

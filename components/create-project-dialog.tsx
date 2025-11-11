@@ -20,9 +20,66 @@ import { PortalSection } from './create-project/portal-section';
 import { ThrottlingSection } from './create-project/throttling-section';
 import { PrePostProcessingSection } from './create-project/preprocessing-section';
 import { DomainsSection } from './create-project/domains-section';
-import { ProjectConfig, SourceType } from './create-project/types';
+import { ProjectConfig } from './create-project/types';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+
+type ProjectCreationSuggestions = string[];
+
+type ProjectCreationDetails = {
+  message?: string;
+  format?: string;
+  line?: number;
+  column?: number;
+  snippet?: string;
+};
+
+type ProjectCreationErrorShape = {
+  message?: string;
+  details?: unknown;
+  suggestions?: unknown;
+};
+
+function isProjectCreationError(value: unknown): value is ProjectCreationErrorShape {
+  return typeof value === 'object' && value !== null;
+}
+
+function isProjectCreationDetails(value: unknown): value is ProjectCreationDetails {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  return (
+    ('message' in record ? typeof record.message === 'string' : true) &&
+    ('format' in record ? typeof record.format === 'string' : true) &&
+    ('line' in record ? typeof record.line === 'number' : true) &&
+    ('column' in record ? typeof record.column === 'number' : true) &&
+    ('snippet' in record ? typeof record.snippet === 'string' : true)
+  );
+}
+
+function extractProjectCreationContext(error: unknown) {
+  const fallbackMessage = error instanceof Error ? error.message.split('\n')[0] : 'Unknown error occurred';
+
+  if (!isProjectCreationError(error)) {
+    return {
+      message: fallbackMessage,
+      details: undefined as ProjectCreationDetails | undefined,
+      suggestions: undefined as ProjectCreationSuggestions | undefined,
+    };
+  }
+
+  const details = isProjectCreationDetails(error.details) ? error.details : undefined;
+  const suggestions = Array.isArray(error.suggestions)
+    ? (error.suggestions.filter((item): item is string => typeof item === 'string') as ProjectCreationSuggestions)
+    : undefined;
+
+  const message =
+    typeof error.message === 'string' && error.message.length > 0 ? error.message : fallbackMessage;
+
+  return { message, details, suggestions };
+}
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -212,15 +269,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     } catch (error) {
       console.error('Failed to create project:', error);
 
-      const details = (error as any)?.details;
-      const suggestions: string[] | undefined = Array.isArray((error as any)?.suggestions)
-        ? (error as any).suggestions
-        : undefined;
-
-      const fallbackMessage =
-        error instanceof Error ? error.message.split('\n')[0] : 'Unknown error occurred';
-      const detailMessage =
-        typeof details?.message === 'string' ? details.message : fallbackMessage;
+      const { message, details, suggestions } = extractProjectCreationContext(error);
+      const detailMessage = details?.message ?? message;
 
       toast({
         title: 'Deployment Failed',
@@ -316,8 +366,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               <PrePostProcessingSection config={config} updateConfig={updateConfig} />
             </TabsContent>
 
-            <TabsContent value="domains" className="mt-0">
-              <DomainsSection config={config} updateConfig={updateConfig} />
+              <TabsContent value="domains" className="mt-0">
+                <DomainsSection config={config} />
             </TabsContent>
           </div>
         </Tabs>

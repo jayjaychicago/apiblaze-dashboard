@@ -85,12 +85,12 @@ export function GitHubAppInstallModal({ open, onOpenChange }: GitHubAppInstallMo
             </Card>
           </div>
 
-          {/* What You're Authorizing */}
+          {/* What You&apos;re Authorizing */}
           <Card>
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
                 <Shield className="h-4 w-4" />
-                What You're Authorizing
+                What You&apos;re Authorizing
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -118,7 +118,7 @@ export function GitHubAppInstallModal({ open, onOpenChange }: GitHubAppInstallMo
             </CardHeader>
             <CardContent>
               <ol className="text-xs space-y-2 text-muted-foreground list-decimal list-inside">
-                <li>Click "Install GitHub App" below</li>
+                <li>Click &quot;Install GitHub App&quot; below</li>
                 <li>Select which repositories to grant access to</li>
                 <li>Authorize the installation</li>
                 <li>Return here to browse your repos</li>

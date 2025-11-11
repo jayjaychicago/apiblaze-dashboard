@@ -17,7 +17,7 @@ export interface Project {
   name: string;
   subdomain: string;
   target_url?: string;
-  openapi_spec?: any;
+  openapi_spec?: string | Record<string, unknown>;
   created_at: string;
   updated_at: string;
   status: 'active' | 'inactive' | 'deploying';
@@ -57,13 +57,16 @@ class ApiClient {
     });
     
     if (!response.ok) {
-      const error: ApiError = await response.json().catch(() => ({
-        error: `HTTP ${response.status}: ${response.statusText}`,
-      }));
+      let error: ApiError = { error: `HTTP ${response.status}: ${response.statusText}` };
+      try {
+        error = (await response.json()) as ApiError;
+      } catch {
+        // Ignore JSON parse errors – default error message already set
+      }
       throw new Error(error.error || 'API request failed');
     }
     
-    return response.json();
+    return (await response.json()) as T;
   }
   
   // Projects
@@ -80,7 +83,7 @@ class ApiClient {
     display_name?: string;
     subdomain: string;
     target_url?: string;
-    openapi_spec?: any;
+    openapi_spec?: string | Record<string, unknown>;
     team_id?: string;
     username?: string;
     github?: {
@@ -97,9 +100,9 @@ class ApiClient {
       scopes: string;
     };
     environments?: Record<string, { target: string }>;
-  }): Promise<any> {
+  }): Promise<Record<string, unknown>> {
     // Map frontend data to backend API format
-    const backendData: any = {
+    const backendData: Record<string, unknown> = {
       target: data.target_url,
       target_url: data.target_url, // Support both formats
       openapi: data.openapi_spec,
@@ -132,7 +135,7 @@ class ApiClient {
     }
 
     console.log('[API Client] Creating project:', data.name);
-    return this.request<any>('/projects', {
+    return this.request<Record<string, unknown>>('/projects', {
       method: 'POST',
       body: JSON.stringify(backendData),
     });

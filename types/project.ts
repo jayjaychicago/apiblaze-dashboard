@@ -45,7 +45,7 @@ export interface Project {
     error?: string;
   } | null;
   
-  config?: any; // Full config from KV if needed
+  config?: Record<string, unknown>; // Full config from KV if needed
 }
 
 export interface ProjectListResponse {

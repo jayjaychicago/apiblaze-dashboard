@@ -3,7 +3,7 @@
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 function CallbackContent() {
   const router = useRouter();

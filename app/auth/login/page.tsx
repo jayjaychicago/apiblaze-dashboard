@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   
   // Redirect if already authenticated
   useEffect(() => {

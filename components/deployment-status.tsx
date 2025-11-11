@@ -105,7 +105,7 @@ export function DeploymentStatus({
       </div>
 
       {/* Time information */}
-      <div className="text-xs text-muted-foreground">
+      <div className="text-xs text-muted-foreground space-y-0.5">
         {status === 'building' && (
           <span>{formatTime(ageSeconds)} elapsed</span>
         )}
@@ -117,6 +117,9 @@ export function DeploymentStatus({
         )}
         {status === 'failed' && (
           <span>{formatTime(ageSeconds)} ago</span>
+        )}
+        {status === 'failed' && error && (
+          <span className="block text-red-600">Error: {error}</span>
         )}
       </div>
     </div>

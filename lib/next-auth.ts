@@ -1,5 +1,4 @@
-import { NextAuthOptions, Session } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import { NextAuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 
 // Extend the Session interface
@@ -52,11 +51,11 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       // Send the GitHub access token to the client
-      if (token.accessToken) {
-        session.accessToken = token.accessToken as string;
+      if (typeof token.accessToken === 'string') {
+        session.accessToken = token.accessToken;
       }
-      if (session.user && token.githubHandle) {
-        session.user.githubHandle = token.githubHandle as string;
+      if (session.user && typeof token.githubHandle === 'string') {
+        session.user.githubHandle = token.githubHandle;
       }
       return session;
     },

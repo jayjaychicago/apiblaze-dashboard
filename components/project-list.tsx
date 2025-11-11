@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Project, ProjectListResponse } from '@/types/project';
 import { ProjectCard } from '@/components/project-card';
 import { deleteProject, listProjects } from '@/lib/api/projects';
@@ -35,7 +35,7 @@ export function ProjectList({ teamId, onUpdateConfig, onDelete: onDeleteCallback
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const fetchProjects = async (currentPage: number = 1): Promise<ProjectListResponse | undefined> => {
+  const fetchProjects = useCallback(async (currentPage: number = 1): Promise<ProjectListResponse | undefined> => {
     try {
       setLoading(true);
       setError(null);
@@ -50,23 +50,24 @@ export function ProjectList({ teamId, onUpdateConfig, onDelete: onDeleteCallback
       setTotalPages(response.pagination.total_pages);
       setPage(response.pagination.page);
       return response;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching projects:', err);
-      setError(err.message || 'Failed to load projects');
+      const message = err instanceof Error ? err.message : 'Failed to load projects';
+      setError(message);
       toast({
         title: 'Error',
-        description: err.message || 'Failed to load projects',
+        description: message,
         variant: 'destructive',
       });
       return undefined;
     } finally {
       setLoading(false);
     }
-  };
+  }, [teamId, toast]);
 
   useEffect(() => {
     fetchProjects(1);
-  }, [teamId]);
+  }, [fetchProjects]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -117,11 +118,12 @@ export function ProjectList({ teamId, onUpdateConfig, onDelete: onDeleteCallback
       onDeleteCallback?.(projectToDelete);
       onRefresh?.();
       closeDeleteDialog();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error deleting project:', err);
+      const message = err instanceof Error ? err.message : 'An unexpected error occurred while deleting the project.';
       toast({
         title: 'Failed to delete project',
-        description: err?.message || 'An unexpected error occurred while deleting the project.',
+        description: message,
         variant: 'destructive',
       });
     } finally {

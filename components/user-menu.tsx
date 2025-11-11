@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { LogOut, User, Settings } from 'lucide-react';
@@ -30,9 +31,11 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
           {user.image ? (
-            <img
+            <Image
               src={user.image}
               alt={user.name || user.githubHandle || 'User'}
+              width={40}
+              height={40}
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
