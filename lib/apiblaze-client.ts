@@ -134,12 +134,14 @@ export class APIBlazeClient {
     limit?: number;
     search?: string;
     team_id?: string;
+    status?: string;
   }) {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.set('page', params.page.toString());
     if (params?.limit) queryParams.set('limit', params.limit.toString());
     if (params?.search) queryParams.set('search', params.search);
     if (params?.team_id) queryParams.set('team_id', params.team_id);
+    if (params?.status) queryParams.set('status', params.status);
     
     const query = queryParams.toString();
     return this.request(`/projects${query ? `?${query}` : ''}`, {

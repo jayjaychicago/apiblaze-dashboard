@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
       limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined,
       search: searchParams.get('search') || undefined,
       team_id: searchParams.get('team_id') || undefined,
+      status: searchParams.get('status') || 'active',
     };
     
     const data = await client.listProxies(userClaims, params);

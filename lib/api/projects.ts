@@ -25,13 +25,21 @@ interface ListProjectsParams {
 
 // Use Next.js API routes to proxy requests (keeps API key server-side)
 export async function listProjects(params: ListProjectsParams = {}): Promise<ProjectListResponse> {
+  const effectiveParams: ListProjectsParams = {
+    ...params,
+  };
+
+  if (!effectiveParams.status) {
+    effectiveParams.status = 'active';
+  }
+
   const queryParams = new URLSearchParams();
   
-  if (params.team_id) queryParams.append('team_id', params.team_id);
-  if (params.search) queryParams.append('search', params.search);
-  if (params.status) queryParams.append('status', params.status);
-  if (params.page) queryParams.append('page', params.page.toString());
-  if (params.limit) queryParams.append('limit', params.limit.toString());
+  if (effectiveParams.team_id) queryParams.append('team_id', effectiveParams.team_id);
+  if (effectiveParams.search) queryParams.append('search', effectiveParams.search);
+  if (effectiveParams.status) queryParams.append('status', effectiveParams.status);
+  if (effectiveParams.page) queryParams.append('page', effectiveParams.page.toString());
+  if (effectiveParams.limit) queryParams.append('limit', effectiveParams.limit.toString());
 
   const url = `/api/projects?${queryParams.toString()}`;
   
@@ -46,7 +54,15 @@ export async function listProjects(params: ListProjectsParams = {}): Promise<Pro
     throw new Error(error.error || `Failed to fetch projects: ${response.status}`);
   }
 
-  return (await response.json()) as ProjectListResponse;
+  const rawResponse = (await response.json()) as ProjectListResponse;
+  const activeProjects = rawResponse.projects.filter(
+    (project) => project.status !== 'deleted'
+  );
+
+  return {
+    ...rawResponse,
+    projects: activeProjects,
+  };
 }
 
 export async function getProjectStatus(projectId: string): Promise<ProjectStatusResponse> {
