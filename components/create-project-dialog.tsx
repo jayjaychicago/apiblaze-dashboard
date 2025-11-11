@@ -211,9 +211,58 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       onSuccess?.();
     } catch (error) {
       console.error('Failed to create project:', error);
+
+      const details = (error as any)?.details;
+      const suggestions: string[] | undefined = Array.isArray((error as any)?.suggestions)
+        ? (error as any).suggestions
+        : undefined;
+
+      const fallbackMessage =
+        error instanceof Error ? error.message.split('\n')[0] : 'Unknown error occurred';
+      const detailMessage =
+        typeof details?.message === 'string' ? details.message : fallbackMessage;
+
       toast({
         title: 'Deployment Failed',
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        description: (
+          <div className="space-y-3">
+            <div>
+              <p className="font-medium">{detailMessage}</p>
+              {details?.format && (
+                <p className="text-sm text-muted-foreground">
+                  Format: {details.format.toUpperCase()}
+                  {details.line !== undefined && (
+                    <>
+                      {' · '}Line {details.line}
+                    </>
+                  )}
+                  {details.column !== undefined && (
+                    <>
+                      {' · '}Column {details.column}
+                    </>
+                  )}
+                </p>
+              )}
+            </div>
+
+            {details?.snippet && (
+              <pre className="bg-muted text-sm rounded-md p-3 overflow-x-auto whitespace-pre-wrap leading-snug">
+                {details.snippet}
+              </pre>
+            )}
+
+            {suggestions && suggestions.length > 0 && (
+              <div>
+                <p className="text-sm font-medium">Suggestions</p>
+                <ul className="mt-1 list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                  {suggestions.map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ),
         variant: 'destructive',
       });
     } finally {
