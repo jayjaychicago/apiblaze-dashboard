@@ -38,9 +38,6 @@ export async function GET(request: NextRequest, context: unknown) {
       headers: {
         accept: 'application/json, application/yaml;q=0.9',
       },
-      cf: {
-        cacheEverything: false,
-      },
     });
 
     if (!upstreamResponse.ok) {
