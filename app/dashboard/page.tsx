@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Zap, Plus, GitBranch, Globe, Users, Rocket } from 'lucide-react';
+import { Zap, Plus, GitBranch, Globe, Users, Rocket, Bot } from 'lucide-react';
 import { UserMenu } from '@/components/user-menu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -105,8 +105,14 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground">Host secure serverless APIs in seconds</p>
               </div>
             </div>
-            
-            <UserMenu />
+          
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={() => router.push('/dashboard/llm')}>
+                <Bot className="mr-2 h-4 w-4" />
+                Enable your API on LLMs
+              </Button>
+              <UserMenu />
+            </div>
           </div>
         </header>
         
@@ -133,10 +139,19 @@ export default function DashboardPage() {
                 Deploy your API proxy in seconds using GitHub, upload, or manual configuration
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-center pb-6">
+            <CardContent className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6">
               <Button size="lg" className="h-12 px-8" onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="mr-2 h-5 w-5" />
                 Create Project
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 px-8"
+                onClick={() => router.push('/dashboard/llm')}
+              >
+                <Bot className="mr-2 h-5 w-5" />
+                Enable on LLMs
               </Button>
             </CardContent>
           </Card>
@@ -207,7 +222,11 @@ export default function DashboardPage() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => router.push('/dashboard/llm')}>
+              <Bot className="mr-2 h-4 w-4" />
+              Enable your API on LLMs
+            </Button>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Create Project
