@@ -99,6 +99,8 @@ class ApiClient {
       client_secret: string;
       scopes: string;
     };
+    user_pool_id?: string;
+    app_client_id?: string;
     environments?: Record<string, { target: string }>;
   }): Promise<Record<string, unknown>> {
     // Map frontend data to backend API format
@@ -130,6 +132,12 @@ class ApiClient {
     if (data.oauth_config) {
       backendData.oauth_config = data.oauth_config;
     }
+    if (data.user_pool_id) {
+      backendData.user_pool_id = data.user_pool_id;
+    }
+    if (data.app_client_id) {
+      backendData.app_client_id = data.app_client_id;
+    }
     if (data.environments) {
       backendData.environments = data.environments;
     }
@@ -156,6 +164,103 @@ class ApiClient {
     return this.request<Team>('/teams', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  // UserPools
+  async listUserPools() {
+    return this.request('/user-pools');
+  }
+
+  async getUserPool(poolId: string) {
+    return this.request(`/user-pools/${poolId}`);
+  }
+
+  async createUserPool(data: { name: string }) {
+    return this.request('/user-pools', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateUserPool(poolId: string, data: { name?: string }) {
+    return this.request(`/user-pools/${poolId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteUserPool(poolId: string) {
+    return this.request(`/user-pools/${poolId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // AppClients
+  async listAppClients(poolId: string) {
+    return this.request(`/user-pools/${poolId}/app-clients`);
+  }
+
+  async getAppClient(poolId: string, clientId: string) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}`);
+  }
+
+  async createAppClient(poolId: string, data: {
+    name: string;
+    refreshTokenExpiry?: number;
+    idTokenExpiry?: number;
+    accessTokenExpiry?: number;
+    redirectUris?: string[];
+    signoutUris?: string[];
+    scopes?: string[];
+  }) {
+    return this.request(`/user-pools/${poolId}/app-clients`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateAppClient(poolId: string, clientId: string, data: {
+    name?: string;
+    refreshTokenExpiry?: number;
+    idTokenExpiry?: number;
+    accessTokenExpiry?: number;
+    redirectUris?: string[];
+    signoutUris?: string[];
+    scopes?: string[];
+  }) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAppClient(poolId: string, clientId: string) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Providers
+  async listProviders(poolId: string, clientId: string) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers`);
+  }
+
+  async addProvider(poolId: string, clientId: string, data: {
+    type: string;
+    clientId: string;
+    clientSecret: string;
+    domain?: string;
+  }) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async removeProvider(poolId: string, clientId: string, providerId: string) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers/${providerId}`, {
+      method: 'DELETE',
     });
   }
 }

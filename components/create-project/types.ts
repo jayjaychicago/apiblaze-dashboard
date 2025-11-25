@@ -37,6 +37,10 @@ export interface ProjectConfig {
   userGroupName: string;
   enableApiKey: boolean;
   enableSocialAuth: boolean;
+  useUserPool: boolean;
+  userPoolId?: string;
+  appClientId?: string;
+  // Legacy OAuth fields (deprecated, use UserPool instead)
   bringOwnProvider: boolean;
   socialProvider: SocialProvider;
   identityProviderDomain: string;

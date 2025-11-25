@@ -10,11 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { CreateProjectDialog } from '@/components/create-project-dialog';
 import { ProjectList } from '@/components/project-list';
 import { listProjects } from '@/lib/api/projects';
+import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
   const [hasProjects, setHasProjects] = useState<boolean | null>(null);
   const [checkingProjects, setCheckingProjects] = useState(true);
   
@@ -140,6 +142,15 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6">
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-12 px-8"
+                onClick={() => setUserPoolModalOpen(true)}
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Add a User Pool
+              </Button>
               <Button size="lg" className="h-12 px-8" onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="mr-2 h-5 w-5" />
                 Create Project
@@ -202,6 +213,11 @@ export default function DashboardPage() {
           onSuccess={handleProjectCreated}
           openToGitHub={typeof window !== 'undefined' && localStorage.getItem('github_app_just_installed') === 'true'}
         />
+        <UserPoolModal
+          open={userPoolModalOpen}
+          onOpenChange={setUserPoolModalOpen}
+          mode="manage"
+        />
       </div>
     );
   }
@@ -226,6 +242,10 @@ export default function DashboardPage() {
             <Button variant="outline" onClick={() => router.push('/dashboard/llm')}>
               <Bot className="mr-2 h-4 w-4" />
               Enable your API on LLMs
+            </Button>
+            <Button variant="outline" onClick={() => setUserPoolModalOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add a User Pool
             </Button>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
@@ -253,6 +273,11 @@ export default function DashboardPage() {
         onOpenChange={setCreateDialogOpen}
         onSuccess={handleProjectCreated}
         openToGitHub={typeof window !== 'undefined' && localStorage.getItem('github_app_just_installed') === 'true'}
+      />
+      <UserPoolModal
+        open={userPoolModalOpen}
+        onOpenChange={setUserPoolModalOpen}
+        mode="manage"
       />
     </div>
   );

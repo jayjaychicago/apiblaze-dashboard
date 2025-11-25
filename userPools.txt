@@ -1,0 +1,11 @@
+Create UI and backend for a homebrew equivalent of Cognito UserPools, Users, Groups, AppClients and Social and External Providers.
+The backend goal is for the user to be able to add multiple identity providers to their apiblaze api and dev portal logins and upon authentication to know which group the user is a member of.
+The frontend goal is - in dashboard.apiblaze.com - add a "+ Add a user Pool" CTA on the left of "+ Create Project" in Phase1 and to replace "Bring My Own OAuth Provider" to "Authenticate with user Pool" in the Auth tab in Phase2
+For backend storage the relationships are the same as Cognito:
+- 1 user pool can have multiple app AppClients, users, groups
+- 1 App client has 1 name, clientId and client secret (randomly generated and stored), user-defined refresh, id, access token expiries with safe defaults. 
+- 1 App client can have multiple social and external providers
+- 1 App client can have multiple authorized redirect and signout URIs
+- 1 App client can have multiple scopes
+At every step, the user should have the option to add to an existing entity or to create a new one. For example, add to already existing userPool1 or create userPool2, add to existing appClient1 or create appClient2, all in one-screen avoiding complex flows. The UX goal is for the users creating new appclients to get the clientid/secret in one modal and for users updating existing app clients to do things like adding a social provider in one modal too.
+Be careful the modal component will be reused in the API project creation modal to tie a userPool to a specific API project being created or modified so that's why it's important to keep the modal simple and able to pass the jwt authorized connected to this user Pool app Client to the API project.

@@ -8,9 +8,12 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Plus, X } from 'lucide-react';
+import { AlertCircle, Plus, X, Users, Key } from 'lucide-react';
 import { ProjectConfig, SocialProvider } from './types';
 import { useState } from 'react';
+import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
+import { api } from '@/lib/api';
+import type { AppClient } from '@/types/user-pool';
 
 interface AuthenticationSectionProps {
   config: ProjectConfig;
@@ -80,6 +83,8 @@ const PROVIDER_SETUP_GUIDES: Record<SocialProvider, string[]> = {
 
 export function AuthenticationSection({ config, updateConfig }: AuthenticationSectionProps) {
   const [newScope, setNewScope] = useState('');
+  const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
+  const [selectedAppClient, setSelectedAppClient] = useState<AppClient & { userPoolId: string } | null>(null);
 
   const handleProviderChange = (provider: SocialProvider) => {
     updateConfig({
@@ -167,173 +172,87 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
           />
         </div>
 
-        {/* OAuth Provider Configuration */}
+        {/* UserPool Configuration */}
         {config.enableSocialAuth && (
           <div className="space-y-4 pl-4 border-l-2 border-blue-200">
-            {/* Bring Your Own Provider */}
+            {/* Authenticate with UserPool */}
             <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
               <div className="space-y-1">
-                <Label htmlFor="bringOwnProvider" className="text-sm font-medium">
-                  Bring My Own OAuth Provider
+                <Label htmlFor="useUserPool" className="text-sm font-medium">
+                  Authenticate with UserPool
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Use your own Google, Auth0, or other OAuth provider instead of APIBlaze GitHub
+                  Use a UserPool to manage identity providers, users, and groups for your API
                 </p>
               </div>
               <Switch
-                id="bringOwnProvider"
-                checked={config.bringOwnProvider}
-                onCheckedChange={(checked) => updateConfig({ bringOwnProvider: checked })}
+                id="useUserPool"
+                checked={config.useUserPool}
+                onCheckedChange={(checked) => updateConfig({ useUserPool: checked })}
               />
             </div>
 
-            {/* Provider Configuration - Two Column Layout */}
-            {config.bringOwnProvider && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Left Column - Configuration Fields */}
-                <div className="space-y-4">
-                  {/* Provider Selection */}
-                  <div>
-                    <Label htmlFor="socialProvider" className="text-sm">OAuth Provider</Label>
-                    <Select
-                      value={config.socialProvider}
-                      onValueChange={(value) => handleProviderChange(value as SocialProvider)}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="google">Google</SelectItem>
-                        <SelectItem value="microsoft">Microsoft</SelectItem>
-                        <SelectItem value="github">GitHub</SelectItem>
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                        <SelectItem value="auth0">Auth0</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+            {/* UserPool Selection/Configuration */}
+            {config.useUserPool && (
+              <div className="space-y-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setUserPoolModalOpen(true)}
+                  className="w-full"
+                >
+                  <Users className="mr-2 h-4 w-4" />
+                  {selectedAppClient ? 'Change UserPool/AppClient' : 'Select or Create UserPool'}
+                </Button>
 
-                  {/* Provider Details */}
-                  <div>
-                    <Label htmlFor="identityProviderDomain" className="text-sm">
-                      Identity Provider Domain
-                    </Label>
-                    <Input
-                      id="identityProviderDomain"
-                      placeholder="https://accounts.google.com"
-                      value={config.identityProviderDomain}
-                      onChange={(e) => updateConfig({ identityProviderDomain: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="identityProviderClientId" className="text-sm">
-                      Client ID
-                    </Label>
-                    <Input
-                      id="identityProviderClientId"
-                      placeholder="your-client-id"
-                      value={config.identityProviderClientId}
-                      onChange={(e) => updateConfig({ identityProviderClientId: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="identityProviderClientSecret" className="text-sm">
-                      Client Secret
-                    </Label>
-                    <Input
-                      id="identityProviderClientSecret"
-                      type="password"
-                      placeholder="your-client-secret"
-                      value={config.identityProviderClientSecret}
-                      onChange={(e) => updateConfig({ identityProviderClientSecret: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  {/* Authorized Scopes */}
-                  <div>
-                    <Label className="text-sm">Authorized Scopes</Label>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Default mandatory scopes: email, openid, profile
-                    </p>
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {config.authorizedScopes.map((scope) => (
-                        <Badge key={scope} variant="secondary" className="text-xs">
-                          {scope}
-                          {!['email', 'openid', 'profile'].includes(scope) && (
-                            <X
-                              className="ml-1 h-3 w-3 cursor-pointer"
-                              onClick={() => removeScope(scope)}
-                            />
-                          )}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Add custom scope"
-                        value={newScope}
-                        onChange={(e) => setNewScope(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addScope();
-                          }
-                        }}
-                      />
-                      <Button type="button" size="sm" onClick={addScope}>
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column - Important Messages & Setup Guide */}
-                <div className="space-y-4">
-                  {/* Important Callback URL */}
-                  <Card className="border-orange-200 bg-orange-50/50">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5" />
-                        <div>
-                          <CardTitle className="text-sm">Important</CardTitle>
-                          <CardDescription className="text-xs mt-1">
-                            Don&apos;t forget to add this authorized callback URL to your OAuth provider:
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <code className="text-xs bg-white px-2 py-1 rounded border block">
-                        https://apiportal.myInstantAPI.com
-                      </code>
-                    </CardContent>
-                  </Card>
-
-                  {/* Setup Guide */}
-                  <Card>
+                {selectedAppClient && (
+                  <Card className="border-green-200 bg-green-50/50">
                     <CardHeader>
-                      <CardTitle className="text-sm">
-                        {config.socialProvider.charAt(0).toUpperCase() + config.socialProvider.slice(1)} Setup Guide
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Key className="h-4 w-4" />
+                        Selected AppClient
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <ol className="text-xs space-y-2 list-decimal list-inside text-muted-foreground">
-                        {PROVIDER_SETUP_GUIDES[config.socialProvider].map((step, index) => (
-                          <li key={index}>{step}</li>
-                        ))}
-                      </ol>
+                    <CardContent className="space-y-2">
+                      <div>
+                        <Label className="text-xs">Client ID</Label>
+                        <code className="text-xs bg-white px-2 py-1 rounded border block font-mono">
+                          {selectedAppClient.clientId}
+                        </code>
+                      </div>
+                      {selectedAppClient.scopes && selectedAppClient.scopes.length > 0 && (
+                        <div>
+                          <Label className="text-xs">Scopes</Label>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {selectedAppClient.scopes.map((scope) => (
+                              <Badge key={scope} variant="secondary" className="text-xs">
+                                {scope}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
-                </div>
+                )}
               </div>
             )}
           </div>
         )}
+
+        <UserPoolModal
+          open={userPoolModalOpen}
+          onOpenChange={setUserPoolModalOpen}
+          mode="select"
+          onSelect={(appClient) => {
+            setSelectedAppClient(appClient);
+            updateConfig({
+              userPoolId: appClient.userPoolId,
+              appClientId: appClient.id,
+            });
+            setUserPoolModalOpen(false);
+          }}
+        />
       </div>
     </div>
   );

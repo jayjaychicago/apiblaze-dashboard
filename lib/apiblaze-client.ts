@@ -173,6 +173,170 @@ export class APIBlazeClient {
       userClaims,
     });
   }
+
+  /**
+   * UserPool methods
+   */
+  async createUserPool(
+    userClaims: UserAssertionClaims,
+    data: { name: string }
+  ) {
+    return this.request('/user-pools', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      userClaims,
+    });
+  }
+
+  async listUserPools(userClaims: UserAssertionClaims) {
+    return this.request('/user-pools', {
+      method: 'GET',
+      userClaims,
+    });
+  }
+
+  async getUserPool(userClaims: UserAssertionClaims, poolId: string) {
+    return this.request(`/user-pools/${poolId}`, {
+      method: 'GET',
+      userClaims,
+    });
+  }
+
+  async updateUserPool(
+    userClaims: UserAssertionClaims,
+    poolId: string,
+    data: { name?: string }
+  ) {
+    return this.request(`/user-pools/${poolId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+      userClaims,
+    });
+  }
+
+  async deleteUserPool(userClaims: UserAssertionClaims, poolId: string) {
+    return this.request(`/user-pools/${poolId}`, {
+      method: 'DELETE',
+      userClaims,
+    });
+  }
+
+  /**
+   * AppClient methods
+   */
+  async createAppClient(
+    userClaims: UserAssertionClaims,
+    poolId: string,
+    data: {
+      name: string;
+      refreshTokenExpiry?: number;
+      idTokenExpiry?: number;
+      accessTokenExpiry?: number;
+      redirectUris?: string[];
+      signoutUris?: string[];
+      scopes?: string[];
+    }
+  ) {
+    return this.request(`/user-pools/${poolId}/app-clients`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      userClaims,
+    });
+  }
+
+  async listAppClients(userClaims: UserAssertionClaims, poolId: string) {
+    return this.request(`/user-pools/${poolId}/app-clients`, {
+      method: 'GET',
+      userClaims,
+    });
+  }
+
+  async getAppClient(
+    userClaims: UserAssertionClaims,
+    poolId: string,
+    clientId: string
+  ) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}`, {
+      method: 'GET',
+      userClaims,
+    });
+  }
+
+  async updateAppClient(
+    userClaims: UserAssertionClaims,
+    poolId: string,
+    clientId: string,
+    data: {
+      name?: string;
+      refreshTokenExpiry?: number;
+      idTokenExpiry?: number;
+      accessTokenExpiry?: number;
+      redirectUris?: string[];
+      signoutUris?: string[];
+      scopes?: string[];
+    }
+  ) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+      userClaims,
+    });
+  }
+
+  async deleteAppClient(
+    userClaims: UserAssertionClaims,
+    poolId: string,
+    clientId: string
+  ) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}`, {
+      method: 'DELETE',
+      userClaims,
+    });
+  }
+
+  /**
+   * Provider methods
+   */
+  async addProvider(
+    userClaims: UserAssertionClaims,
+    poolId: string,
+    clientId: string,
+    data: {
+      type: string;
+      clientId: string;
+      clientSecret: string;
+      domain?: string;
+    }
+  ) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      userClaims,
+    });
+  }
+
+  async listProviders(
+    userClaims: UserAssertionClaims,
+    poolId: string,
+    clientId: string
+  ) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers`, {
+      method: 'GET',
+      userClaims,
+    });
+  }
+
+  async removeProvider(
+    userClaims: UserAssertionClaims,
+    poolId: string,
+    clientId: string,
+    providerId: string
+  ) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers/${providerId}`, {
+      method: 'DELETE',
+      userClaims,
+    });
+  }
 }
 
 /**

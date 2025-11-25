@@ -117,6 +117,9 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     userGroupName: '',
     enableApiKey: true,
     enableSocialAuth: false,
+    useUserPool: false,
+    userPoolId: undefined,
+    appClientId: undefined,
     bringOwnProvider: false,
     socialProvider: 'github',
     identityProviderDomain: '',
@@ -233,12 +236,24 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
       // Prepare auth config
       const authType = config.enableSocialAuth ? 'oauth' : (config.enableApiKey ? 'api_key' : 'none');
-      const oauthConfig = config.enableSocialAuth && config.bringOwnProvider ? {
-        provider_type: config.socialProvider,
-        client_id: config.identityProviderClientId,
-        client_secret: config.identityProviderClientSecret,
-        scopes: config.authorizedScopes.join(' '),
-      } : undefined;
+      
+      // Use UserPool if enabled, otherwise fall back to legacy OAuth config
+      let oauthConfig;
+      if (config.enableSocialAuth && config.useUserPool && config.userPoolId && config.appClientId) {
+        // UserPool-based auth - pass UserPool and AppClient IDs
+        // The backend will handle OAuth config from UserPool
+        oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
+      } else if (config.enableSocialAuth && config.bringOwnProvider) {
+        // Legacy OAuth config
+        oauthConfig = {
+          provider_type: config.socialProvider,
+          client_id: config.identityProviderClientId,
+          client_secret: config.identityProviderClientSecret,
+          scopes: config.authorizedScopes.join(' '),
+        };
+      } else {
+        oauthConfig = undefined;
+      }
 
       // Create the project
       const projectData = {
@@ -250,6 +265,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         github: githubSource,
         auth_type: authType,
         oauth_config: oauthConfig,
+        user_pool_id: config.useUserPool && config.userPoolId ? config.userPoolId : undefined,
+        app_client_id: config.useUserPool && config.appClientId ? config.appClientId : undefined,
         environments: Object.keys(environments).length > 0 ? environments : undefined,
       };
 
