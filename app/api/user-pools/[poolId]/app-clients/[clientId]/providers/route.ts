@@ -7,17 +7,18 @@ const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { poolId: string; clientId: string } }
+  { params }: { params: Promise<{ poolId: string; clientId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId, clientId } = await params;
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
 
-    const data = await client.listProviders(userClaims, params.poolId, params.clientId);
+    const data = await client.listProviders(userClaims, poolId, clientId);
     return NextResponse.json(data);
     
   } catch (error: unknown) {
@@ -41,10 +42,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { poolId: string; clientId: string } }
+  { params }: { params: Promise<{ poolId: string; clientId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId, clientId } = await params;
     const body = (await request.json()) as CreateProviderRequest;
     
     if (!body.type || !body.clientId || !body.clientSecret) {
@@ -59,7 +61,7 @@ export async function POST(
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
     
-    const data = await client.addProvider(userClaims, params.poolId, params.clientId, {
+    const data = await client.addProvider(userClaims, poolId, clientId, {
       type: body.type,
       clientId: body.clientId,
       clientSecret: body.clientSecret,

@@ -7,17 +7,18 @@ const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { poolId: string; clientId: string } }
+  { params }: { params: Promise<{ poolId: string; clientId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId, clientId } = await params;
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
 
-    const data = await client.getAppClient(userClaims, params.poolId, params.clientId);
+    const data = await client.getAppClient(userClaims, poolId, clientId);
     return NextResponse.json(data);
     
   } catch (error: unknown) {
@@ -41,10 +42,11 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { poolId: string; clientId: string } }
+  { params }: { params: Promise<{ poolId: string; clientId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId, clientId } = await params;
     const body = (await request.json()) as UpdateAppClientRequest;
     
     const client = createAPIBlazeClient({
@@ -52,7 +54,7 @@ export async function PATCH(
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
     
-    const data = await client.updateAppClient(userClaims, params.poolId, params.clientId, body);
+    const data = await client.updateAppClient(userClaims, poolId, clientId, body);
     return NextResponse.json(data);
     
   } catch (error: unknown) {
@@ -87,17 +89,18 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { poolId: string; clientId: string } }
+  { params }: { params: Promise<{ poolId: string; clientId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId, clientId } = await params;
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
     
-    await client.deleteAppClient(userClaims, params.poolId, params.clientId);
+    await client.deleteAppClient(userClaims, poolId, clientId);
     return NextResponse.json({ success: true });
     
   } catch (error: unknown) {

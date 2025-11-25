@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,9 +23,6 @@ import {
   Check,
   Loader2,
   AlertCircle,
-  Users,
-  Key,
-  Globe,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -105,6 +102,7 @@ export function UserPoolModal({
     if (open) {
       loadUserPools();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // Load app clients when user pool is selected
@@ -115,6 +113,7 @@ export function UserPoolModal({
       setAppClients([]);
       setSelectedAppClientId('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUserPoolId]);
 
   // Load providers and app client details when app client is selected

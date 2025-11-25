@@ -6,17 +6,18 @@ const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { poolId: string; clientId: string; providerId: string } }
+  { params }: { params: Promise<{ poolId: string; clientId: string; providerId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId, clientId, providerId } = await params;
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
     
-    await client.removeProvider(userClaims, params.poolId, params.clientId, params.providerId);
+    await client.removeProvider(userClaims, poolId, clientId, providerId);
     return NextResponse.json({ success: true });
     
   } catch (error: unknown) {

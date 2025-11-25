@@ -8,11 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Plus, X, Users, Key } from 'lucide-react';
-import { ProjectConfig, SocialProvider } from './types';
+import { Plus, Users, Key } from 'lucide-react';
+import { ProjectConfig } from './types';
 import { useState } from 'react';
 import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
-import { api } from '@/lib/api';
 import type { AppClient } from '@/types/user-pool';
 
 interface AuthenticationSectionProps {
@@ -20,94 +19,9 @@ interface AuthenticationSectionProps {
   updateConfig: (updates: Partial<ProjectConfig>) => void;
 }
 
-const PROVIDER_DOMAINS: Record<SocialProvider, string> = {
-  google: 'https://accounts.google.com',
-  microsoft: 'https://login.microsoftonline.com',
-  github: 'https://github.com',
-  facebook: 'https://www.facebook.com',
-  auth0: 'https://YOUR_DOMAIN.auth0.com',
-  other: '',
-};
-
-const PROVIDER_SETUP_GUIDES: Record<SocialProvider, string[]> = {
-  google: [
-    'Go to Google Cloud Console (console.cloud.google.com)',
-    'Select your project or create a new one',
-    'Go to APIs & Services → Library',
-    'Search for and enable: Google+ API',
-    'Go to APIs & Services → Credentials',
-    'Click + CREATE CREDENTIALS → OAuth 2.0 Client IDs',
-    'Choose Web application as application type',
-    'Add the authorized redirect URI below',
-    'Copy the Client ID and Client Secret',
-  ],
-  github: [
-    'Go to GitHub Settings → Developer settings',
-    'Click OAuth Apps → New OAuth App',
-    'Fill in application name and homepage URL',
-    'Add the authorization callback URL below',
-    'Click Register application',
-    'Copy the Client ID',
-    'Generate a new client secret and copy it',
-  ],
-  microsoft: [
-    'Go to Azure Portal (portal.azure.com)',
-    'Navigate to Azure Active Directory',
-    'Go to App registrations → New registration',
-    'Enter application name and select account types',
-    'Add redirect URI: Web → paste callback URL',
-    'After creation, copy Application (client) ID',
-    'Go to Certificates & secrets → New client secret',
-    'Copy the client secret value',
-  ],
-  facebook: [
-    'Go to Facebook Developers (developers.facebook.com)',
-    'Create a new app or select existing one',
-    'Add Facebook Login product',
-    'Go to Settings → Basic',
-    'Copy App ID and App Secret',
-    'Go to Facebook Login → Settings',
-    'Add Valid OAuth Redirect URIs',
-  ],
-  auth0: [
-    'Go to Auth0 Dashboard (manage.auth0.com)',
-    'Navigate to Applications → Create Application',
-    'Choose Regular Web Application',
-    'Go to Settings tab',
-    'Copy Domain, Client ID, and Client Secret',
-    'Add callback URL to Allowed Callback URLs',
-    'Save changes',
-  ],
-  other: ['Configure your custom OAuth provider'],
-};
-
 export function AuthenticationSection({ config, updateConfig }: AuthenticationSectionProps) {
-  const [newScope, setNewScope] = useState('');
   const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
   const [selectedAppClient, setSelectedAppClient] = useState<AppClient & { userPoolId: string } | null>(null);
-
-  const handleProviderChange = (provider: SocialProvider) => {
-    updateConfig({
-      socialProvider: provider,
-      identityProviderDomain: PROVIDER_DOMAINS[provider],
-    });
-  };
-
-  const addScope = () => {
-    if (newScope && !config.authorizedScopes.includes(newScope)) {
-      updateConfig({
-        authorizedScopes: [...config.authorizedScopes, newScope],
-      });
-      setNewScope('');
-    }
-  };
-
-  const removeScope = (scope: string) => {
-    if (['email', 'openid', 'profile'].includes(scope)) return; // Don't remove mandatory scopes
-    updateConfig({
-      authorizedScopes: config.authorizedScopes.filter(s => s !== scope),
-    });
-  };
 
   return (
     <div className="space-y-6">

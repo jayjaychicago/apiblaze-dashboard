@@ -7,17 +7,18 @@ const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { poolId: string } }
+  { params }: { params: Promise<{ poolId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId } = await params;
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
 
-    const data = await client.listAppClients(userClaims, params.poolId);
+    const data = await client.listAppClients(userClaims, poolId);
     return NextResponse.json(data);
     
   } catch (error: unknown) {
@@ -41,10 +42,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { poolId: string } }
+  { params }: { params: Promise<{ poolId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId } = await params;
     const body = (await request.json()) as CreateAppClientRequest;
     
     if (!body.name || body.name.trim().length === 0) {
@@ -70,7 +72,7 @@ export async function POST(
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
     
-    const data = await client.createAppClient(userClaims, params.poolId, appClientData);
+    const data = await client.createAppClient(userClaims, poolId, appClientData);
     return NextResponse.json(data);
     
   } catch (error: unknown) {

@@ -6,17 +6,18 @@ const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { poolId: string } }
+  { params }: { params: Promise<{ poolId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId } = await params;
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
 
-    const data = await client.getUserPool(userClaims, params.poolId);
+    const data = await client.getUserPool(userClaims, poolId);
     return NextResponse.json(data);
     
   } catch (error: unknown) {
@@ -40,10 +41,11 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { poolId: string } }
+  { params }: { params: Promise<{ poolId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId } = await params;
     const body = (await request.json()) as { name?: string };
     
     const client = createAPIBlazeClient({
@@ -51,7 +53,7 @@ export async function PATCH(
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
     
-    const data = await client.updateUserPool(userClaims, params.poolId, body);
+    const data = await client.updateUserPool(userClaims, poolId, body);
     return NextResponse.json(data);
     
   } catch (error: unknown) {
@@ -86,17 +88,18 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { poolId: string } }
+  { params }: { params: Promise<{ poolId: string }> }
 ) {
   try {
     const userClaims = await getUserClaims();
+    const { poolId } = await params;
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
     
-    await client.deleteUserPool(userClaims, params.poolId);
+    await client.deleteUserPool(userClaims, poolId);
     return NextResponse.json({ success: true });
     
   } catch (error: unknown) {
