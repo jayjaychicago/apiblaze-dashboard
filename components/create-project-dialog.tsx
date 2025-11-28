@@ -237,22 +237,82 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       // Prepare auth config
       const authType = config.enableSocialAuth ? 'oauth' : (config.enableApiKey ? 'api_key' : 'none');
       
-      // Use UserPool if enabled, otherwise fall back to legacy OAuth config
+      let userPoolId: string | undefined;
+      let appClientId: string | undefined;
       let oauthConfig;
-      if (config.enableSocialAuth && config.useUserPool && config.userPoolId && config.appClientId) {
-        // UserPool-based auth - pass UserPool and AppClient IDs
-        // The backend will handle OAuth config from UserPool
-        oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
-      } else if (config.enableSocialAuth && config.bringOwnProvider) {
-        // Legacy OAuth config
-        oauthConfig = {
-          provider_type: config.socialProvider,
-          client_id: config.identityProviderClientId,
-          client_secret: config.identityProviderClientSecret,
-          scopes: config.authorizedScopes.join(' '),
-        };
-      } else {
-        oauthConfig = undefined;
+
+      // Handle UserPool creation/selection
+      if (config.enableSocialAuth) {
+        if (config.useUserPool && config.userPoolId && config.appClientId) {
+          // Use existing UserPool
+          userPoolId = config.userPoolId;
+          appClientId = config.appClientId;
+          oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
+        } else if (config.bringOwnProvider) {
+          // Validate OAuth provider fields
+          if (!config.identityProviderClientId || !config.identityProviderClientSecret) {
+            toast({
+              title: 'Validation Error',
+              description: 'Please provide Client ID and Client Secret for your OAuth provider',
+              variant: 'destructive',
+            });
+            setActiveTab('auth');
+            setIsDeploying(false);
+            return;
+          }
+
+          // Create UserPool, AppClient, and Provider automatically
+          try {
+            // 1. Create UserPool
+            const userPoolName = config.userGroupName || `${config.projectName}-userpool`;
+            const userPool = await api.createUserPool({ name: userPoolName });
+            const createdUserPoolId = (userPool as { id: string }).id;
+
+            // 2. Create AppClient
+            const appClient = await api.createAppClient(createdUserPoolId, {
+              name: `${config.projectName}-appclient`,
+              scopes: config.authorizedScopes,
+            });
+            const createdAppClientId = (appClient as { id: string }).id;
+            const createdAppClientClientId = (appClient as { clientId: string }).clientId;
+
+            // 3. Add Provider to AppClient
+            await api.addProvider(createdUserPoolId, createdAppClientId, {
+              type: config.socialProvider,
+              clientId: config.identityProviderClientId,
+              clientSecret: config.identityProviderClientSecret,
+              domain: config.identityProviderDomain || undefined,
+            });
+
+            // Use the created UserPool and AppClient
+            userPoolId = createdUserPoolId;
+            appClientId = createdAppClientId;
+            oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
+
+            console.log('[CreateProject] Created UserPool automatically:', {
+              userPoolId,
+              appClientId,
+              provider: config.socialProvider,
+            });
+          } catch (error) {
+            console.error('Error creating UserPool automatically:', error);
+            toast({
+              title: 'Error Creating UserPool',
+              description: 'Failed to create UserPool automatically. Please try again.',
+              variant: 'destructive',
+            });
+            setIsDeploying(false);
+            return;
+          }
+        } else {
+          // Legacy OAuth config (no UserPool)
+          oauthConfig = {
+            provider_type: config.socialProvider,
+            client_id: config.identityProviderClientId,
+            client_secret: config.identityProviderClientSecret,
+            scopes: config.authorizedScopes.join(' '),
+          };
+        }
       }
 
       // Create the project
@@ -265,8 +325,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         github: githubSource,
         auth_type: authType,
         oauth_config: oauthConfig,
-        user_pool_id: config.useUserPool && config.userPoolId ? config.userPoolId : undefined,
-        app_client_id: config.useUserPool && config.appClientId ? config.appClientId : undefined,
+        user_pool_id: userPoolId,
+        app_client_id: appClientId,
         environments: Object.keys(environments).length > 0 ? environments : undefined,
       };
 
