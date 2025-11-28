@@ -250,7 +250,11 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       let oauthConfig;
 
       // Handle UserPool creation/selection
-      if (config.enableSocialAuth) {
+      // Defensive check: if authType is oauth, we MUST have a UserPool
+      const needsUserPool = config.enableSocialAuth || authType === 'oauth';
+      console.log('[CreateProject] Checking enableSocialAuth:', config.enableSocialAuth, 'authType:', authType, 'needsUserPool:', needsUserPool);
+      
+      if (needsUserPool) {
         console.log('[CreateProject] Social auth enabled, checking UserPool config:', {
           useUserPool: config.useUserPool,
           userPoolId: config.userPoolId,
@@ -387,6 +391,26 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             return;
           }
         }
+      } else {
+        console.log('[CreateProject] Social auth is NOT enabled, skipping UserPool creation');
+      }
+
+      // Defensive check: if we're using oauth but don't have a UserPool, that's an error
+      if (authType === 'oauth' && !userPoolId) {
+        console.error('[CreateProject] ERROR: OAuth auth type requires UserPool but none was created!', {
+          enableSocialAuth: config.enableSocialAuth,
+          useUserPool: config.useUserPool,
+          userPoolId: config.userPoolId,
+          appClientId: config.appClientId,
+          bringOwnProvider: config.bringOwnProvider,
+        });
+        toast({
+          title: 'Configuration Error',
+          description: 'OAuth authentication requires a UserPool. Please try again or contact support.',
+          variant: 'destructive',
+        });
+        setIsDeploying(false);
+        return;
       }
 
       // Create the project
