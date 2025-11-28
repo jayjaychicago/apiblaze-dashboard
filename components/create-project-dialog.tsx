@@ -252,9 +252,18 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       // Handle UserPool creation/selection
       // Defensive check: if authType is oauth, we MUST have a UserPool
       const needsUserPool = config.enableSocialAuth || authType === 'oauth';
-      console.log('[CreateProject] Checking enableSocialAuth:', config.enableSocialAuth, 'authType:', authType, 'needsUserPool:', needsUserPool);
+      console.warn('[CreateProject] ⚠️ CHECKING USERPOOL CREATION:', {
+        enableSocialAuth: config.enableSocialAuth,
+        authType: authType,
+        needsUserPool: needsUserPool,
+        useUserPool: config.useUserPool,
+        userPoolId: config.userPoolId,
+        appClientId: config.appClientId,
+        bringOwnProvider: config.bringOwnProvider,
+      });
       
       if (needsUserPool) {
+        console.warn('[CreateProject] ✅ NEEDS USERPOOL - Entering creation logic');
         console.log('[CreateProject] Social auth enabled, checking UserPool config:', {
           useUserPool: config.useUserPool,
           userPoolId: config.userPoolId,
@@ -333,7 +342,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           }
         } else {
           // Default GitHub case - create UserPool/AppClient/Provider automatically
-          console.log('[CreateProject] Creating UserPool with default GitHub provider');
+          console.warn('[CreateProject] 🚀 DEFAULT GITHUB CASE - Creating UserPool with default GitHub provider');
           try {
             // Get default GitHub OAuth credentials
             console.log('[CreateProject] Fetching default GitHub credentials...');
@@ -392,7 +401,10 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           }
         }
       } else {
-        console.log('[CreateProject] Social auth is NOT enabled, skipping UserPool creation');
+        console.warn('[CreateProject] ❌ SKIPPING USERPOOL - Social auth is NOT enabled!', {
+          enableSocialAuth: config.enableSocialAuth,
+          authType: authType,
+        });
       }
 
       // Defensive check: if we're using oauth but don't have a UserPool, that's an error
