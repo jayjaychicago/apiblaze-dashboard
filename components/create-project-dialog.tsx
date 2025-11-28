@@ -347,10 +347,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             // Get default GitHub OAuth credentials
             console.log('[CreateProject] Fetching default GitHub credentials...');
             const credentialsResponse = await fetch('/api/default-github-credentials');
-            if (!credentialsResponse.ok) {
-              throw new Error('Failed to get default GitHub credentials');
+            const credentialsData = await credentialsResponse.json();
+            if (!credentialsResponse.ok || credentialsData.error) {
+              const errorMessage = credentialsData.error || 'Failed to get default GitHub credentials';
+              console.error('[CreateProject] Error getting default GitHub credentials:', errorMessage);
+              throw new Error(errorMessage);
             }
-            const defaultCredentials = await credentialsResponse.json();
+            const defaultCredentials = credentialsData;
             console.log('[CreateProject] Got default GitHub credentials');
 
             // 1. Create UserPool
@@ -391,9 +394,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             });
           } catch (error) {
             console.error('Error creating UserPool for default GitHub:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             toast({
               title: 'Error Creating UserPool',
-              description: 'Failed to create UserPool for default GitHub. Please try again.',
+              description: errorMessage.includes('not configured') 
+                ? 'Default GitHub OAuth credentials are not configured. Please enable "Bring My Own OAuth Provider" and provide your own GitHub credentials, or contact support to configure default credentials.'
+                : `Failed to create UserPool for default GitHub: ${errorMessage}`,
               variant: 'destructive',
             });
             setIsDeploying(false);
