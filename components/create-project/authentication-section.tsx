@@ -198,91 +198,141 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
         {/* OAuth Provider Configuration */}
         {config.enableSocialAuth && (
           <div className="space-y-4 pl-4 border-l-2 border-blue-200">
-            {/* Use Existing UserPool Escape Hatch */}
-            {!config.useUserPool && (
-              <div className="p-4 border rounded-lg bg-blue-50/50">
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-sm font-medium">Use Existing UserPool</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setUserPoolModalOpen(true)}
-                  >
-                    <Users className="mr-2 h-4 w-4" />
-                    Select UserPool
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Or configure a new OAuth provider below (will create UserPool automatically)
-                </p>
-              </div>
-            )}
+            {/* OAuth Provider Selection - Mutually Exclusive Options */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold">OAuth Provider Configuration</Label>
+              <p className="text-xs text-muted-foreground mb-3">
+                Choose one: Use an existing UserPool or configure a new OAuth provider
+              </p>
 
-            {/* Show Selected UserPool Info */}
-            {config.useUserPool && selectedAppClient && (
-              <Card className="border-green-200 bg-green-50/50">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Using Existing UserPool
-                    </CardTitle>
+              {/* Option 1: Use Existing UserPool */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    id="useExistingUserPool"
+                    name="oauthOption"
+                    checked={config.useUserPool && !!selectedAppClient}
+                    onChange={() => {
+                      // Clear bringOwnProvider when switching to existing UserPool
+                      updateConfig({
+                        bringOwnProvider: false,
+                        identityProviderClientId: '',
+                        identityProviderClientSecret: '',
+                        identityProviderDomain: '',
+                      });
+                      if (!config.useUserPool || !selectedAppClient) {
+                        setUserPoolModalOpen(true);
+                      }
+                    }}
+                    className="h-4 w-4"
+                  />
+                  <Label htmlFor="useExistingUserPool" className="text-sm font-medium cursor-pointer">
+                    Use Existing UserPool
+                  </Label>
+                </div>
+                {config.useUserPool && selectedAppClient ? (
+                  <Card className="border-green-200 bg-green-50/50 ml-6">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Selected UserPool
+                        </CardTitle>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            handleClearUserPool();
+                            setUserPoolModalOpen(true);
+                          }}
+                        >
+                          Change
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div>
+                        <Label className="text-xs">Client ID</Label>
+                        <code className="text-xs bg-white px-2 py-1 rounded border block font-mono">
+                          {selectedAppClient.clientId}
+                        </code>
+                      </div>
+                      {selectedAppClient.scopes && selectedAppClient.scopes.length > 0 && (
+                        <div>
+                          <Label className="text-xs">Scopes</Label>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {selectedAppClient.scopes.map((scope) => (
+                              <Badge key={scope} variant="secondary" className="text-xs">
+                                {scope}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="ml-6">
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      onClick={handleClearUserPool}
+                      onClick={() => {
+                        setUserPoolModalOpen(true);
+                      }}
                     >
-                      Change
+                      <Users className="mr-2 h-4 w-4" />
+                      Select UserPool
                     </Button>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div>
-                    <Label className="text-xs">Client ID</Label>
-                    <code className="text-xs bg-white px-2 py-1 rounded border block font-mono">
-                      {selectedAppClient.clientId}
-                    </code>
-                  </div>
-                  {selectedAppClient.scopes && selectedAppClient.scopes.length > 0 && (
-                    <div>
-                      <Label className="text-xs">Scopes</Label>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {selectedAppClient.scopes.map((scope) => (
-                          <Badge key={scope} variant="secondary" className="text-xs">
-                            {scope}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                )}
+              </div>
 
-            {/* Bring Your Own Provider */}
-            {!config.useUserPool && (
-              <>
-                <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                  <div className="space-y-1">
-                    <Label htmlFor="bringOwnProvider" className="text-sm font-medium">
-                      Bring My Own OAuth Provider
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Use your own Google, Auth0, or other OAuth provider instead of APIBlaze GitHub
-                    </p>
-                  </div>
-                  <Switch
-                    id="bringOwnProvider"
-                    checked={config.bringOwnProvider}
-                    onCheckedChange={(checked) => updateConfig({ bringOwnProvider: checked })}
+              {/* Option 2: Configure New OAuth Provider */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    id="configureNewProvider"
+                    name="oauthOption"
+                    checked={!config.useUserPool}
+                    onChange={() => {
+                      // Clear UserPool selection when switching to configure new provider
+                      handleClearUserPool();
+                    }}
+                    className="h-4 w-4"
                   />
+                  <Label htmlFor="configureNewProvider" className="text-sm font-medium cursor-pointer">
+                    Configure New OAuth Provider
+                  </Label>
                 </div>
+                {!config.useUserPool && (
+                  <div className="ml-6 space-y-4">
+                    {/* Bring Your Own Provider Toggle */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                      <div className="space-y-1">
+                        <Label htmlFor="bringOwnProvider" className="text-sm font-medium">
+                          Bring My Own OAuth Provider
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Use your own Google, Auth0, or other OAuth provider (creates UserPool automatically)
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Leave off to use default APIBlaze GitHub (creates UserPool automatically)
+                        </p>
+                      </div>
+                      <Switch
+                        id="bringOwnProvider"
+                        checked={config.bringOwnProvider}
+                        onCheckedChange={(checked) => updateConfig({ bringOwnProvider: checked })}
+                      />
+                    </div>
 
-                {/* Provider Configuration - Two Column Layout */}
-                {config.bringOwnProvider && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Provider Configuration - Two Column Layout */}
+                    {config.bringOwnProvider && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Left Column - Configuration Fields */}
                     <div className="space-y-4">
                       {/* Provider Selection */}
@@ -422,11 +472,13 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                           </ol>
                         </CardContent>
                       </Card>
+                      </div>
                     </div>
+                    )}
                   </div>
                 )}
-              </>
-            )}
+              </div>
+            </div>
           </div>
         )}
       </div>
