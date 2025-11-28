@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get default GitHub OAuth credentials from environment (server-side only)
-    const defaultClientId = process.env.NEXT_PUBLIC_APIBLAZE_GITHUB_CLIENT_ID || process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
-    const defaultClientSecret = process.env.APIBLAZE_GITHUB_CLIENT_SECRET || process.env.GITHUB_CLIENT_SECRET;
+    // Both client ID and secret are server-side only (no NEXT_PUBLIC_ prefix)
+    const defaultClientId = process.env.GITHUB_CLIENT_ID;
+    const defaultClientSecret = process.env.GITHUB_CLIENT_SECRET;
 
     if (!defaultClientId || !defaultClientSecret) {
       return NextResponse.json(
