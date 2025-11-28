@@ -320,10 +320,10 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                           Bring My Own OAuth Provider
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          Use your own Google, Auth0, or other OAuth provider (creates UserPool automatically)
+                          Use your own Google, Auth0, or other OAuth provider 
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Leave off to use default APIBlaze GitHub (creates UserPool automatically)
+                          Leave off to use default APIBlaze GitHub
                         </p>
                       </div>
                       <Switch
