@@ -342,49 +342,22 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           }
         } else {
           // Default GitHub case - create UserPool/AppClient/Provider automatically
-          console.warn('[CreateProject] 🚀 DEFAULT GITHUB CASE - Creating UserPool with default GitHub provider');
+          // This is done server-side to keep GitHub client secret secure
+          console.warn('[CreateProject] 🚀 DEFAULT GITHUB CASE - Creating UserPool with default GitHub provider (server-side)');
           try {
-            // Get default GitHub OAuth credentials
-            console.log('[CreateProject] Fetching default GitHub credentials...');
-            const credentialsResponse = await fetch('/api/default-github-credentials');
-            const credentialsData = await credentialsResponse.json();
-            if (!credentialsResponse.ok || credentialsData.error) {
-              const errorMessage = credentialsData.error || 'Failed to get default GitHub credentials';
-              console.error('[CreateProject] Error getting default GitHub credentials:', errorMessage);
-              throw new Error(errorMessage);
-            }
-            const defaultCredentials = credentialsData;
-            console.log('[CreateProject] Got default GitHub credentials');
-
-            // 1. Create UserPool
             const userPoolName = config.userGroupName || `${config.projectName}-userpool`;
-            console.log('[CreateProject] Creating UserPool:', userPoolName);
-            const userPool = await api.createUserPool({ name: userPoolName });
-            const createdUserPoolId = (userPool as { id: string }).id;
-            console.log('[CreateProject] Created UserPool with ID:', createdUserPoolId);
-
-            // 2. Create AppClient
-            console.log('[CreateProject] Creating AppClient...');
-            const appClient = await api.createAppClient(createdUserPoolId, {
-              name: `${config.projectName}-appclient`,
+            const appClientName = `${config.projectName}-appclient`;
+            
+            console.log('[CreateProject] Creating UserPool/AppClient/Provider with default GitHub (server-side)...');
+            const result = await api.createUserPoolWithDefaultGitHub({
+              userPoolName,
+              appClientName,
               scopes: config.authorizedScopes,
             });
-            const createdAppClientId = (appClient as { id: string }).id;
-            console.log('[CreateProject] Created AppClient with ID:', createdAppClientId);
-
-            // 3. Add default GitHub Provider to AppClient
-            console.log('[CreateProject] Adding default GitHub provider...');
-            await api.addProvider(createdUserPoolId, createdAppClientId, {
-              type: 'github',
-              clientId: defaultCredentials.clientId,
-              clientSecret: defaultCredentials.clientSecret,
-              domain: defaultCredentials.domain,
-            });
-            console.log('[CreateProject] Added default GitHub provider');
 
             // Use the created UserPool and AppClient
-            userPoolId = createdUserPoolId;
-            appClientId = createdAppClientId;
+            userPoolId = result.userPoolId;
+            appClientId = result.appClientId;
             oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
 
             console.log('[CreateProject] Created UserPool for default GitHub:', {

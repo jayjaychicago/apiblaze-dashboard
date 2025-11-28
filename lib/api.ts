@@ -263,6 +263,21 @@ class ApiClient {
       method: 'DELETE',
     });
   }
+
+  /**
+   * Create UserPool, AppClient, and Provider with default GitHub credentials
+   * This keeps the GitHub client secret server-side only
+   */
+  async createUserPoolWithDefaultGitHub(data: {
+    userPoolName: string;
+    appClientName: string;
+    scopes?: string[];
+  }) {
+    return this.request<{ userPoolId: string; appClientId: string }>('/user-pools/create-with-default-github', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiClient();
