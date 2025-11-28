@@ -226,11 +226,9 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
               <div className="space-y-3">
                 <Label className="text-sm font-semibold">OAuth Provider Configuration</Label>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Choose one: Use an existing UserPool or configure a new UserPool
+                  Choose one: Use an existing UserPool or configure a new UserPool (a pool of users you&apos;ll be able to reuse between various APIs)
                 </p>
-                <p className="text-xs text-muted-foreground mb-3 italic">
-                  A user pool is a pool of users you&apos;ll be able to reuse between various APIs
-                </p>
+
 
                 {/* Option 1: Use Existing UserPool */}
                 <div className="space-y-2">
