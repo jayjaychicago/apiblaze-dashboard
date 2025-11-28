@@ -202,7 +202,10 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
             <div className="space-y-3">
               <Label className="text-sm font-semibold">OAuth Provider Configuration</Label>
               <p className="text-xs text-muted-foreground mb-3">
-                Choose one: Use an existing UserPool or configure a new OAuth provider
+                Choose one: Use an existing UserPool or configure a new UserPool
+              </p>
+              <p className="text-xs text-muted-foreground mb-3 italic">
+                A user pool is a pool of users you'll be able to reuse between various APIs
               </p>
 
               {/* Option 1: Use Existing UserPool */}
@@ -290,22 +293,22 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                 )}
               </div>
 
-              {/* Option 2: Configure New OAuth Provider */}
+              {/* Option 2: Configure New UserPool */}
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <input
                     type="radio"
-                    id="configureNewProvider"
+                    id="configureNewUserPool"
                     name="oauthOption"
                     checked={!config.useUserPool}
                     onChange={() => {
-                      // Clear UserPool selection when switching to configure new provider
+                      // Clear UserPool selection when switching to configure new UserPool
                       handleClearUserPool();
                     }}
                     className="h-4 w-4"
                   />
-                  <Label htmlFor="configureNewProvider" className="text-sm font-medium cursor-pointer">
-                    Configure New OAuth Provider
+                  <Label htmlFor="configureNewUserPool" className="text-sm font-medium cursor-pointer">
+                    Configure New UserPool
                   </Label>
                 </div>
                 {!config.useUserPool && (
