@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     // Get default GitHub OAuth credentials from environment (server-side only)
     // Both client ID and secret are server-side only (no NEXT_PUBLIC_ prefix)
     const defaultClientId = process.env.GITHUB_CLIENT_ID;
-    const defaultClientSecret = process.env.GITHUB_CLIENT_SECRET;
+    const defaultClientSecret = 'REPLACE_WITH_APIBLAZE_CLIENT_SECRET'; // process.env.GITHUB_CLIENT_SECRET; // DANGER: This is going to store the APIBLAZE client secret for every API simple auth
 
     if (!defaultClientId || !defaultClientSecret) {
       return NextResponse.json(
