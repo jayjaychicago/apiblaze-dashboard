@@ -203,6 +203,14 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
   const handleDeploy = async () => {
     setIsDeploying(true);
+    console.log('[CreateProject] Starting deployment with config:', {
+      projectName: config.projectName,
+      enableSocialAuth: config.enableSocialAuth,
+      useUserPool: config.useUserPool,
+      userPoolId: config.userPoolId,
+      appClientId: config.appClientId,
+      bringOwnProvider: config.bringOwnProvider,
+    });
     try {
       // Validate required fields
       if (!config.projectName) {
@@ -243,12 +251,27 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
       // Handle UserPool creation/selection
       if (config.enableSocialAuth) {
-        if (config.useUserPool && config.userPoolId && config.appClientId) {
+        console.log('[CreateProject] Social auth enabled, checking UserPool config:', {
+          useUserPool: config.useUserPool,
+          userPoolId: config.userPoolId,
+          appClientId: config.appClientId,
+          bringOwnProvider: config.bringOwnProvider,
+        });
+
+        // Check if we should use an existing UserPool
+        const hasExistingUserPool = config.useUserPool && config.userPoolId && config.appClientId;
+        
+        if (hasExistingUserPool) {
           // Use existing UserPool
+          console.log('[CreateProject] Using existing UserPool:', {
+            userPoolId: config.userPoolId,
+            appClientId: config.appClientId,
+          });
           userPoolId = config.userPoolId;
           appClientId = config.appClientId;
           oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
         } else if (config.bringOwnProvider) {
+          console.log('[CreateProject] Creating UserPool with user-provided OAuth provider');
           // Validate OAuth provider fields
           if (!config.identityProviderClientId || !config.identityProviderClientSecret) {
             toast({
@@ -306,33 +329,42 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           }
         } else {
           // Default GitHub case - create UserPool/AppClient/Provider automatically
+          console.log('[CreateProject] Creating UserPool with default GitHub provider');
           try {
             // Get default GitHub OAuth credentials
+            console.log('[CreateProject] Fetching default GitHub credentials...');
             const credentialsResponse = await fetch('/api/default-github-credentials');
             if (!credentialsResponse.ok) {
               throw new Error('Failed to get default GitHub credentials');
             }
             const defaultCredentials = await credentialsResponse.json();
+            console.log('[CreateProject] Got default GitHub credentials');
 
             // 1. Create UserPool
             const userPoolName = config.userGroupName || `${config.projectName}-userpool`;
+            console.log('[CreateProject] Creating UserPool:', userPoolName);
             const userPool = await api.createUserPool({ name: userPoolName });
             const createdUserPoolId = (userPool as { id: string }).id;
+            console.log('[CreateProject] Created UserPool with ID:', createdUserPoolId);
 
             // 2. Create AppClient
+            console.log('[CreateProject] Creating AppClient...');
             const appClient = await api.createAppClient(createdUserPoolId, {
               name: `${config.projectName}-appclient`,
               scopes: config.authorizedScopes,
             });
             const createdAppClientId = (appClient as { id: string }).id;
+            console.log('[CreateProject] Created AppClient with ID:', createdAppClientId);
 
             // 3. Add default GitHub Provider to AppClient
+            console.log('[CreateProject] Adding default GitHub provider...');
             await api.addProvider(createdUserPoolId, createdAppClientId, {
               type: 'github',
               clientId: defaultCredentials.clientId,
               clientSecret: defaultCredentials.clientSecret,
               domain: defaultCredentials.domain,
             });
+            console.log('[CreateProject] Added default GitHub provider');
 
             // Use the created UserPool and AppClient
             userPoolId = createdUserPoolId;
@@ -358,6 +390,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       }
 
       // Create the project
+      console.log('[CreateProject] Final values before project creation:', {
+        userPoolId,
+        appClientId,
+        authType,
+        hasOauthConfig: !!oauthConfig,
+      });
+      
       const projectData = {
         name: config.projectName,
         display_name: config.projectName,
@@ -372,7 +411,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         environments: Object.keys(environments).length > 0 ? environments : undefined,
       };
 
-      console.log('[CreateProject] Deploying project:', config.projectName);
+      console.log('[CreateProject] Deploying project with data:', projectData);
       const response = await api.createProject(projectData);
       
       console.log('[CreateProject] Success:', response);
