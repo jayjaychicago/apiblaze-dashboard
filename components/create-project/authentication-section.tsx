@@ -8,12 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Plus, X, Users } from 'lucide-react';
+import { AlertCircle, Plus, X, Users, Key, Copy, Check } from 'lucide-react';
 import { ProjectConfig, SocialProvider } from './types';
 import { useState, useEffect } from 'react';
 import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
 import { api } from '@/lib/api';
 import type { AppClient, UserPool } from '@/types/user-pool';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AuthenticationSectionProps {
   config: ProjectConfig;
@@ -87,6 +88,9 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
   const [selectedAppClient, setSelectedAppClient] = useState<AppClient & { userPoolId: string } | null>(null);
   const [existingUserPools, setExistingUserPools] = useState<UserPool[]>([]);
   const [loadingUserPools, setLoadingUserPools] = useState(false);
+  const [appClientDetails, setAppClientDetails] = useState<AppClient | null>(null);
+  const [loadingAppClient, setLoadingAppClient] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Load existing UserPools when social auth is enabled
   useEffect(() => {
@@ -94,6 +98,15 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
       loadUserPools();
     }
   }, [config.enableSocialAuth]);
+
+  // Load AppClient details when UserPool is configured
+  useEffect(() => {
+    if (config.useUserPool && config.userPoolId && config.appClientId) {
+      loadAppClientDetails();
+    } else {
+      setAppClientDetails(null);
+    }
+  }, [config.useUserPool, config.userPoolId, config.appClientId]);
 
   const loadUserPools = async () => {
     setLoadingUserPools(true);

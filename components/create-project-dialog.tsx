@@ -23,6 +23,7 @@ import { DomainsSection } from './create-project/domains-section';
 import { ProjectConfig } from './create-project/types';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import type { Project } from '@/types/project';
 
 type ProjectCreationSuggestions = string[];
 
@@ -86,13 +87,127 @@ interface CreateProjectDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
   openToGitHub?: boolean;
+  project?: Project | null; // If provided, opens in edit mode with pre-populated data
 }
 
-export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHub }: CreateProjectDialogProps) {
+export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHub, project }: CreateProjectDialogProps) {
   const { data: session } = useSession();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const [isDeploying, setIsDeploying] = useState(false);
+
+  // Initialize config from project if in edit mode
+  const getInitialConfig = (): ProjectConfig => {
+    if (!project) {
+      return {
+        // General
+        projectName: '',
+        apiVersion: '1.0.0',
+        sourceType: 'github',
+        githubUser: '',
+        githubRepo: '',
+        githubPath: '',
+        githubBranch: 'main',
+        targetUrl: '',
+        uploadedFile: null,
+        
+        // Authentication
+        userGroupName: '',
+        enableApiKey: true,
+        enableSocialAuth: false,
+        useUserPool: false,
+        userPoolId: undefined,
+        appClientId: undefined,
+        bringOwnProvider: false,
+        socialProvider: 'github',
+        identityProviderDomain: '',
+        identityProviderClientId: '',
+        identityProviderClientSecret: '',
+        authorizedScopes: ['email', 'openid', 'profile'],
+        
+        // Target Servers
+        targetServers: [
+          { stage: 'dev', targetUrl: '', config: [] },
+          { stage: 'test', targetUrl: '', config: [] },
+          { stage: 'prod', targetUrl: '', config: [] },
+        ],
+        
+        // Portal
+        createPortal: true,
+        portalLogoUrl: '',
+        
+        // Throttling
+        throttlingRate: 10,
+        throttlingBurst: 20,
+        quota: 1000,
+        quotaInterval: 'day',
+        
+        // Pre/Post Processing
+        preProcessingPath: '',
+        postProcessingPath: '',
+        
+        // Domains (placeholder)
+        customDomains: [],
+      };
+    }
+
+    // Populate from project
+    const projectConfig = project.config as Record<string, unknown> | undefined;
+    const specSource = project.spec_source;
+    
+    return {
+      // General
+      projectName: project.display_name || '',
+      apiVersion: project.api_version || '1.0.0',
+      sourceType: specSource.type === 'github' ? 'github' : specSource.type === 'upload' ? 'upload' : 'targetUrl',
+      githubUser: specSource.github?.owner || '',
+      githubRepo: specSource.github?.repo || '',
+      githubPath: '', // Not stored in project
+      githubBranch: specSource.github?.branch || 'main',
+      targetUrl: (projectConfig?.target_url as string) || (projectConfig?.target as string) || '',
+      uploadedFile: null,
+      
+      // Authentication - extract from config
+      userGroupName: '',
+      enableApiKey: (projectConfig?.auth_type as string) !== 'none',
+      enableSocialAuth: (projectConfig?.auth_type as string) === 'oauth' || !!(projectConfig?.user_pool_id as string),
+      useUserPool: !!(projectConfig?.user_pool_id as string),
+      userPoolId: projectConfig?.user_pool_id as string | undefined,
+      appClientId: projectConfig?.app_client_id as string | undefined,
+      bringOwnProvider: !!(projectConfig?.oauth_config as Record<string, unknown>),
+      socialProvider: 'github',
+      identityProviderDomain: (projectConfig?.oauth_config as Record<string, unknown>)?.domain as string || '',
+      identityProviderClientId: (projectConfig?.oauth_config as Record<string, unknown>)?.client_id as string || '',
+      identityProviderClientSecret: '',
+      authorizedScopes: ((projectConfig?.oauth_config as Record<string, unknown>)?.scopes as string)?.split(' ') || ['email', 'openid', 'profile'],
+      
+      // Target Servers
+      targetServers: [
+        { stage: 'dev', targetUrl: '', config: [] },
+        { stage: 'test', targetUrl: '', config: [] },
+        { stage: 'prod', targetUrl: '', config: [] },
+      ],
+      
+      // Portal
+      createPortal: true,
+      portalLogoUrl: '',
+      
+      // Throttling
+      throttlingRate: 10,
+      throttlingBurst: 20,
+      quota: 1000,
+      quotaInterval: 'day',
+      
+      // Pre/Post Processing
+      preProcessingPath: '',
+      postProcessingPath: '',
+      
+      // Domains
+      customDomains: [],
+    };
+  };
+
+  const [config, setConfig] = useState<ProjectConfig>(getInitialConfig());
 
   // When dialog opens with openToGitHub flag, ensure we're on General tab and GitHub source
   useEffect(() => {
@@ -101,7 +216,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       setConfig(prev => ({ ...prev, sourceType: 'github' }));
     }
   }, [open, openToGitHub]);
-  const [config, setConfig] = useState<ProjectConfig>({
+
+  // Reset config when project changes or dialog opens/closes
+  useEffect(() => {
+    if (open) {
+      setConfig(getInitialConfig());
+    }
+  }, [open, project]);
     // General
     projectName: '',
     apiVersion: '1.0.0',
