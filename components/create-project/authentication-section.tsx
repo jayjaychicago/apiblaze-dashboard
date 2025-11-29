@@ -295,51 +295,52 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                     </Label>
                   </div>
                   {config.useUserPool && selectedAppClient ? (
-                    <Card className="border-green-200 bg-green-50/50 ml-6">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            Selected UserPool
-                          </CardTitle>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              handleClearUserPool();
-                              setUserPoolModalOpen(true);
-                            }}
-                          >
-                            Change
-                          </Button>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-2">
-                        <div>
-                          <Label className="text-xs">Client ID</Label>
-                          <code className="text-xs bg-white px-2 py-1 rounded border block font-mono">
-                            {selectedAppClient.clientId}
-                          </code>
-                        </div>
-                        {selectedAppClient.scopes && selectedAppClient.scopes.length > 0 && (
-                          <div>
-                            <Label className="text-xs">Scopes</Label>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {selectedAppClient.scopes.map((scope) => (
-                                <Badge key={scope} variant="secondary" className="text-xs">
-                                  {scope}
-                                </Badge>
-                              ))}
-                            </div>
+                    <>
+                      <Card className="border-green-200 bg-green-50/50 ml-6">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-sm flex items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              Selected UserPool
+                            </CardTitle>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                handleClearUserPool();
+                                setUserPoolModalOpen(true);
+                              }}
+                            >
+                              Change
+                            </Button>
                           </div>
-                        )}
-                      </CardContent>
-                    </Card>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div>
+                            <Label className="text-xs">Client ID</Label>
+                            <code className="text-xs bg-white px-2 py-1 rounded border block font-mono">
+                              {selectedAppClient.clientId}
+                            </code>
+                          </div>
+                          {selectedAppClient.scopes && selectedAppClient.scopes.length > 0 && (
+                            <div>
+                              <Label className="text-xs">Scopes</Label>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {selectedAppClient.scopes.map((scope) => (
+                                  <Badge key={scope} variant="secondary" className="text-xs">
+                                    {scope}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
 
-                    {/* AppClient Credentials Display */}
-                    {config.useUserPool && config.userPoolId && config.appClientId && (
-                      <Card className="mt-4 border-blue-200 bg-blue-50/50">
+                      {/* AppClient Credentials Display */}
+                      {config.useUserPool && config.userPoolId && config.appClientId && (
+                        <Card className="mt-4 border-blue-200 bg-blue-50/50 ml-6">
                         <CardHeader className="pb-3">
                           <CardTitle className="text-sm flex items-center gap-2">
                             <Key className="h-4 w-4" />
@@ -431,7 +432,8 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                           )}
                         </CardContent>
                       </Card>
-                    )}
+                      )}
+                    </>
                   ) : (
                     <div className="ml-6">
                       <Button
