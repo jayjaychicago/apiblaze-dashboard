@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, ExternalLink, Users, Key, Globe, Settings } from 'lucide-react';
 import { api } from '@/lib/api';
-import type { UserPool, AppClient, Provider } from '@/types/user-pool';
+import type { UserPool, AppClient, SocialProvider } from '@/types/user-pool';
 
 interface ProjectConfigDialogProps {
   open: boolean;
@@ -20,7 +20,7 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
   const [loading, setLoading] = useState(false);
   const [userPool, setUserPool] = useState<UserPool | null>(null);
   const [appClient, setAppClient] = useState<AppClient | null>(null);
-  const [providers, setProviders] = useState<Provider[]>([]);
+  const [providers, setProviders] = useState<SocialProvider[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -246,23 +246,25 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">Client ID</span>
-                            <span className="text-sm font-mono">{appClient.client_id}</span>
+                            <span className="text-sm font-mono">
+                              {(appClient as any).client_id || appClient.clientId}
+                            </span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">Scopes</span>
                             <div className="flex gap-1">
-                              {appClient.scopes.map((scope) => (
+                              {(appClient.scopes || []).map((scope: string) => (
                                 <Badge key={scope} variant="outline" className="text-xs">
                                   {scope}
                                 </Badge>
                               ))}
                             </div>
                           </div>
-                          {appClient.redirect_uris && appClient.redirect_uris.length > 0 && (
+                          {((appClient as any).redirectUris || (appClient as any).redirect_uris || []).length > 0 && (
                             <div className="flex items-start justify-between">
                               <span className="text-sm text-muted-foreground">Redirect URIs</span>
                               <div className="flex flex-col gap-1 text-right">
-                                {appClient.redirect_uris.map((uri, idx) => (
+                                {((appClient as any).redirectUris || (appClient as any).redirect_uris || []).map((uri: string, idx: number) => (
                                   <span key={idx} className="text-sm font-mono text-xs">
                                     {uri}
                                   </span>
@@ -300,7 +302,9 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
                               </div>
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Client ID</span>
-                                <span className="text-sm font-mono">{provider.client_id}</span>
+                                <span className="text-sm font-mono">
+                                  {(provider as any).client_id || provider.clientId}
+                                </span>
                               </div>
                               {provider.domain && (
                                 <div className="flex items-center justify-between">
