@@ -121,6 +121,31 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
     }
   };
 
+  const loadAppClientDetails = async () => {
+    if (!config.userPoolId || !config.appClientId) return;
+    
+    setLoadingAppClient(true);
+    try {
+      const client = await api.getAppClient(config.userPoolId, config.appClientId);
+      setAppClientDetails(client);
+    } catch (error) {
+      console.error('Error loading app client details:', error);
+      setAppClientDetails(null);
+    } finally {
+      setLoadingAppClient(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
+  };
+
   const handleProviderChange = (provider: SocialProvider) => {
     updateConfig({
       socialProvider: provider,
@@ -311,6 +336,102 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* AppClient Credentials Display */}
+                    {config.useUserPool && config.userPoolId && config.appClientId && (
+                      <Card className="mt-4 border-blue-200 bg-blue-50/50">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Key className="h-4 w-4" />
+                            App Client Credentials
+                          </CardTitle>
+                          <CardDescription className="text-xs">
+                            Use these credentials to configure your OAuth client
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {loadingAppClient ? (
+                            <div className="text-sm text-muted-foreground">Loading credentials...</div>
+                          ) : appClientDetails ? (
+                            <>
+                              <div>
+                                <Label className="text-xs font-medium">Client ID</Label>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
+                                    {(appClientDetails as any).client_id || appClientDetails.clientId}
+                                  </code>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => copyToClipboard((appClientDetails as any).client_id || appClientDetails.clientId, 'clientId')}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    {copiedField === 'clientId' ? (
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    ) : (
+                                      <Copy className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                              {appClientDetails.clientSecret && (
+                                <div>
+                                  <Label className="text-xs font-medium">Client Secret</Label>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    ⚠️ This secret is only shown once. Save it securely.
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
+                                      {appClientDetails.clientSecret}
+                                    </code>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => copyToClipboard(appClientDetails.clientSecret!, 'clientSecret')}
+                                      className="h-8 w-8 p-0"
+                                    >
+                                      {copiedField === 'clientSecret' ? (
+                                        <Check className="h-4 w-4 text-green-600" />
+                                      ) : (
+                                        <Copy className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                              {(appClientDetails.scopes || []).length > 0 && (
+                                <div>
+                                  <Label className="text-xs font-medium">Scopes</Label>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {appClientDetails.scopes.map((scope) => (
+                                      <Badge key={scope} variant="secondary" className="text-xs">
+                                        {scope}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {((appClientDetails as any).redirectUris || (appClientDetails as any).redirect_uris || []).length > 0 && (
+                                <div>
+                                  <Label className="text-xs font-medium">Redirect URIs</Label>
+                                  <div className="space-y-1 mt-1">
+                                    {((appClientDetails as any).redirectUris || (appClientDetails as any).redirect_uris || []).map((uri: string, idx: number) => (
+                                      <code key={idx} className="block text-xs bg-white px-2 py-1 rounded border font-mono">
+                                        {uri}
+                                      </code>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">Unable to load credentials</div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    )}
                   ) : (
                     <div className="ml-6">
                       <Button

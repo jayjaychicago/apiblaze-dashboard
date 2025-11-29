@@ -267,26 +267,27 @@ export default function DashboardPage() {
           onRefresh={loadProjects}
           onUpdateConfig={(project) => {
             setSelectedProject(project);
-            setConfigDialogOpen(true);
+            setCreateDialogOpen(true);
           }}
         />
       </main>
 
       <CreateProjectDialog
         open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
+        onOpenChange={(open) => {
+          setCreateDialogOpen(open);
+          if (!open) {
+            setSelectedProject(null);
+          }
+        }}
         onSuccess={handleProjectCreated}
         openToGitHub={typeof window !== 'undefined' && localStorage.getItem('github_app_just_installed') === 'true'}
+        project={selectedProject}
       />
       <UserPoolModal
         open={userPoolModalOpen}
         onOpenChange={setUserPoolModalOpen}
         mode="manage"
-      />
-      <ProjectConfigDialog
-        open={configDialogOpen}
-        onOpenChange={setConfigDialogOpen}
-        project={selectedProject}
       />
     </div>
   );

@@ -223,55 +223,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       setConfig(getInitialConfig());
     }
   }, [open, project]);
-    // General
-    projectName: '',
-    apiVersion: '1.0.0',
-    sourceType: 'github',
-    githubUser: '',
-    githubRepo: '',
-    githubPath: '',
-    githubBranch: 'main',
-    targetUrl: '',
-    uploadedFile: null,
-    
-    // Authentication
-    userGroupName: '',
-    enableApiKey: true,
-    enableSocialAuth: false,
-    useUserPool: false,
-    userPoolId: undefined,
-    appClientId: undefined,
-    bringOwnProvider: false,
-    socialProvider: 'github',
-    identityProviderDomain: '',
-    identityProviderClientId: '',
-    identityProviderClientSecret: '',
-    authorizedScopes: ['email', 'openid', 'profile'],
-    
-    // Target Servers
-    targetServers: [
-      { stage: 'dev', targetUrl: '', config: [] },
-      { stage: 'test', targetUrl: '', config: [] },
-      { stage: 'prod', targetUrl: '', config: [] },
-    ],
-    
-    // Portal
-    createPortal: true,
-    portalLogoUrl: '',
-    
-    // Throttling
-    throttlingRate: 10,
-    throttlingBurst: 20,
-    quota: 1000,
-    quotaInterval: 'day',
-    
-    // Pre/Post Processing
-    preProcessingPath: '',
-    postProcessingPath: '',
-    
-    // Domains (placeholder)
-    customDomains: [],
-  });
 
   const updateConfig = (updates: Partial<ProjectConfig>) => {
     setConfig(prev => ({ ...prev, ...updates }));
@@ -618,9 +569,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Create New API Project</DialogTitle>
+          <DialogTitle className="text-2xl">
+            {project ? 'Edit API Project' : 'Create New API Project'}
+          </DialogTitle>
           <DialogDescription>
-            Configure your API proxy with sensible defaults. Deploy instantly or customize settings across all sections.
+            {project 
+              ? 'Update your API proxy configuration. Changes will be applied on the next deployment.'
+              : 'Configure your API proxy with sensible defaults. Deploy instantly or customize settings across all sections.'}
           </DialogDescription>
         </DialogHeader>
 
