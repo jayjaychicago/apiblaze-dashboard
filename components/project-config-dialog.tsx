@@ -10,6 +10,17 @@ import { Loader2, ExternalLink, Users, Key, Globe, Settings } from 'lucide-react
 import { api } from '@/lib/api';
 import type { UserPool, AppClient, SocialProvider } from '@/types/user-pool';
 
+// API response may have snake_case fields from the database
+type AppClientResponse = AppClient & {
+  client_id?: string;
+  redirect_uris?: string[];
+  signout_uris?: string[];
+};
+
+type SocialProviderResponse = SocialProvider & {
+  client_id?: string;
+};
+
 interface ProjectConfigDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -247,7 +258,7 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">Client ID</span>
                             <span className="text-sm font-mono">
-                              {(appClient as any).client_id || appClient.clientId}
+                              {(appClient as AppClientResponse).client_id || appClient.clientId}
                             </span>
                           </div>
                           <div className="flex items-center justify-between">
@@ -260,11 +271,11 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
                               ))}
                             </div>
                           </div>
-                          {((appClient as any).redirectUris || (appClient as any).redirect_uris || []).length > 0 && (
+                          {((appClient as AppClientResponse).redirectUris || (appClient as AppClientResponse).redirect_uris || []).length > 0 && (
                             <div className="flex items-start justify-between">
                               <span className="text-sm text-muted-foreground">Redirect URIs</span>
                               <div className="flex flex-col gap-1 text-right">
-                                {((appClient as any).redirectUris || (appClient as any).redirect_uris || []).map((uri: string, idx: number) => (
+                                {((appClient as AppClientResponse).redirectUris || (appClient as AppClientResponse).redirect_uris || []).map((uri: string, idx: number) => (
                                   <span key={idx} className="text-sm font-mono text-xs">
                                     {uri}
                                   </span>
@@ -303,7 +314,7 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
                               <div className="flex items-center justify-between">
                                 <span className="text-sm text-muted-foreground">Client ID</span>
                                 <span className="text-sm font-mono">
-                                  {(provider as any).client_id || provider.clientId}
+                                  {(provider as SocialProviderResponse).client_id || provider.clientId}
                                 </span>
                               </div>
                               {provider.domain && (
