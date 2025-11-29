@@ -3,8 +3,21 @@
  * Handles communication with internalapi.apiblaze.com
  */
 
+import type { UserPool, AppClient, SocialProvider } from '@/types/user-pool';
+
 // Use Next.js API routes to proxy requests (keeps API key server-side)
 const API_BASE_URL = '/api';
+
+// API response may have snake_case fields from the database
+type AppClientResponse = AppClient & {
+  client_id?: string;
+  redirect_uris?: string[];
+  signout_uris?: string[];
+};
+
+type SocialProviderResponse = SocialProvider & {
+  client_id?: string;
+};
 
 export interface ApiError {
   error: string;
@@ -169,11 +182,11 @@ class ApiClient {
 
   // UserPools
   async listUserPools() {
-    return this.request('/user-pools');
+    return this.request<UserPool[]>('/user-pools');
   }
 
-  async getUserPool(poolId: string) {
-    return this.request(`/user-pools/${poolId}`);
+  async getUserPool(poolId: string): Promise<UserPool> {
+    return this.request<UserPool>(`/user-pools/${poolId}`);
   }
 
   async createUserPool(data: { name: string }) {
@@ -198,11 +211,11 @@ class ApiClient {
 
   // AppClients
   async listAppClients(poolId: string) {
-    return this.request(`/user-pools/${poolId}/app-clients`);
+    return this.request<AppClient[]>(`/user-pools/${poolId}/app-clients`);
   }
 
-  async getAppClient(poolId: string, clientId: string) {
-    return this.request(`/user-pools/${poolId}/app-clients/${clientId}`);
+  async getAppClient(poolId: string, clientId: string): Promise<AppClientResponse> {
+    return this.request<AppClientResponse>(`/user-pools/${poolId}/app-clients/${clientId}`);
   }
 
   async createAppClient(poolId: string, data: {
@@ -242,8 +255,8 @@ class ApiClient {
   }
 
   // Providers
-  async listProviders(poolId: string, clientId: string) {
-    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers`);
+  async listProviders(poolId: string, clientId: string): Promise<SocialProviderResponse[]> {
+    return this.request<SocialProviderResponse[]>(`/user-pools/${poolId}/app-clients/${clientId}/providers`);
   }
 
   async addProvider(poolId: string, clientId: string, data: {

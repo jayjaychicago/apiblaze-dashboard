@@ -30,8 +30,8 @@ interface ProjectConfigDialogProps {
 export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConfigDialogProps) {
   const [loading, setLoading] = useState(false);
   const [userPool, setUserPool] = useState<UserPool | null>(null);
-  const [appClient, setAppClient] = useState<AppClient | null>(null);
-  const [providers, setProviders] = useState<SocialProvider[]>([]);
+  const [appClient, setAppClient] = useState<AppClientResponse | null>(null);
+  const [providers, setProviders] = useState<SocialProviderResponse[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
