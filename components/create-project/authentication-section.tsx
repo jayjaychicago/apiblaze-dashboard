@@ -15,6 +15,13 @@ import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
 import { api } from '@/lib/api';
 import type { AppClient, UserPool } from '@/types/user-pool';
 
+// API response may have snake_case fields from the database
+type AppClientResponse = AppClient & {
+  client_id?: string;
+  redirect_uris?: string[];
+  signout_uris?: string[];
+};
+
 interface AuthenticationSectionProps {
   config: ProjectConfig;
   updateConfig: (updates: Partial<ProjectConfig>) => void;
@@ -87,7 +94,7 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
   const [selectedAppClient, setSelectedAppClient] = useState<AppClient & { userPoolId: string } | null>(null);
   const [existingUserPools, setExistingUserPools] = useState<UserPool[]>([]);
   const [loadingUserPools, setLoadingUserPools] = useState(false);
-  const [appClientDetails, setAppClientDetails] = useState<AppClient | null>(null);
+  const [appClientDetails, setAppClientDetails] = useState<AppClientResponse | null>(null);
   const [loadingAppClient, setLoadingAppClient] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -358,13 +365,13 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                                 <Label className="text-xs font-medium">Client ID</Label>
                                 <div className="flex items-center gap-2 mt-1">
                                   <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
-                                    {(appClientDetails as any).client_id || appClientDetails.clientId}
+                                    {appClientDetails.client_id || appClientDetails.clientId}
                                   </code>
                                   <Button
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => copyToClipboard((appClientDetails as any).client_id || appClientDetails.clientId, 'clientId')}
+                                    onClick={() => copyToClipboard(appClientDetails.client_id || appClientDetails.clientId, 'clientId')}
                                     className="h-8 w-8 p-0"
                                   >
                                     {copiedField === 'clientId' ? (
@@ -413,11 +420,11 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
                                   </div>
                                 </div>
                               )}
-                              {((appClientDetails as any).redirectUris || (appClientDetails as any).redirect_uris || []).length > 0 && (
+                              {(appClientDetails.redirectUris || appClientDetails.redirect_uris || []).length > 0 && (
                                 <div>
                                   <Label className="text-xs font-medium">Redirect URIs</Label>
                                   <div className="space-y-1 mt-1">
-                                    {((appClientDetails as any).redirectUris || (appClientDetails as any).redirect_uris || []).map((uri: string, idx: number) => (
+                                    {(appClientDetails.redirectUris || appClientDetails.redirect_uris || []).map((uri: string, idx: number) => (
                                       <code key={idx} className="block text-xs bg-white px-2 py-1 rounded border font-mono">
                                         {uri}
                                       </code>
