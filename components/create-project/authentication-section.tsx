@@ -14,7 +14,6 @@ import { useState, useEffect } from 'react';
 import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
 import { api } from '@/lib/api';
 import type { AppClient, UserPool } from '@/types/user-pool';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AuthenticationSectionProps {
   config: ProjectConfig;
