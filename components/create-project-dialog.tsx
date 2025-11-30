@@ -247,8 +247,15 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
     switch (config.sourceType) {
       case 'github':
-        // GitHub requires user, repo, and path
-        return !!(config.githubUser && config.githubRepo && config.githubPath);
+        // GitHub requires user and repo (path is optional for existing projects)
+        // For new projects, path is required. For existing projects, we allow deployment without path
+        if (project) {
+          // Editing existing project - only require user and repo
+          return !!(config.githubUser && config.githubRepo);
+        } else {
+          // New project - require user, repo, and path
+          return !!(config.githubUser && config.githubRepo && config.githubPath);
+        }
       case 'targetUrl':
         // Target URL requires a URL
         return !!config.targetUrl;
@@ -266,8 +273,16 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     // Check if source is configured first
     switch (config.sourceType) {
       case 'github':
-        if (!config.githubUser || !config.githubRepo || !config.githubPath) {
-          return 'github-source';
+        // For existing projects, only require user and repo
+        if (project) {
+          if (!config.githubUser || !config.githubRepo) {
+            return 'github-source';
+          }
+        } else {
+          // For new projects, require path too
+          if (!config.githubUser || !config.githubRepo || !config.githubPath) {
+            return 'github-source';
+          }
         }
         break;
       case 'targetUrl':
@@ -310,11 +325,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       }
 
       // Prepare GitHub source data if applicable
-      const githubSource = config.sourceType === 'github' && config.githubUser && config.githubRepo && config.githubPath
+      // For existing projects, path might not be available, but we still need to send the source
+      const githubSource = config.sourceType === 'github' && config.githubUser && config.githubRepo
         ? {
             owner: config.githubUser,
             repo: config.githubRepo,
-            path: config.githubPath,
+            ...(config.githubPath ? { path: config.githubPath } : {}),
             branch: config.githubBranch || 'main',
           }
         : undefined;
@@ -497,7 +513,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         hasOauthConfig: !!oauthConfig,
       });
       
-      const projectData = {
+      const projectData: Record<string, unknown> = {
         name: config.projectName,
         display_name: config.projectName,
         subdomain: config.projectName.toLowerCase().replace(/[^a-z0-9]/g, ''),
@@ -511,6 +527,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         environments: Object.keys(environments).length > 0 ? environments : undefined,
       };
 
+      // If editing an existing project, include the project_id so backend can update it
+      if (project) {
+        projectData.project_id = project.project_id;
+        projectData.api_version = project.api_version;
+        console.log('[CreateProject] Updating existing project:', project.project_id);
+      }
+
       console.log('[CreateProject] Deploying project with data:', projectData);
       const response = await api.createProject(projectData);
       
@@ -518,8 +541,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
       // Success!
       toast({
-        title: 'Project Created! 🎉',
-        description: `${config.projectName} has been successfully deployed.`,
+        title: project ? 'Project Updated! 🎉' : 'Project Created! 🎉',
+        description: `${config.projectName} has been successfully ${project ? 'updated' : 'deployed'}.`,
       });
       
       onOpenChange(false);
@@ -638,7 +661,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           <div className="flex-1">
             {!isSourceConfigured() ? (
               <p className="text-sm text-orange-600">
-                {validationError === 'github-source' && 'Select a GitHub repository to continue'}
+                {validationError === 'github-source' && (project ? 'Select a GitHub repository to continue' : 'Select a GitHub repository and spec file to continue')}
                 {validationError === 'target-url' && 'Enter a target URL to continue'}
                 {validationError === 'upload-file' && 'Upload an OpenAPI spec to continue'}
                 {validationError === 'project-name' && 'Enter a project name to continue'}
