@@ -234,13 +234,14 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   useEffect(() => {
     if (open) {
       // If in edit mode and project config is missing, try to fetch it
-      if (project && !project.config) {
+      if (project && (!project.config || Object.keys(project.config).length === 0)) {
         // Try to fetch full project details
         api.getProject(project.project_id)
           .then((fullProject) => {
-            if (fullProject.config) {
+            const projectWithConfig = fullProject as Project;
+            if (projectWithConfig.config && Object.keys(projectWithConfig.config).length > 0) {
               // Update config with full project data
-              const updatedProject = { ...project, config: fullProject.config };
+              const updatedProject: Project = { ...project, config: projectWithConfig.config };
               setConfig(getInitialConfig(updatedProject));
             } else {
               setConfig(getInitialConfig());
