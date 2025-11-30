@@ -105,14 +105,15 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
     }
   }, [config.enableSocialAuth]);
 
-  // Load AppClient details when UserPool is configured
+  // Load AppClient details when UserPool is configured (either from selection or from existing config)
   useEffect(() => {
-    if (config.useUserPool && config.userPoolId && config.appClientId) {
+    // Load details if we have userPoolId and appClientId (either from selection or from existing config)
+    if (config.userPoolId && config.appClientId) {
       loadAppClientDetails();
     } else {
       setAppClientDetails(null);
     }
-  }, [config.useUserPool, config.userPoolId, config.appClientId]);
+  }, [config.userPoolId, config.appClientId]);
 
   const loadUserPools = async () => {
     setLoadingUserPools(true);

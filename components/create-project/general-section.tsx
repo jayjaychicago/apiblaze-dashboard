@@ -16,9 +16,10 @@ interface GeneralSectionProps {
   config: ProjectConfig;
   updateConfig: (updates: Partial<ProjectConfig>) => void;
   validationError?: 'project-name' | 'github-source' | 'target-url' | 'upload-file' | null;
+  isEditMode?: boolean;
 }
 
-export function GeneralSection({ config, updateConfig, validationError }: GeneralSectionProps) {
+export function GeneralSection({ config, updateConfig, validationError, isEditMode = false }: GeneralSectionProps) {
   const [checkingName, setCheckingName] = useState(false);
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
   const [repoSelectorOpen, setRepoSelectorOpen] = useState(false);
@@ -197,6 +198,7 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
               value={config.projectName}
               onChange={(e) => updateConfig({ projectName: e.target.value })}
               onBlur={handleProjectNameBlur}
+              disabled={isEditMode}
               className={`pr-10 ${validationError === 'project-name' ? 'border-red-500 ring-2 ring-red-500 ring-offset-2' : ''}`}
             />
             {checkingName && (
@@ -215,6 +217,7 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
             placeholder="1.0.0"
             value={config.apiVersion}
             onChange={(e) => updateConfig({ apiVersion: e.target.value })}
+            disabled={isEditMode}
             className="w-32"
           />
         </div>

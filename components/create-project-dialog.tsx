@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Rocket } from 'lucide-react';
+import { Loader2, Rocket, Trash2 } from 'lucide-react';
 import { GeneralSection } from './create-project/general-section';
 import { AuthenticationSection } from './create-project/authentication-section';
 import { TargetServersSection } from './create-project/target-servers-section';
@@ -23,6 +23,7 @@ import { DomainsSection } from './create-project/domains-section';
 import { ProjectConfig } from './create-project/types';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { deleteProject } from '@/lib/api/projects';
 import type { Project } from '@/types/project';
 
 type ProjectCreationSuggestions = string[];
@@ -95,6 +96,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const [isDeploying, setIsDeploying] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Initialize config from project if in edit mode
   const getInitialConfig = (projectToUse?: Project | null): ProjectConfig => {
@@ -181,14 +184,19 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       uploadedFile: null,
       
       // Authentication - extract from config
+      // Check for social auth: either auth_type is 'oauth' OR user_pool_id exists (which indicates social auth was enabled)
+      const hasUserPool = !!(projectConfig?.user_pool_id as string);
+      const authType = (projectConfig?.auth_type as string) || 'none';
+      const hasSocialAuth = authType === 'oauth' || hasUserPool;
+      
       userGroupName: '',
-      enableApiKey: (projectConfig?.auth_type as string) !== 'none',
-      enableSocialAuth: (projectConfig?.auth_type as string) === 'oauth' || !!(projectConfig?.user_pool_id as string),
-      useUserPool: !!(projectConfig?.user_pool_id as string),
+      enableApiKey: authType !== 'none' && authType !== 'oauth',
+      enableSocialAuth: hasSocialAuth,
+      useUserPool: hasUserPool,
       userPoolId: projectConfig?.user_pool_id as string | undefined,
       appClientId: projectConfig?.app_client_id as string | undefined,
       bringOwnProvider: !!(projectConfig?.oauth_config as Record<string, unknown>),
-      socialProvider: 'github',
+      socialProvider: (projectConfig?.oauth_config as Record<string, unknown>)?.provider_type as string || 'github',
       identityProviderDomain: (projectConfig?.oauth_config as Record<string, unknown>)?.domain as string || '',
       identityProviderClientId: (projectConfig?.oauth_config as Record<string, unknown>)?.client_id as string || '',
       identityProviderClientSecret: '',
@@ -603,8 +611,36 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
   };
 
+  const handleDelete = async () => {
+    if (!project) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteProject(project.project_id, project.api_version);
+      
+      toast({
+        title: 'Project Deleted',
+        description: `${project.display_name} has been successfully deleted.`,
+      });
+      
+      setShowDeleteConfirm(false);
+      onOpenChange(false);
+      onSuccess?.();
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      toast({
+        title: 'Delete Failed',
+        description: error instanceof Error ? error.message : 'Failed to delete project. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl">
@@ -630,7 +666,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
           <div className="flex-1 overflow-y-auto mt-4">
             <TabsContent value="general" className="mt-0">
-              <GeneralSection config={config} updateConfig={updateConfig} validationError={validationError} />
+              <GeneralSection config={config} updateConfig={updateConfig} validationError={validationError} isEditMode={!!project} />
             </TabsContent>
 
             <TabsContent value="auth" className="mt-0">
@@ -676,12 +712,22 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             )}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeploying}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeploying || isDeleting}>
               Cancel
             </Button>
+            {project && (
+              <Button 
+                onClick={() => setShowDeleteConfirm(true)} 
+                disabled={isDeploying || isDeleting}
+                variant="destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            )}
             <Button 
               onClick={handleDeploy} 
-              disabled={isDeploying || !isSourceConfigured()}
+              disabled={isDeploying || isDeleting || !isSourceConfigured()}
               variant={project ? 'destructive' : 'default'}
               className={!isSourceConfigured() ? 'opacity-50 cursor-not-allowed' : ''}
             >
@@ -701,6 +747,37 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Delete Confirmation Dialog */}
+    <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Project?</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete <strong>{project?.display_name}</strong>? This action cannot be undone and will permanently remove the project and all its data.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Project
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
 
