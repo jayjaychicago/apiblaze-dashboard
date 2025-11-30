@@ -172,9 +172,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
     
     // Check for social auth: either auth_type is 'oauth' OR user_pool_id exists (which indicates social auth was enabled)
-    // Also check if config exists at all - if not, we might need to look elsewhere
-    const hasUserPool = !!(projectConfig?.user_pool_id as string);
-    const hasAppClient = !!(projectConfig?.app_client_id as string);
+    // Extract user pool and app client IDs from config
+    const userPoolId = projectConfig?.user_pool_id as string | undefined;
+    const appClientId = projectConfig?.app_client_id as string | undefined;
+    
+    const hasUserPool = !!userPoolId;
+    const hasAppClient = !!appClientId;
     const authType = (projectConfig?.auth_type as string) || 'none';
     // Social auth is enabled if: auth_type is 'oauth', OR user_pool_id exists, OR app_client_id exists
     const hasSocialAuth = authType === 'oauth' || hasUserPool || hasAppClient;
@@ -182,13 +185,15 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     console.log('[getInitialConfig] Auth detection:', {
       hasConfig: !!projectConfig,
       configKeys: projectConfig ? Object.keys(projectConfig) : [],
+      projectKeys: Object.keys(projectData),
       authType,
       hasUserPool,
       hasAppClient,
-      userPoolId: projectConfig?.user_pool_id,
-      appClientId: projectConfig?.app_client_id,
+      userPoolId,
+      appClientId,
       hasSocialAuth,
       fullConfig: projectConfig,
+      fullProject: projectData,
     });
     
     return {
@@ -208,8 +213,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       enableApiKey: authType !== 'none' && authType !== 'oauth',
       enableSocialAuth: hasSocialAuth,
       useUserPool: hasUserPool,
-      userPoolId: projectConfig?.user_pool_id as string | undefined,
-      appClientId: projectConfig?.app_client_id as string | undefined,
+      userPoolId: userPoolId,
+      appClientId: appClientId,
       bringOwnProvider: !!(projectConfig?.oauth_config as Record<string, unknown>),
       socialProvider: ((projectConfig?.oauth_config as Record<string, unknown>)?.provider_type as string || 'github') as 'github' | 'google' | 'microsoft' | 'facebook' | 'auth0' | 'other',
       identityProviderDomain: (projectConfig?.oauth_config as Record<string, unknown>)?.domain as string || '',
@@ -244,6 +249,10 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   };
 
   const [config, setConfig] = useState<ProjectConfig>(getInitialConfig());
+  const [fullProject, setFullProject] = useState<Project | null>(project || null);
+
+  // Use fullProject if available, otherwise fall back to project prop
+  const currentProject = fullProject || project;
 
   // When dialog opens with openToGitHub flag, ensure we're on General tab and GitHub source
   useEffect(() => {
@@ -253,9 +262,28 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
   }, [open, openToGitHub]);
 
-  // Reset config when project changes or dialog opens/closes
+  // Fetch full project details if config is missing when opening in edit mode
   useEffect(() => {
-    if (open) {
+    if (open && project && (!project.config || Object.keys(project.config).length === 0)) {
+      // Fetch full project details to get the config
+      api.getProject(project.project_id)
+        .then((fullProjectData) => {
+          setFullProject(fullProjectData);
+          setConfig(getInitialConfig(fullProjectData));
+        })
+        .catch((error) => {
+          console.error('Error fetching full project details:', error);
+          // Fallback to using the project as-is
+          setFullProject(project);
+          setConfig(getInitialConfig(project));
+        });
+    } else if (open && project) {
+      // Project already has config, use it directly
+      setFullProject(project);
+      setConfig(getInitialConfig(project));
+    } else if (open) {
+      // No project, reset to empty config
+      setFullProject(null);
       setConfig(getInitialConfig());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -273,7 +301,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       case 'github':
         // GitHub requires user and repo (path is optional for existing projects)
         // For new projects, path is required. For existing projects, we allow deployment without path
-        if (project) {
+        if (currentProject) {
           // Editing existing project - only require user and repo
           return !!(config.githubUser && config.githubRepo);
         } else {
@@ -298,7 +326,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     switch (config.sourceType) {
       case 'github':
         // For existing projects, only require user and repo
-        if (project) {
+        if (currentProject) {
           if (!config.githubUser || !config.githubRepo) {
             return 'github-source';
           }
@@ -549,14 +577,14 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         app_client_id: appClientId,
         environments: Object.keys(environments).length > 0 ? environments : undefined,
         // Include project_id and api_version for updates
-        ...(project ? {
-          project_id: project.project_id,
-          api_version: project.api_version,
+        ...(currentProject ? {
+          project_id: currentProject.project_id,
+          api_version: currentProject.api_version,
         } : {}),
       };
 
-      if (project) {
-        console.log('[CreateProject] Updating existing project:', project.project_id);
+      if (currentProject) {
+        console.log('[CreateProject] Updating existing project:', currentProject.project_id);
       }
 
       console.log('[CreateProject] Deploying project with data:', projectData);
@@ -566,8 +594,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
       // Success!
       toast({
-        title: project ? 'Project Updated! 🎉' : 'Project Created! 🎉',
-        description: `${config.projectName} has been successfully ${project ? 'updated' : 'deployed'}.`,
+        title: currentProject ? 'Project Updated! 🎉' : 'Project Created! 🎉',
+        description: `${config.projectName} has been successfully ${currentProject ? 'updated' : 'deployed'}.`,
       });
       
       onOpenChange(false);
@@ -627,15 +655,16 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   };
 
   const handleDelete = async () => {
-    if (!project) return;
+    const currentProject = fullProject || project;
+    if (!currentProject) return;
     
     setIsDeleting(true);
     try {
-      await deleteProject(project.project_id, project.api_version);
+      await deleteProject(currentProject.project_id, currentProject.api_version);
       
       toast({
         title: 'Project Deleted',
-        description: `${project.display_name} has been successfully deleted.`,
+        description: `${currentProject.display_name} has been successfully deleted.`,
       });
       
       setShowDeleteConfirm(false);
@@ -659,10 +688,10 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl">
-            {project ? 'Edit API Project' : 'Create New API Project'}
+            {currentProject ? 'Edit API Project' : 'Create New API Project'}
           </DialogTitle>
           <DialogDescription>
-            {project 
+            {currentProject 
               ? 'Update your API proxy configuration. Changes will be applied on the next deployment.'
               : 'Configure your API proxy with sensible defaults. Deploy instantly or customize settings across all sections.'}
           </DialogDescription>
@@ -681,7 +710,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
           <div className="flex-1 overflow-y-auto mt-4">
             <TabsContent value="general" className="mt-0">
-              <GeneralSection config={config} updateConfig={updateConfig} validationError={validationError} isEditMode={!!project} />
+              <GeneralSection config={config} updateConfig={updateConfig} validationError={validationError} isEditMode={!!currentProject} />
             </TabsContent>
 
             <TabsContent value="auth" className="mt-0">
@@ -714,7 +743,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           <div className="flex-1">
             {!isSourceConfigured() ? (
               <p className="text-sm text-orange-600">
-                {validationError === 'github-source' && (project ? 'Select a GitHub repository to continue' : 'Select a GitHub repository and spec file to continue')}
+                {validationError === 'github-source' && (currentProject ? 'Select a GitHub repository to continue' : 'Select a GitHub repository and spec file to continue')}
                 {validationError === 'target-url' && 'Enter a target URL to continue'}
                 {validationError === 'upload-file' && 'Upload an OpenAPI spec to continue'}
                 {validationError === 'project-name' && 'Enter a project name to continue'}
@@ -722,7 +751,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">
-                {project ? 'Ready to redeploy! Customize other sections or redeploy now.' : 'Ready to deploy! Customize other sections or deploy now.'}
+                {currentProject ? 'Ready to redeploy! Customize other sections or redeploy now.' : 'Ready to deploy! Customize other sections or deploy now.'}
               </p>
             )}
           </div>
@@ -730,7 +759,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeploying || isDeleting}>
               Cancel
             </Button>
-            {project && (
+            {currentProject && (
               <Button 
                 onClick={() => setShowDeleteConfirm(true)} 
                 disabled={isDeploying || isDeleting}
@@ -749,12 +778,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               {isDeploying ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {project ? 'Redeploying...' : 'Deploying...'}
+                  {currentProject ? 'Redeploying...' : 'Deploying...'}
                 </>
               ) : (
                 <>
                   <Rocket className="mr-2 h-4 w-4" />
-                  {project ? 'Redeploy API' : 'Deploy API'}
+                  {currentProject ? 'Redeploy API' : 'Deploy API'}
                 </>
               )}
             </Button>
@@ -769,7 +798,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         <DialogHeader>
           <DialogTitle>Delete Project?</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete <strong>{project?.display_name}</strong>? This action cannot be undone and will permanently remove the project and all its data.
+            Are you sure you want to delete <strong>{currentProject?.display_name}</strong>? This action cannot be undone and will permanently remove the project and all its data.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
