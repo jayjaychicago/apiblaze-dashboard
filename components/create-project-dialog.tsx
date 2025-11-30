@@ -172,9 +172,24 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
     
     // Check for social auth: either auth_type is 'oauth' OR user_pool_id exists (which indicates social auth was enabled)
+    // Also check if config exists at all - if not, we might need to look elsewhere
     const hasUserPool = !!(projectConfig?.user_pool_id as string);
+    const hasAppClient = !!(projectConfig?.app_client_id as string);
     const authType = (projectConfig?.auth_type as string) || 'none';
-    const hasSocialAuth = authType === 'oauth' || hasUserPool;
+    // Social auth is enabled if: auth_type is 'oauth', OR user_pool_id exists, OR app_client_id exists
+    const hasSocialAuth = authType === 'oauth' || hasUserPool || hasAppClient;
+    
+    console.log('[getInitialConfig] Auth detection:', {
+      hasConfig: !!projectConfig,
+      configKeys: projectConfig ? Object.keys(projectConfig) : [],
+      authType,
+      hasUserPool,
+      hasAppClient,
+      userPoolId: projectConfig?.user_pool_id,
+      appClientId: projectConfig?.app_client_id,
+      hasSocialAuth,
+      fullConfig: projectConfig,
+    });
     
     return {
       // General
@@ -189,7 +204,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       uploadedFile: null,
       
       // Authentication - extract from config
-      // Check for social auth: either auth_type is 'oauth' OR user_pool_id exists (which indicates social auth was enabled)
       userGroupName: '',
       enableApiKey: authType !== 'none' && authType !== 'oauth',
       enableSocialAuth: hasSocialAuth,
@@ -244,6 +258,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     if (open) {
       setConfig(getInitialConfig());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, project]);
 
   const updateConfig = (updates: Partial<ProjectConfig>) => {
@@ -420,7 +435,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               scopes: config.authorizedScopes,
             });
             const createdAppClientId = (appClient as { id: string }).id;
-            const createdAppClientClientId = (appClient as { clientId: string }).clientId;
 
             // 3. Add Provider to AppClient
             await api.addProvider(createdUserPoolId, createdAppClientId, {
@@ -729,7 +743,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             <Button 
               onClick={handleDeploy} 
               disabled={isDeploying || isDeleting || !isSourceConfigured()}
-              variant={project ? 'destructive' : 'default'}
+              variant="default"
               className={!isSourceConfigured() ? 'opacity-50 cursor-not-allowed' : ''}
             >
               {isDeploying ? (
