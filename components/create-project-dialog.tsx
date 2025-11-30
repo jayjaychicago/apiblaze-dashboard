@@ -171,7 +171,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       }
     }
     
-    // Check for social auth: either auth_type is 'oauth' OR user_pool_id exists (which indicates social auth was enabled)
+    // Check for social auth: multiple possible formats
+    // 1. auth_type === 'oauth' (old format)
+    // 2. auth_config.type === 'oauth' (new format)
+    // 3. user_pool_id exists (UserPool format)
+    // 4. app_client_id exists (UserPool format)
+    
     // Extract user pool and app client IDs from config
     const userPoolId = projectConfig?.user_pool_id as string | undefined;
     const appClientId = projectConfig?.app_client_id as string | undefined;
@@ -179,22 +184,70 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     const hasUserPool = !!userPoolId;
     const hasAppClient = !!appClientId;
     const authType = (projectConfig?.auth_type as string) || 'none';
-    // Social auth is enabled if: auth_type is 'oauth', OR user_pool_id exists, OR app_client_id exists
-    const hasSocialAuth = authType === 'oauth' || hasUserPool || hasAppClient;
+    const authConfig = projectConfig?.auth_config as Record<string, unknown> | undefined;
+    const authConfigType = authConfig?.type as string | undefined;
+    
+    // Social auth is enabled if any of these conditions are true:
+    // - auth_type is 'oauth' (old format)
+    // - auth_config.type is 'oauth' (new format)
+    // - user_pool_id exists (UserPool format)
+    // - app_client_id exists (UserPool format)
+    const hasSocialAuth = authType === 'oauth' || authConfigType === 'oauth' || hasUserPool || hasAppClient;
     
     console.log('[getInitialConfig] Auth detection:', {
       hasConfig: !!projectConfig,
       configKeys: projectConfig ? Object.keys(projectConfig) : [],
       projectKeys: Object.keys(projectData),
       authType,
+      authConfigType,
       hasUserPool,
       hasAppClient,
       userPoolId,
       appClientId,
       hasSocialAuth,
+      authConfig: projectConfig?.auth_config,
+      oauthConfig: projectConfig?.oauth_config,
       fullConfig: projectConfig,
       fullProject: projectData,
     });
+    
+    // Handle both old format (oauth_config) and new format (auth_config)
+    const oauthConfig = projectConfig?.oauth_config as Record<string, unknown> | undefined;
+    const authConfigForOAuth = projectConfig?.auth_config as Record<string, unknown> | undefined;
+    
+    // Determine if user brought their own provider (either format)
+    const hasOAuthConfig = !!(oauthConfig || (authConfigForOAuth && authConfigForOAuth.type === 'oauth'));
+    
+    // Extract provider info from either format
+    const providerType = oauthConfig?.provider_type as string 
+      || authConfigForOAuth?.provider as string 
+      || 'github';
+    
+    const providerClientId = oauthConfig?.client_id as string 
+      || authConfigForOAuth?.client_id as string 
+      || '';
+    
+    const providerDomain = oauthConfig?.domain as string 
+      || authConfigForOAuth?.domain as string 
+      || '';
+    
+    // Extract scopes - handle both string (space-separated) and array formats
+    let scopes: string[] = ['email', 'openid', 'profile'];
+    if (oauthConfig?.scopes) {
+      const oauthScopes = oauthConfig.scopes;
+      scopes = typeof oauthScopes === 'string' 
+        ? oauthScopes.split(' ') 
+        : Array.isArray(oauthScopes) 
+          ? oauthScopes as string[]
+          : ['email', 'openid', 'profile'];
+    } else if (authConfigForOAuth?.scopes) {
+      const authScopes = authConfigForOAuth.scopes;
+      scopes = typeof authScopes === 'string'
+        ? authScopes.split(' ')
+        : Array.isArray(authScopes)
+          ? authScopes as string[]
+          : ['email', 'openid', 'profile'];
+    }
     
     return {
       // General
@@ -210,17 +263,17 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       
       // Authentication - extract from config
       userGroupName: '',
-      enableApiKey: authType !== 'none' && authType !== 'oauth',
+      enableApiKey: authType !== 'oauth' && authConfigType !== 'oauth' && !hasSocialAuth,
       enableSocialAuth: hasSocialAuth,
       useUserPool: hasUserPool,
       userPoolId: userPoolId,
       appClientId: appClientId,
-      bringOwnProvider: !!(projectConfig?.oauth_config as Record<string, unknown>),
-      socialProvider: ((projectConfig?.oauth_config as Record<string, unknown>)?.provider_type as string || 'github') as 'github' | 'google' | 'microsoft' | 'facebook' | 'auth0' | 'other',
-      identityProviderDomain: (projectConfig?.oauth_config as Record<string, unknown>)?.domain as string || '',
-      identityProviderClientId: (projectConfig?.oauth_config as Record<string, unknown>)?.client_id as string || '',
+      bringOwnProvider: hasOAuthConfig,
+      socialProvider: providerType as 'github' | 'google' | 'microsoft' | 'facebook' | 'auth0' | 'other',
+      identityProviderDomain: providerDomain,
+      identityProviderClientId: providerClientId,
       identityProviderClientSecret: '',
-      authorizedScopes: ((projectConfig?.oauth_config as Record<string, unknown>)?.scopes as string)?.split(' ') || ['email', 'openid', 'profile'],
+      authorizedScopes: scopes,
       
       // Target Servers
       targetServers: [
