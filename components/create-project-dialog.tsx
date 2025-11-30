@@ -171,6 +171,11 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       }
     }
     
+    // Check for social auth: either auth_type is 'oauth' OR user_pool_id exists (which indicates social auth was enabled)
+    const hasUserPool = !!(projectConfig?.user_pool_id as string);
+    const authType = (projectConfig?.auth_type as string) || 'none';
+    const hasSocialAuth = authType === 'oauth' || hasUserPool;
+    
     return {
       // General
       projectName: projectData.display_name || '',
@@ -185,10 +190,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       
       // Authentication - extract from config
       // Check for social auth: either auth_type is 'oauth' OR user_pool_id exists (which indicates social auth was enabled)
-      const hasUserPool = !!(projectConfig?.user_pool_id as string);
-      const authType = (projectConfig?.auth_type as string) || 'none';
-      const hasSocialAuth = authType === 'oauth' || hasUserPool;
-      
       userGroupName: '',
       enableApiKey: authType !== 'none' && authType !== 'oauth',
       enableSocialAuth: hasSocialAuth,
