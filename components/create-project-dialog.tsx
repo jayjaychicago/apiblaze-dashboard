@@ -671,7 +671,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Ready to deploy! Customize other sections or deploy now.
+                {project ? 'Ready to redeploy! Customize other sections or redeploy now.' : 'Ready to deploy! Customize other sections or deploy now.'}
               </p>
             )}
           </div>
@@ -682,17 +682,18 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             <Button 
               onClick={handleDeploy} 
               disabled={isDeploying || !isSourceConfigured()}
+              variant={project ? 'destructive' : 'default'}
               className={!isSourceConfigured() ? 'opacity-50 cursor-not-allowed' : ''}
             >
               {isDeploying ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deploying...
+                  {project ? 'Redeploying...' : 'Deploying...'}
                 </>
               ) : (
                 <>
                   <Rocket className="mr-2 h-4 w-4" />
-                  Deploy API
+                  {project ? 'Redeploy API' : 'Deploy API'}
                 </>
               )}
             </Button>
