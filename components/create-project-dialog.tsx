@@ -268,8 +268,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       // Fetch full project details to get the config
       api.getProject(project.project_id)
         .then((fullProjectData) => {
-          setFullProject(fullProjectData);
-          setConfig(getInitialConfig(fullProjectData));
+          setFullProject(fullProjectData as unknown as Project);
+          setConfig(getInitialConfig(fullProjectData as unknown as Project));
         })
         .catch((error) => {
           console.error('Error fetching full project details:', error);
