@@ -331,7 +331,7 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
             )}
 
             {/* GitHub Spec Selected Summary */}
-            {config.githubUser && config.githubRepo && config.githubPath ? (
+            {config.githubUser && config.githubRepo ? (
               <Card className="border-green-200 bg-green-50/50">
                 <CardContent className="pt-4">
                   <div className="flex items-start justify-between gap-2">
@@ -339,11 +339,12 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
                       <div className="flex items-center gap-2 mb-1">
                         <Check className="h-4 w-4 text-green-600" />
                         <span className="text-sm font-medium text-green-900">
-                          OpenAPI Spec Selected
+                          {config.githubPath ? 'OpenAPI Spec Selected' : 'GitHub Repository Selected'}
                         </span>
                       </div>
                       <p className="text-xs text-green-700 font-mono">
-                        {config.githubUser}/{config.githubRepo}/{config.githubPath}
+                        {config.githubUser}/{config.githubRepo}
+                        {config.githubPath && `/${config.githubPath}`}
                       </p>
                       <p className="text-xs text-green-700 mt-1">
                         Branch: {config.githubBranch}
@@ -369,7 +370,7 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
                         size="sm"
                         onClick={handleBrowseGitHub}
                       >
-                        Change
+                        {config.githubPath ? 'Change' : 'Select Spec File'}
                       </Button>
                     </div>
                   </div>

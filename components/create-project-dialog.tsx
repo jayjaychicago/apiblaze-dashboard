@@ -97,8 +97,9 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   const [isDeploying, setIsDeploying] = useState(false);
 
   // Initialize config from project if in edit mode
-  const getInitialConfig = (): ProjectConfig => {
-    if (!project) {
+  const getInitialConfig = (projectToUse?: Project | null): ProjectConfig => {
+    const projectData = projectToUse || project;
+    if (!projectData) {
       return {
         // General
         projectName: '',
@@ -152,17 +153,29 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
 
     // Populate from project
-    const projectConfig = project.config as Record<string, unknown> | undefined;
-    const specSource = project.spec_source;
+    const projectConfig = projectData.config as Record<string, unknown> | undefined;
+    const specSource = projectData.spec_source;
+    
+    // Try to extract GitHub path from config or spec_source
+    let githubPath = '';
+    if (specSource.type === 'github') {
+      // Check if path is in spec_source.github (if backend stores it there)
+      githubPath = (specSource.github as Record<string, unknown>)?.path as string || '';
+      // If not found, check in project config
+      if (!githubPath && projectConfig) {
+        const githubConfig = projectConfig.github as Record<string, unknown> | undefined;
+        githubPath = githubConfig?.path as string || '';
+      }
+    }
     
     return {
       // General
-      projectName: project.display_name || '',
-      apiVersion: project.api_version || '1.0.0',
+      projectName: projectData.display_name || '',
+      apiVersion: projectData.api_version || '1.0.0',
       sourceType: specSource.type === 'github' ? 'github' : specSource.type === 'upload' ? 'upload' : 'targetUrl',
       githubUser: specSource.github?.owner || '',
       githubRepo: specSource.github?.repo || '',
-      githubPath: '', // Not stored in project
+      githubPath: githubPath,
       githubBranch: specSource.github?.branch || 'main',
       targetUrl: (projectConfig?.target_url as string) || (projectConfig?.target as string) || '',
       uploadedFile: null,
@@ -220,7 +233,26 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   // Reset config when project changes or dialog opens/closes
   useEffect(() => {
     if (open) {
-      setConfig(getInitialConfig());
+      // If in edit mode and project config is missing, try to fetch it
+      if (project && !project.config) {
+        // Try to fetch full project details
+        api.getProject(project.project_id)
+          .then((fullProject) => {
+            if (fullProject.config) {
+              // Update config with full project data
+              const updatedProject = { ...project, config: fullProject.config };
+              setConfig(getInitialConfig(updatedProject));
+            } else {
+              setConfig(getInitialConfig());
+            }
+          })
+          .catch((error) => {
+            console.warn('Failed to fetch full project config:', error);
+            setConfig(getInitialConfig());
+          });
+      } else {
+        setConfig(getInitialConfig());
+      }
     }
   }, [open, project]);
 
