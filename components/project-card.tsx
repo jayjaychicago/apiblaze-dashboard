@@ -47,6 +47,7 @@ export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardPr
     if (hasSocialAuth && showCredentials && !appClientDetails && !loadingCredentials) {
       loadCredentials();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasSocialAuth, showCredentials]);
 
   const loadCredentials = async () => {

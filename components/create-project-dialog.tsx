@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { 
   Dialog, 
@@ -197,7 +197,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       userPoolId: projectConfig?.user_pool_id as string | undefined,
       appClientId: projectConfig?.app_client_id as string | undefined,
       bringOwnProvider: !!(projectConfig?.oauth_config as Record<string, unknown>),
-      socialProvider: (projectConfig?.oauth_config as Record<string, unknown>)?.provider_type as string || 'github',
+      socialProvider: ((projectConfig?.oauth_config as Record<string, unknown>)?.provider_type as string || 'github') as 'github' | 'google' | 'microsoft' | 'facebook' | 'auth0' | 'other',
       identityProviderDomain: (projectConfig?.oauth_config as Record<string, unknown>)?.domain as string || '',
       identityProviderClientId: (projectConfig?.oauth_config as Record<string, unknown>)?.client_id as string || '',
       identityProviderClientSecret: '',

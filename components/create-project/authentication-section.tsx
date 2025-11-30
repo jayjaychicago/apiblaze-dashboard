@@ -113,6 +113,7 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
     } else {
       setAppClientDetails(null);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.userPoolId, config.appClientId]);
 
   const loadUserPools = async () => {
