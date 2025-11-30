@@ -513,7 +513,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         hasOauthConfig: !!oauthConfig,
       });
       
-      const projectData: Record<string, unknown> = {
+      const projectData = {
         name: config.projectName,
         display_name: config.projectName,
         subdomain: config.projectName.toLowerCase().replace(/[^a-z0-9]/g, ''),
@@ -525,12 +525,14 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         user_pool_id: userPoolId,
         app_client_id: appClientId,
         environments: Object.keys(environments).length > 0 ? environments : undefined,
+        // Include project_id and api_version for updates
+        ...(project ? {
+          project_id: project.project_id,
+          api_version: project.api_version,
+        } : {}),
       };
 
-      // If editing an existing project, include the project_id so backend can update it
       if (project) {
-        projectData.project_id = project.project_id;
-        projectData.api_version = project.api_version;
         console.log('[CreateProject] Updating existing project:', project.project_id);
       }
 

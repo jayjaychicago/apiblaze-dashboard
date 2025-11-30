@@ -102,7 +102,7 @@ class ApiClient {
     github?: {
       owner: string;
       repo: string;
-      path: string;
+      path?: string; // Optional for existing projects
       branch?: string;
     };
     auth_type?: string;
@@ -115,6 +115,8 @@ class ApiClient {
     user_pool_id?: string;
     app_client_id?: string;
     environments?: Record<string, { target: string }>;
+    project_id?: string; // For updates
+    api_version?: string; // For updates
   }): Promise<Record<string, unknown>> {
     // Map frontend data to backend API format
     const backendData: Record<string, unknown> = {
