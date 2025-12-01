@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react';
 import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
 import { api } from '@/lib/api';
 import type { AppClient, UserPool } from '@/types/user-pool';
+import type { Project } from '@/types/project';
 
 // API response may have snake_case fields from the database
 type AppClientResponse = AppClient & {
@@ -25,6 +26,8 @@ type AppClientResponse = AppClient & {
 interface AuthenticationSectionProps {
   config: ProjectConfig;
   updateConfig: (updates: Partial<ProjectConfig>) => void;
+  isEditMode?: boolean;
+  project?: Project | null;
 }
 
 const PROVIDER_DOMAINS: Record<SocialProvider, string> = {
@@ -88,7 +91,7 @@ const PROVIDER_SETUP_GUIDES: Record<SocialProvider, string[]> = {
   other: ['Configure your custom OAuth provider'],
 };
 
-export function AuthenticationSection({ config, updateConfig }: AuthenticationSectionProps) {
+export function AuthenticationSection({ config, updateConfig, isEditMode = false, project }: AuthenticationSectionProps) {
   const [newScope, setNewScope] = useState('');
   const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
   const [selectedAppClient, setSelectedAppClient] = useState<AppClient & { userPoolId: string } | null>(null);
@@ -109,7 +112,7 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
   useEffect(() => {
     // Load details if we have userPoolId and appClientId (either from selection or from existing config)
     if (config.userPoolId && config.appClientId) {
-      loadAppClientDetails();
+      loadAppClientDetails(config.userPoolId, config.appClientId);
     } else {
       setAppClientDetails(null);
     }
@@ -129,12 +132,15 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
     }
   };
 
-  const loadAppClientDetails = async () => {
-    if (!config.userPoolId || !config.appClientId) return;
+  const loadAppClientDetails = async (userPoolId?: string, appClientId?: string) => {
+    const poolId = userPoolId || config.userPoolId;
+    const clientId = appClientId || config.appClientId;
+    
+    if (!poolId || !clientId) return;
     
     setLoadingAppClient(true);
     try {
-      const client = await api.getAppClient(config.userPoolId, config.appClientId);
+      const client = await api.getAppClient(poolId, clientId);
       setAppClientDetails(client);
     } catch (error) {
       console.error('Error loading app client details:', error);
@@ -263,6 +269,144 @@ export function AuthenticationSection({ config, updateConfig }: AuthenticationSe
             onCheckedChange={(checked) => updateConfig({ enableSocialAuth: checked })}
           />
         </div>
+
+        {/* APIBlaze OAuth Credentials - Show in edit mode when social auth is enabled and we have UserPool/AppClient */}
+        {isEditMode && config.enableSocialAuth && config.userPoolId && config.appClientId && (
+          <Card className="border-blue-200 bg-blue-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Key className="h-4 w-4" />
+                APIBlaze OAuth Credentials
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Use these credentials to configure your OAuth client. Users will authenticate with APIBlaze using these credentials.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loadingAppClient ? (
+                <div className="text-sm text-muted-foreground">Loading credentials...</div>
+              ) : (
+                <>
+                  {/* APIBlaze Client ID */}
+                  {appClientDetails && (
+                    <div>
+                      <Label className="text-xs font-medium">APIBlaze Client ID</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
+                          {appClientDetails.client_id || appClientDetails.clientId}
+                        </code>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(appClientDetails.client_id || appClientDetails.clientId, 'apiblazeClientId')}
+                          className="h-8 w-8 p-0"
+                        >
+                          {copiedField === 'apiblazeClientId' ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* APIBlaze Client Secret */}
+                  {appClientDetails?.clientSecret && (
+                    <div>
+                      <Label className="text-xs font-medium">APIBlaze Client Secret</Label>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        ⚠️ This secret is only shown once. Save it securely.
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
+                          {appClientDetails.clientSecret}
+                        </code>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(appClientDetails.clientSecret!, 'apiblazeClientSecret')}
+                          className="h-8 w-8 p-0"
+                        >
+                          {copiedField === 'apiblazeClientSecret' ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Token Signing Key URL (JWKS) */}
+                  {project?.urls?.auth && (
+                    <div>
+                      <Label className="text-xs font-medium">Token Signing Key URL (JWKS)</Label>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Use this URL to fetch the public keys for verifying APIBlaze tokens
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
+                          {project.urls.auth}/.well-known/jwks.json
+                        </code>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => copyToClipboard(`${project.urls.auth}/.well-known/jwks.json`, 'jwksUrl')}
+                          className="h-8 w-8 p-0"
+                        >
+                          {copiedField === 'jwksUrl' ? (
+                            <Check className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Redirect URIs */}
+                  {appClientDetails && (() => {
+                    const redirectUris = appClientDetails.redirectUris || appClientDetails.redirect_uris || [];
+                    return redirectUris.length > 0 && (
+                      <div>
+                        <Label className="text-xs font-medium">Authorized Redirect URIs</Label>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Configure these redirect URIs in your OAuth client
+                        </p>
+                        <div className="space-y-1 mt-1">
+                          {redirectUris.map((uri: string, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <code className="flex-1 text-xs bg-white px-2 py-1 rounded border font-mono break-all">
+                              {uri}
+                            </code>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyToClipboard(uri, `redirectUri-${idx}`)}
+                              className="h-8 w-8 p-0"
+                            >
+                              {copiedField === `redirectUri-${idx}` ? (
+                                <Check className="h-4 w-4 text-green-600" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    );
+                  })()}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* OAuth Provider Configuration */}
         {config.enableSocialAuth && (

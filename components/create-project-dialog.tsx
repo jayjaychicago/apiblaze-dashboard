@@ -767,7 +767,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             </TabsContent>
 
             <TabsContent value="auth" className="mt-0">
-              <AuthenticationSection config={config} updateConfig={updateConfig} />
+              <AuthenticationSection 
+                config={config} 
+                updateConfig={updateConfig}
+                isEditMode={!!currentProject}
+                project={currentProject}
+              />
             </TabsContent>
 
             <TabsContent value="targets" className="mt-0">
