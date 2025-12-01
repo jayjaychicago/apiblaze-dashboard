@@ -526,6 +526,27 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           userPoolId = config.userPoolId;
           appClientId = config.appClientId;
           oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
+          
+          // Fetch provider details from the existing UserPool to include in third_party_provider_config
+          try {
+            // TypeScript: We know these exist because hasExistingUserPool check passed
+            const poolId = config.userPoolId!;
+            const clientId = config.appClientId!;
+            const providers = await api.listProviders(poolId, clientId);
+            if (providers && providers.length > 0) {
+              const provider = providers[0]; // Use the first provider
+              thirdPartyProviderConfig = {
+                provider_type: provider.type,
+                client_id: provider.client_id || provider.clientId || '',
+                domain: provider.domain || undefined,
+                scopes: config.authorizedScopes, // Use scopes from config
+              };
+              console.log('[CreateProject] Fetched provider details from existing UserPool:', thirdPartyProviderConfig);
+            }
+          } catch (providerError) {
+            console.warn('[CreateProject] Failed to fetch provider details from existing UserPool:', providerError);
+            // Continue without third_party_provider_config - backend can fetch it if needed
+          }
         } else if (config.bringOwnProvider) {
           console.log('[CreateProject] Creating UserPool with user-provided OAuth provider');
           // Validate OAuth provider fields
@@ -581,6 +602,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               domain: config.identityProviderDomain || undefined,
               scopes: config.authorizedScopes,
             };
+            console.log('[CreateProject] Set thirdPartyProviderConfig for new UserPool:', thirdPartyProviderConfig);
           } catch (error) {
             console.error('Error creating UserPool automatically:', error);
             toast({
@@ -680,6 +702,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         appClientId,
         authType,
         hasOauthConfig: !!oauthConfig,
+        hasThirdPartyProviderConfig: !!thirdPartyProviderConfig,
+        thirdPartyProviderConfig,
         createdResources,
       });
       
@@ -694,7 +718,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         oauth_config: oauthConfig,
         user_pool_id: userPoolId,
         app_client_id: appClientId,
-        third_party_provider_config: thirdPartyProviderConfig,
+        ...(thirdPartyProviderConfig ? { third_party_provider_config: thirdPartyProviderConfig } : {}),
         environments: Object.keys(environments).length > 0 ? environments : undefined,
         // Include project_id and api_version for updates
         ...(currentProject ? {
