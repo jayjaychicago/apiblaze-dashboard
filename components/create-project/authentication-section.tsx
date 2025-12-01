@@ -242,7 +242,7 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
       identityProviderClientSecret: '',
       identityProviderDomain: '',
     });
-    setUserPoolModalOpen(false);
+    setUserPoolModalOpen(false); 
   };
 
   const handleClearUserPool = () => {
