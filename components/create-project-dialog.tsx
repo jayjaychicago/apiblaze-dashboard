@@ -177,9 +177,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     // 3. user_pool_id exists (UserPool format)
     // 4. app_client_id exists (UserPool format)
     
-    // Extract user pool and app client IDs from config
-    const userPoolId = projectConfig?.user_pool_id as string | undefined;
-    const appClientId = projectConfig?.app_client_id as string | undefined;
+    // Extract user pool and app client IDs from config or project root
+    // Check both config and project root level (some projects might store it at root level)
+    const userPoolId = (projectConfig?.user_pool_id as string | undefined) 
+      || ((projectData as unknown) as Record<string, unknown>)?.user_pool_id as string | undefined;
+    const appClientId = (projectConfig?.app_client_id as string | undefined)
+      || ((projectData as unknown) as Record<string, unknown>)?.app_client_id as string | undefined;
     
     const hasUserPool = !!userPoolId;
     const hasAppClient = !!appClientId;
@@ -217,53 +220,48 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     const oauthConfig = projectConfig?.oauth_config as Record<string, unknown> | undefined;
     const authConfigForOAuth = projectConfig?.auth_config as Record<string, unknown> | undefined;
     
-    // Only extract third-party provider info from config if NOT using UserPool
-    // If using UserPool, provider info should be fetched separately from Provider API
+    // IMPORTANT: Never extract client_id from auth_config as it might be APIBlaze's client ID
+    // Third-party provider credentials should ONLY come from:
+    // 1. oauth_config (old format, when NOT using UserPool)
+    // 2. Provider API (when using UserPool)
+    // The auth_config.client_id is likely APIBlaze's client ID, not the third-party provider's
+    
     let providerType = 'github';
     let providerClientId = '';
     let providerDomain = '';
     let scopes: string[] = ['email', 'openid', 'profile'];
     let hasOAuthConfig = false;
     
-    if (!hasUserPool && !hasAppClient) {
-      // Old format: extract from oauth_config or auth_config
-      hasOAuthConfig = !!(oauthConfig || (authConfigForOAuth && authConfigForOAuth.type === 'oauth'));
+    // Only extract from oauth_config (old format) - never from auth_config
+    // auth_config is for APIBlaze's own configuration, not third-party provider
+    if (oauthConfig) {
+      // Old format with explicit oauth_config
+      hasOAuthConfig = true;
+      providerType = (oauthConfig.provider_type as string || 'github');
+      providerClientId = (oauthConfig.client_id as string || '');
+      providerDomain = (oauthConfig.domain as string || '');
       
-      if (hasOAuthConfig) {
-        providerType = (oauthConfig?.provider_type as string 
-          || authConfigForOAuth?.provider as string 
-          || 'github');
-        
-        providerClientId = (oauthConfig?.client_id as string 
-          || authConfigForOAuth?.client_id as string 
-          || '');
-        
-        providerDomain = (oauthConfig?.domain as string 
-          || authConfigForOAuth?.domain as string 
-          || '');
-        
-        // Extract scopes - handle both string (space-separated) and array formats
-        if (oauthConfig?.scopes) {
-          const oauthScopes = oauthConfig.scopes;
-          scopes = typeof oauthScopes === 'string' 
-            ? oauthScopes.split(' ') 
-            : Array.isArray(oauthScopes) 
-              ? oauthScopes as string[]
-              : ['email', 'openid', 'profile'];
-        } else if (authConfigForOAuth?.scopes) {
-          const authScopes = authConfigForOAuth.scopes;
-          scopes = typeof authScopes === 'string'
-            ? authScopes.split(' ')
-            : Array.isArray(authScopes)
-              ? authScopes as string[]
-              : ['email', 'openid', 'profile'];
-        }
+      // Extract scopes
+      if (oauthConfig.scopes) {
+        const oauthScopes = oauthConfig.scopes;
+        scopes = typeof oauthScopes === 'string' 
+          ? oauthScopes.split(' ') 
+          : Array.isArray(oauthScopes) 
+            ? oauthScopes as string[]
+            : ['email', 'openid', 'profile'];
       }
-    } else {
+    } else if (hasUserPool || hasAppClient) {
       // Using UserPool: provider info should be fetched from Provider API
-      // Don't extract from auth_config as it might contain APIBlaze credentials
-      // For now, leave empty - will be populated when provider is fetched
+      // Don't extract from auth_config as it contains APIBlaze credentials
+      // Will be populated when provider is fetched via loadThirdPartyProvider
       hasOAuthConfig = false; // Will be determined by whether providers exist
+    } else if (authConfigForOAuth && authConfigForOAuth.type === 'oauth') {
+      // This is a tricky case: project has auth_config but no user_pool_id
+      // The auth_config.client_id is likely APIBlaze's client ID, not third-party provider's
+      // We should NOT populate third-party provider fields from this
+      // Instead, we'll let the Provider API fetch determine if there's a third-party provider
+      hasOAuthConfig = false;
+      // Don't extract client_id from auth_config - it's APIBlaze's, not the provider's
     }
     
     return {
