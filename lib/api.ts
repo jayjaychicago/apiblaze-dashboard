@@ -191,6 +191,10 @@ class ApiClient {
     }
 
     console.log('[API Client] Creating project:', data.name);
+    console.log('[API Client] backendData includes third_party_provider_config:', !!backendData.third_party_provider_config);
+    if (backendData.third_party_provider_config) {
+      console.log('[API Client] third_party_provider_config value:', JSON.stringify(backendData.third_party_provider_config));
+    }
     return this.request<Record<string, unknown>>('/projects', {
       method: 'POST',
       body: JSON.stringify(backendData),
