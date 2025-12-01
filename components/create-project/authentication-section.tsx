@@ -13,7 +13,7 @@ import { ProjectConfig, SocialProvider } from './types';
 import { useState, useEffect } from 'react';
 import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
 import { api } from '@/lib/api';
-import type { AppClient, UserPool } from '@/types/user-pool';
+import type { AppClient, UserPool, SocialProvider as SocialProviderType } from '@/types/user-pool';
 import type { Project } from '@/types/project';
 
 // API response may have snake_case fields from the database
@@ -21,6 +21,10 @@ type AppClientResponse = AppClient & {
   client_id?: string;
   redirect_uris?: string[];
   signout_uris?: string[];
+};
+
+type SocialProviderResponse = SocialProviderType & {
+  client_id?: string;
 };
 
 interface AuthenticationSectionProps {
@@ -100,6 +104,8 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
   const [appClientDetails, setAppClientDetails] = useState<AppClientResponse | null>(null);
   const [loadingAppClient, setLoadingAppClient] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [thirdPartyProvider, setThirdPartyProvider] = useState<SocialProviderResponse | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState(false);
 
   // Load existing UserPools when social auth is enabled
   useEffect(() => {
@@ -113,11 +119,16 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
     // Load details if we have userPoolId and appClientId (either from selection or from existing config)
     if (config.userPoolId && config.appClientId) {
       loadAppClientDetails(config.userPoolId, config.appClientId);
+      // Also load third-party provider info if using UserPool
+      if (isEditMode || config.useUserPool) {
+        loadThirdPartyProvider(config.userPoolId, config.appClientId);
+      }
     } else {
       setAppClientDetails(null);
+      setThirdPartyProvider(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.userPoolId, config.appClientId]);
+  }, [config.userPoolId, config.appClientId, isEditMode, config.useUserPool]);
 
   const loadUserPools = async () => {
     setLoadingUserPools(true);
@@ -147,6 +158,42 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
       setAppClientDetails(null);
     } finally {
       setLoadingAppClient(false);
+    }
+  };
+
+  const loadThirdPartyProvider = async (userPoolId?: string, appClientId?: string) => {
+    const poolId = userPoolId || config.userPoolId;
+    const clientId = appClientId || config.appClientId;
+    
+    if (!poolId || !clientId) return;
+    
+    setLoadingProvider(true);
+    try {
+      const providers = await api.listProviders(poolId, clientId);
+      // Get the first provider (usually there's one per app client)
+      if (providers && providers.length > 0) {
+        const provider = providers[0];
+        setThirdPartyProvider(provider);
+        // Update config with provider info
+        updateConfig({
+          bringOwnProvider: true,
+          socialProvider: (provider.type || 'github') as 'github' | 'google' | 'microsoft' | 'facebook' | 'auth0' | 'other',
+          identityProviderDomain: provider.domain || '',
+          identityProviderClientId: provider.client_id || provider.clientId || '',
+          // Note: client secret is not returned for security reasons
+        });
+      } else {
+        setThirdPartyProvider(null);
+        // No provider configured - using default APIBlaze GitHub
+        updateConfig({
+          bringOwnProvider: false,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading third-party provider:', error);
+      setThirdPartyProvider(null);
+    } finally {
+      setLoadingProvider(false);
     }
   };
 

@@ -212,41 +212,58 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     });
     
     // Handle both old format (oauth_config) and new format (auth_config)
+    // IMPORTANT: If using UserPool, third-party provider credentials come from Provider API, not from auth_config
+    // The auth_config.client_id might be APIBlaze's client ID, not the third-party provider's
     const oauthConfig = projectConfig?.oauth_config as Record<string, unknown> | undefined;
     const authConfigForOAuth = projectConfig?.auth_config as Record<string, unknown> | undefined;
     
-    // Determine if user brought their own provider (either format)
-    const hasOAuthConfig = !!(oauthConfig || (authConfigForOAuth && authConfigForOAuth.type === 'oauth'));
-    
-    // Extract provider info from either format
-    const providerType = oauthConfig?.provider_type as string 
-      || authConfigForOAuth?.provider as string 
-      || 'github';
-    
-    const providerClientId = oauthConfig?.client_id as string 
-      || authConfigForOAuth?.client_id as string 
-      || '';
-    
-    const providerDomain = oauthConfig?.domain as string 
-      || authConfigForOAuth?.domain as string 
-      || '';
-    
-    // Extract scopes - handle both string (space-separated) and array formats
+    // Only extract third-party provider info from config if NOT using UserPool
+    // If using UserPool, provider info should be fetched separately from Provider API
+    let providerType = 'github';
+    let providerClientId = '';
+    let providerDomain = '';
     let scopes: string[] = ['email', 'openid', 'profile'];
-    if (oauthConfig?.scopes) {
-      const oauthScopes = oauthConfig.scopes;
-      scopes = typeof oauthScopes === 'string' 
-        ? oauthScopes.split(' ') 
-        : Array.isArray(oauthScopes) 
-          ? oauthScopes as string[]
-          : ['email', 'openid', 'profile'];
-    } else if (authConfigForOAuth?.scopes) {
-      const authScopes = authConfigForOAuth.scopes;
-      scopes = typeof authScopes === 'string'
-        ? authScopes.split(' ')
-        : Array.isArray(authScopes)
-          ? authScopes as string[]
-          : ['email', 'openid', 'profile'];
+    let hasOAuthConfig = false;
+    
+    if (!hasUserPool && !hasAppClient) {
+      // Old format: extract from oauth_config or auth_config
+      hasOAuthConfig = !!(oauthConfig || (authConfigForOAuth && authConfigForOAuth.type === 'oauth'));
+      
+      if (hasOAuthConfig) {
+        providerType = (oauthConfig?.provider_type as string 
+          || authConfigForOAuth?.provider as string 
+          || 'github');
+        
+        providerClientId = (oauthConfig?.client_id as string 
+          || authConfigForOAuth?.client_id as string 
+          || '');
+        
+        providerDomain = (oauthConfig?.domain as string 
+          || authConfigForOAuth?.domain as string 
+          || '');
+        
+        // Extract scopes - handle both string (space-separated) and array formats
+        if (oauthConfig?.scopes) {
+          const oauthScopes = oauthConfig.scopes;
+          scopes = typeof oauthScopes === 'string' 
+            ? oauthScopes.split(' ') 
+            : Array.isArray(oauthScopes) 
+              ? oauthScopes as string[]
+              : ['email', 'openid', 'profile'];
+        } else if (authConfigForOAuth?.scopes) {
+          const authScopes = authConfigForOAuth.scopes;
+          scopes = typeof authScopes === 'string'
+            ? authScopes.split(' ')
+            : Array.isArray(authScopes)
+              ? authScopes as string[]
+              : ['email', 'openid', 'profile'];
+        }
+      }
+    } else {
+      // Using UserPool: provider info should be fetched from Provider API
+      // Don't extract from auth_config as it might contain APIBlaze credentials
+      // For now, leave empty - will be populated when provider is fetched
+      hasOAuthConfig = false; // Will be determined by whether providers exist
     }
     
     return {
@@ -609,12 +626,32 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         return;
       }
 
+      // Track resources created during this deployment for cleanup on failure
+      // Check if we should use an existing UserPool (defined earlier in the function)
+      const hasExistingUserPoolForCleanup = config.useUserPool && config.userPoolId && config.appClientId;
+      
+      const createdResources: {
+        userPoolId?: string;
+        appClientId?: string;
+        wasCreated: boolean; // true if we created it in this session, false if it was pre-existing
+      } = {
+        wasCreated: false,
+      };
+
+      // Mark resources as created if we just created them (not pre-existing)
+      if (needsUserPool && !hasExistingUserPoolForCleanup) {
+        createdResources.userPoolId = userPoolId;
+        createdResources.appClientId = appClientId;
+        createdResources.wasCreated = true;
+      }
+
       // Create the project
       console.log('[CreateProject] Final values before project creation:', {
         userPoolId,
         appClientId,
         authType,
         hasOauthConfig: !!oauthConfig,
+        createdResources,
       });
       
       const projectData = {
@@ -641,7 +678,63 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       }
 
       console.log('[CreateProject] Deploying project with data:', projectData);
-      const response = await api.createProject(projectData);
+      
+      let response;
+      try {
+        response = await api.createProject(projectData);
+      } catch (projectError) {
+        // Project creation failed - clean up created resources
+        console.error('[CreateProject] Project creation failed, cleaning up resources:', projectError);
+        
+        if (createdResources.wasCreated && createdResources.userPoolId && createdResources.appClientId) {
+          try {
+            // Try to get provider ID for cleanup (if we created one with bringOwnProvider)
+            if (config.bringOwnProvider) {
+              // For bring-your-own-provider, we created a provider - try to find and delete it
+              try {
+                const providers = await api.listProviders(createdResources.userPoolId, createdResources.appClientId);
+                if (providers && providers.length > 0) {
+                  // Delete all providers (usually just one)
+                  for (const provider of providers) {
+                    try {
+                      await api.removeProvider(createdResources.userPoolId, createdResources.appClientId, provider.id);
+                      console.log('[CreateProject] Cleaned up provider:', provider.id);
+                    } catch (providerError) {
+                      console.error('[CreateProject] Failed to delete provider:', providerError);
+                    }
+                  }
+                }
+              } catch (listError) {
+                console.error('[CreateProject] Failed to list providers for cleanup:', listError);
+              }
+            }
+            // For default GitHub, provider is created server-side, so we can't clean it up individually
+            // But deleting the AppClient should cascade delete the provider
+            
+            // Delete AppClient (this should cascade delete providers)
+            try {
+              await api.deleteAppClient(createdResources.userPoolId, createdResources.appClientId);
+              console.log('[CreateProject] Cleaned up AppClient:', createdResources.appClientId);
+            } catch (appClientError) {
+              console.error('[CreateProject] Failed to delete AppClient:', appClientError);
+            }
+            
+            // Delete UserPool (this should cascade delete AppClients and Providers)
+            try {
+              await api.deleteUserPool(createdResources.userPoolId);
+              console.log('[CreateProject] Cleaned up UserPool:', createdResources.userPoolId);
+            } catch (userPoolError) {
+              console.error('[CreateProject] Failed to delete UserPool:', userPoolError);
+            }
+          } catch (cleanupError) {
+            console.error('[CreateProject] Error during cleanup:', cleanupError);
+            // Continue to show the original error, but log cleanup failure
+          }
+        }
+        
+        // Re-throw the original project creation error
+        throw projectError;
+      }
       
       console.log('[CreateProject] Success:', response);
 
