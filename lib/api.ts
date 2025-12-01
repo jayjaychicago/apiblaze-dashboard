@@ -79,31 +79,7 @@ class ApiClient {
       throw new Error(error.error || 'API request failed');
     }
     
-    // Handle responses with no body (204 No Content, 205 Reset Content, etc.)
-    // These are common for DELETE operations
-    if (response.status === 204 || response.status === 205) {
-      return {} as T;
-    }
-    
-    // Check if response has content to parse
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      // No JSON content, return empty object
-      return {} as T;
-    }
-    
-    // Try to parse JSON, but handle empty responses gracefully
-    const text = await response.text();
-    if (!text || text.trim() === '') {
-      return {} as T;
-    }
-    
-    try {
-      return JSON.parse(text) as T;
-    } catch {
-      // If JSON parsing fails, return empty object
-      return {} as T;
-    }
+    return (await response.json()) as T;
   }
   
   // Projects
@@ -126,7 +102,7 @@ class ApiClient {
     github?: {
       owner: string;
       repo: string;
-      path?: string; // Optional for existing projects
+      path: string;
       branch?: string;
     };
     auth_type?: string;
@@ -138,15 +114,7 @@ class ApiClient {
     };
     user_pool_id?: string;
     app_client_id?: string;
-    third_party_provider_config?: {
-      provider_type: string;
-      client_id: string;
-      domain?: string;
-      scopes?: string[];
-    };
     environments?: Record<string, { target: string }>;
-    project_id?: string; // For updates
-    api_version?: string; // For updates
   }): Promise<Record<string, unknown>> {
     // Map frontend data to backend API format
     const backendData: Record<string, unknown> = {
@@ -183,18 +151,11 @@ class ApiClient {
     if (data.app_client_id) {
       backendData.app_client_id = data.app_client_id;
     }
-    if (data.third_party_provider_config) {
-      backendData.third_party_provider_config = data.third_party_provider_config;
-    }
     if (data.environments) {
       backendData.environments = data.environments;
     }
 
     console.log('[API Client] Creating project:', data.name);
-    console.log('[API Client] backendData includes third_party_provider_config:', !!backendData.third_party_provider_config);
-    if (backendData.third_party_provider_config) {
-      console.log('[API Client] third_party_provider_config value:', JSON.stringify(backendData.third_party_provider_config));
-    }
     return this.request<Record<string, unknown>>('/projects', {
       method: 'POST',
       body: JSON.stringify(backendData),
@@ -242,8 +203,8 @@ class ApiClient {
     });
   }
 
-  async deleteUserPool(poolId: string): Promise<void> {
-    await this.request(`/user-pools/${poolId}`, {
+  async deleteUserPool(poolId: string) {
+    return this.request(`/user-pools/${poolId}`, {
       method: 'DELETE',
     });
   }
@@ -287,8 +248,8 @@ class ApiClient {
     });
   }
 
-  async deleteAppClient(poolId: string, clientId: string): Promise<void> {
-    await this.request(`/user-pools/${poolId}/app-clients/${clientId}`, {
+  async deleteAppClient(poolId: string, clientId: string) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}`, {
       method: 'DELETE',
     });
   }
@@ -310,8 +271,8 @@ class ApiClient {
     });
   }
 
-  async removeProvider(poolId: string, clientId: string, providerId: string): Promise<void> {
-    await this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers/${providerId}`, {
+  async removeProvider(poolId: string, clientId: string, providerId: string) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers/${providerId}`, {
       method: 'DELETE',
     });
   }

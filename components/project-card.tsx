@@ -1,15 +1,10 @@
-'use client';
-
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
 import { Project } from '@/types/project';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DeploymentStatus } from '@/components/deployment-status';
-import { ExternalLink, Settings, Trash2, Github, Globe, Key, Copy, Check } from 'lucide-react';
-import { api } from '@/lib/api';
-import type { AppClient } from '@/types/user-pool';
+import { ExternalLink, Settings, Trash2, Github, Globe } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,56 +20,7 @@ interface ProjectCardProps {
   onDelete?: (project: Project) => void;
 }
 
-// API response may have snake_case fields from the database
-type AppClientResponse = AppClient & {
-  client_id?: string;
-  redirect_uris?: string[];
-  signout_uris?: string[];
-};
-
 export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardProps) {
-  const [appClientDetails, setAppClientDetails] = useState<AppClientResponse | null>(null);
-  const [loadingCredentials, setLoadingCredentials] = useState(false);
-  const [showCredentials, setShowCredentials] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
-
-  const projectConfig = project.config as Record<string, unknown> | undefined;
-  const userPoolId = projectConfig?.user_pool_id as string | undefined;
-  const appClientId = projectConfig?.app_client_id as string | undefined;
-  const hasSocialAuth = !!(userPoolId && appClientId);
-
-  useEffect(() => {
-    if (hasSocialAuth && showCredentials && !appClientDetails && !loadingCredentials) {
-      loadCredentials();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasSocialAuth, showCredentials]);
-
-  const loadCredentials = async () => {
-    if (!userPoolId || !appClientId) return;
-    
-    setLoadingCredentials(true);
-    try {
-      const client = await api.getAppClient(userPoolId, appClientId);
-      setAppClientDetails(client);
-    } catch (error) {
-      console.error('Error loading app client details:', error);
-      setAppClientDetails(null);
-    } finally {
-      setLoadingCredentials(false);
-    }
-  };
-
-  const copyToClipboard = async (text: string, field: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
-    }
-  };
-
   const handleOpenPortal = () => {
     const portalUrl = project.api_version
       ? `${project.urls.portal}/${project.api_version}`
@@ -170,80 +116,6 @@ export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardPr
             </div>
           )}
         </div>
-
-        {/* OAuth Credentials (if social auth is enabled) */}
-        {hasSocialAuth && (
-          <div className="pt-2 border-t">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setShowCredentials(!showCredentials);
-                if (!showCredentials && !appClientDetails) {
-                  loadCredentials();
-                }
-              }}
-              className="w-full justify-start text-xs"
-            >
-              <Key className="mr-2 h-3 w-3" />
-              {showCredentials ? 'Hide' : 'Show'} OAuth Credentials
-            </Button>
-            {showCredentials && (
-              <div className="mt-2 space-y-2 p-3 bg-muted rounded-lg">
-                {loadingCredentials ? (
-                  <p className="text-xs text-muted-foreground">Loading credentials...</p>
-                ) : appClientDetails ? (
-                  <>
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-medium">Client ID</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2"
-                          onClick={() => copyToClipboard(appClientDetails.client_id || appClientDetails.clientId, 'clientId')}
-                        >
-                          {copiedField === 'clientId' ? (
-                            <Check className="h-3 w-3" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                        </Button>
-                      </div>
-                      <code className="text-xs bg-background px-2 py-1 rounded border font-mono block break-all">
-                        {appClientDetails.client_id || appClientDetails.clientId}
-                      </code>
-                    </div>
-                    {appClientDetails.clientSecret && (
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium">Client Secret</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2"
-                            onClick={() => copyToClipboard(appClientDetails.clientSecret!, 'clientSecret')}
-                          >
-                            {copiedField === 'clientSecret' ? (
-                              <Check className="h-3 w-3" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                          </Button>
-                        </div>
-                        <code className="text-xs bg-background px-2 py-1 rounded border font-mono block break-all">
-                          {appClientDetails.clientSecret}
-                        </code>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-xs text-muted-foreground">Failed to load credentials</p>
-                )}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Deployer Information */}
         <div className="flex items-center gap-2 pt-2 border-t">

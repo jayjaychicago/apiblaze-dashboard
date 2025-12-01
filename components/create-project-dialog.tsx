@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { 
   Dialog, 
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Rocket, Trash2 } from 'lucide-react';
+import { Loader2, Rocket } from 'lucide-react';
 import { GeneralSection } from './create-project/general-section';
 import { AuthenticationSection } from './create-project/authentication-section';
 import { TargetServersSection } from './create-project/target-servers-section';
@@ -23,7 +23,6 @@ import { DomainsSection } from './create-project/domains-section';
 import { ProjectConfig } from './create-project/types';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import { deleteProject } from '@/lib/api/projects';
 import type { Project } from '@/types/project';
 
 type ProjectCreationSuggestions = string[];
@@ -96,13 +95,10 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const [isDeploying, setIsDeploying] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Initialize config from project if in edit mode
-  const getInitialConfig = (projectToUse?: Project | null): ProjectConfig => {
-    const projectData = projectToUse || project;
-    if (!projectData) {
+  const getInitialConfig = (): ProjectConfig => {
+    if (!project) {
       return {
         // General
         projectName: '',
@@ -156,155 +152,34 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
 
     // Populate from project
-    const projectConfig = projectData.config as Record<string, unknown> | undefined;
-    const specSource = projectData.spec_source;
-    
-    // Try to extract GitHub path from config or spec_source
-    let githubPath = '';
-    if (specSource.type === 'github') {
-      // Check if path is in spec_source.github (if backend stores it there)
-      githubPath = (specSource.github as Record<string, unknown>)?.path as string || '';
-      // If not found, check in project config
-      if (!githubPath && projectConfig) {
-        const githubConfig = projectConfig.github as Record<string, unknown> | undefined;
-        githubPath = githubConfig?.path as string || '';
-      }
-    }
-    
-    // Check for social auth: multiple possible formats
-    // 1. auth_type === 'oauth' (old format)
-    // 2. auth_config.type === 'oauth' (new format)
-    // 3. user_pool_id exists (UserPool format)
-    // 4. app_client_id exists (UserPool format)
-    
-    // Extract user pool and app client IDs from config or project root
-    // Check both config and project root level (some projects might store it at root level)
-    const userPoolId = (projectConfig?.user_pool_id as string | undefined) 
-      || ((projectData as unknown) as Record<string, unknown>)?.user_pool_id as string | undefined;
-    const appClientId = (projectConfig?.app_client_id as string | undefined)
-      || ((projectData as unknown) as Record<string, unknown>)?.app_client_id as string | undefined;
-    
-    const hasUserPool = !!userPoolId;
-    const hasAppClient = !!appClientId;
-    const authType = (projectConfig?.auth_type as string) || 'none';
-    const authConfig = projectConfig?.auth_config as Record<string, unknown> | undefined;
-    const authConfigType = authConfig?.type as string | undefined;
-    
-    // Social auth is enabled if any of these conditions are true:
-    // - auth_type is 'oauth' (old format)
-    // - auth_config.type is 'oauth' (new format)
-    // - user_pool_id exists (UserPool format)
-    // - app_client_id exists (UserPool format)
-    const hasSocialAuth = authType === 'oauth' || authConfigType === 'oauth' || hasUserPool || hasAppClient;
-    
-    console.log('[getInitialConfig] Auth detection:', {
-      hasConfig: !!projectConfig,
-      configKeys: projectConfig ? Object.keys(projectConfig) : [],
-      projectKeys: Object.keys(projectData),
-      authType,
-      authConfigType,
-      hasUserPool,
-      hasAppClient,
-      userPoolId,
-      appClientId,
-      hasSocialAuth,
-      authConfig: projectConfig?.auth_config,
-      oauthConfig: projectConfig?.oauth_config,
-      fullConfig: projectConfig,
-      fullProject: projectData,
-    });
-    
-    // Handle both old format (oauth_config) and new format (auth_config)
-    // IMPORTANT: If using UserPool, third-party provider credentials come from Provider API, not from auth_config
-    // The auth_config.client_id might be APIBlaze's client ID, not the third-party provider's
-    const oauthConfig = projectConfig?.oauth_config as Record<string, unknown> | undefined;
-    const authConfigForOAuth = projectConfig?.auth_config as Record<string, unknown> | undefined;
-    const thirdPartyProviderConfig = projectConfig?.third_party_provider_config as Record<string, unknown> | undefined;
-    
-    // IMPORTANT: Never extract client_id from auth_config as it might be APIBlaze's client ID
-    // Third-party provider credentials should come from (in priority order):
-    // 1. third_party_provider_config (new format, explicitly stores third-party provider details)
-    // 2. oauth_config (old format, when NOT using UserPool)
-    // 3. Provider API (when using UserPool, fetched via loadThirdPartyProvider)
-    // The auth_config.client_id is likely APIBlaze's client ID, not the third-party provider's
-    
-    let providerType = 'github';
-    let providerClientId = '';
-    let providerDomain = '';
-    let scopes: string[] = ['email', 'openid', 'profile'];
-    let hasOAuthConfig = false;
-    
-    // Priority 1: Check third_party_provider_config (new format)
-    if (thirdPartyProviderConfig) {
-      hasOAuthConfig = true;
-      providerType = (thirdPartyProviderConfig.provider_type as string || 'github');
-      providerClientId = (thirdPartyProviderConfig.client_id as string || '');
-      providerDomain = (thirdPartyProviderConfig.domain as string || '');
-      
-      // Extract scopes
-      if (thirdPartyProviderConfig.scopes) {
-        const providerScopes = thirdPartyProviderConfig.scopes;
-        scopes = Array.isArray(providerScopes) 
-          ? providerScopes as string[]
-          : typeof providerScopes === 'string'
-            ? providerScopes.split(' ')
-            : ['email', 'openid', 'profile'];
-      }
-    } else if (oauthConfig) {
-      // Priority 2: Old format with explicit oauth_config
-      hasOAuthConfig = true;
-      providerType = (oauthConfig.provider_type as string || 'github');
-      providerClientId = (oauthConfig.client_id as string || '');
-      providerDomain = (oauthConfig.domain as string || '');
-      
-      // Extract scopes
-      if (oauthConfig.scopes) {
-        const oauthScopes = oauthConfig.scopes;
-        scopes = typeof oauthScopes === 'string' 
-          ? oauthScopes.split(' ') 
-          : Array.isArray(oauthScopes) 
-            ? oauthScopes as string[]
-            : ['email', 'openid', 'profile'];
-      }
-    } else if (hasUserPool || hasAppClient) {
-      // Priority 3: Using UserPool: provider info should be fetched from Provider API
-      // Don't extract from auth_config as it contains APIBlaze credentials
-      // Will be populated when provider is fetched via loadThirdPartyProvider
-      hasOAuthConfig = false; // Will be determined by whether providers exist
-    } else if (authConfigForOAuth && authConfigForOAuth.type === 'oauth') {
-      // This is a tricky case: project has auth_config but no user_pool_id
-      // The auth_config.client_id is likely APIBlaze's client ID, not third-party provider's
-      // We should NOT populate third-party provider fields from this
-      // Instead, we'll let the Provider API fetch determine if there's a third-party provider
-      hasOAuthConfig = false;
-      // Don't extract client_id from auth_config - it's APIBlaze's, not the provider's
-    }
+    const projectConfig = project.config as Record<string, unknown> | undefined;
+    const specSource = project.spec_source;
     
     return {
       // General
-      projectName: projectData.display_name || '',
-      apiVersion: projectData.api_version || '1.0.0',
+      projectName: project.display_name || '',
+      apiVersion: project.api_version || '1.0.0',
       sourceType: specSource.type === 'github' ? 'github' : specSource.type === 'upload' ? 'upload' : 'targetUrl',
       githubUser: specSource.github?.owner || '',
       githubRepo: specSource.github?.repo || '',
-      githubPath: githubPath,
+      githubPath: (projectConfig?.github_source as Record<string, unknown>)?.path as string || (specSource.github as Record<string, unknown>)?.path as string || '',
       githubBranch: specSource.github?.branch || 'main',
       targetUrl: (projectConfig?.target_url as string) || (projectConfig?.target as string) || '',
       uploadedFile: null,
       
       // Authentication - extract from config
       userGroupName: '',
-      enableApiKey: authType !== 'oauth' && authConfigType !== 'oauth' && !hasSocialAuth,
-      enableSocialAuth: hasSocialAuth,
-      useUserPool: hasUserPool,
-      userPoolId: userPoolId,
-      appClientId: appClientId,
-      bringOwnProvider: hasOAuthConfig,
-      socialProvider: providerType as 'github' | 'google' | 'microsoft' | 'facebook' | 'auth0' | 'other',
-      identityProviderDomain: providerDomain,
-      identityProviderClientId: providerClientId,
+      enableApiKey: (projectConfig?.auth_type as string) !== 'none',
+      enableSocialAuth: (projectConfig?.auth_type as string) === 'oauth' || !!(projectConfig?.user_pool_id as string),
+      useUserPool: !!(projectConfig?.user_pool_id as string),
+      userPoolId: projectConfig?.user_pool_id as string | undefined,
+      appClientId: undefined, // Not stored in config - selected at deployment time from database
+      bringOwnProvider: !!(projectConfig?.oauth_config as Record<string, unknown>),
+      socialProvider: 'github',
+      identityProviderDomain: (projectConfig?.oauth_config as Record<string, unknown>)?.domain as string || '',
+      identityProviderClientId: (projectConfig?.oauth_config as Record<string, unknown>)?.client_id as string || '',
       identityProviderClientSecret: '',
-      authorizedScopes: scopes,
+      authorizedScopes: ((projectConfig?.oauth_config as Record<string, unknown>)?.scopes as string)?.split(' ') || ['email', 'openid', 'profile'],
       
       // Target Servers
       targetServers: [
@@ -333,10 +208,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   };
 
   const [config, setConfig] = useState<ProjectConfig>(getInitialConfig());
-  const [fullProject, setFullProject] = useState<Project | null>(project || null);
-
-  // Use fullProject if available, otherwise fall back to project prop
-  const currentProject = fullProject || project;
 
   // When dialog opens with openToGitHub flag, ensure we're on General tab and GitHub source
   useEffect(() => {
@@ -346,31 +217,11 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
   }, [open, openToGitHub]);
 
-  // Fetch full project details if config is missing when opening in edit mode
+  // Reset config when project changes or dialog opens/closes
   useEffect(() => {
-    if (open && project && (!project.config || Object.keys(project.config).length === 0)) {
-      // Fetch full project details to get the config
-      api.getProject(project.project_id)
-        .then((fullProjectData) => {
-          setFullProject(fullProjectData as unknown as Project);
-          setConfig(getInitialConfig(fullProjectData as unknown as Project));
-        })
-        .catch((error) => {
-          console.error('Error fetching full project details:', error);
-          // Fallback to using the project as-is
-          setFullProject(project);
-          setConfig(getInitialConfig(project));
-        });
-    } else if (open && project) {
-      // Project already has config, use it directly
-      setFullProject(project);
-      setConfig(getInitialConfig(project));
-    } else if (open) {
-      // No project, reset to empty config
-      setFullProject(null);
+    if (open) {
       setConfig(getInitialConfig());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, project]);
 
   const updateConfig = (updates: Partial<ProjectConfig>) => {
@@ -383,15 +234,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
     switch (config.sourceType) {
       case 'github':
-        // GitHub requires user and repo (path is optional for existing projects)
-        // For new projects, path is required. For existing projects, we allow deployment without path
-        if (currentProject) {
-          // Editing existing project - only require user and repo
-          return !!(config.githubUser && config.githubRepo);
-        } else {
-          // New project - require user, repo, and path
-          return !!(config.githubUser && config.githubRepo && config.githubPath);
-        }
+        // GitHub requires user, repo, and path
+        return !!(config.githubUser && config.githubRepo && config.githubPath);
       case 'targetUrl':
         // Target URL requires a URL
         return !!config.targetUrl;
@@ -409,16 +253,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     // Check if source is configured first
     switch (config.sourceType) {
       case 'github':
-        // For existing projects, only require user and repo
-        if (currentProject) {
-          if (!config.githubUser || !config.githubRepo) {
-            return 'github-source';
-          }
-        } else {
-          // For new projects, require path too
-          if (!config.githubUser || !config.githubRepo || !config.githubPath) {
-            return 'github-source';
-          }
+        if (!config.githubUser || !config.githubRepo || !config.githubPath) {
+          return 'github-source';
         }
         break;
       case 'targetUrl':
@@ -461,12 +297,11 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       }
 
       // Prepare GitHub source data if applicable
-      // For existing projects, path might not be available, but we still need to send the source
-      const githubSource = config.sourceType === 'github' && config.githubUser && config.githubRepo
+      const githubSource = config.sourceType === 'github' && config.githubUser && config.githubRepo && config.githubPath
         ? {
             owner: config.githubUser,
             repo: config.githubRepo,
-            ...(config.githubPath ? { path: config.githubPath } : {}),
+            path: config.githubPath,
             branch: config.githubBranch || 'main',
           }
         : undefined;
@@ -485,12 +320,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       let userPoolId: string | undefined;
       let appClientId: string | undefined;
       let oauthConfig;
-      let thirdPartyProviderConfig: {
-        provider_type: string;
-        client_id: string;
-        domain?: string;
-        scopes?: string[];
-      } | undefined;
 
       // Handle UserPool creation/selection
       // Defensive check: if authType is oauth, we MUST have a UserPool
@@ -526,27 +355,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           userPoolId = config.userPoolId;
           appClientId = config.appClientId;
           oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
-          
-          // Fetch provider details from the existing UserPool to include in third_party_provider_config
-          try {
-            // TypeScript: We know these exist because hasExistingUserPool check passed
-            const poolId = config.userPoolId!;
-            const clientId = config.appClientId!;
-            const providers = await api.listProviders(poolId, clientId);
-            if (providers && providers.length > 0) {
-              const provider = providers[0]; // Use the first provider
-              thirdPartyProviderConfig = {
-                provider_type: provider.type,
-                client_id: provider.client_id || provider.clientId || '',
-                domain: provider.domain || undefined,
-                scopes: config.authorizedScopes, // Use scopes from config
-              };
-              console.log('[CreateProject] Fetched provider details from existing UserPool:', thirdPartyProviderConfig);
-            }
-          } catch (providerError) {
-            console.warn('[CreateProject] Failed to fetch provider details from existing UserPool:', providerError);
-            // Continue without third_party_provider_config - backend can fetch it if needed
-          }
         } else if (config.bringOwnProvider) {
           console.log('[CreateProject] Creating UserPool with user-provided OAuth provider');
           // Validate OAuth provider fields
@@ -574,6 +382,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               scopes: config.authorizedScopes,
             });
             const createdAppClientId = (appClient as { id: string }).id;
+            const createdAppClientClientId = (appClient as { clientId: string }).clientId;
 
             // 3. Add Provider to AppClient
             await api.addProvider(createdUserPoolId, createdAppClientId, {
@@ -593,16 +402,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               appClientId,
               provider: config.socialProvider,
             });
-            
-            // Store third-party provider config for the backend
-            // This will be sent separately from auth_config to avoid confusion
-            thirdPartyProviderConfig = {
-              provider_type: config.socialProvider,
-              client_id: config.identityProviderClientId,
-              domain: config.identityProviderDomain || undefined,
-              scopes: config.authorizedScopes,
-            };
-            console.log('[CreateProject] Set thirdPartyProviderConfig for new UserPool:', thirdPartyProviderConfig);
           } catch (error) {
             console.error('Error creating UserPool automatically:', error);
             toast({
@@ -677,34 +476,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         return;
       }
 
-      // Track resources created during this deployment for cleanup on failure
-      // Check if we should use an existing UserPool (defined earlier in the function)
-      const hasExistingUserPoolForCleanup = config.useUserPool && config.userPoolId && config.appClientId;
-      
-      const createdResources: {
-        userPoolId?: string;
-        appClientId?: string;
-        wasCreated: boolean; // true if we created it in this session, false if it was pre-existing
-      } = {
-        wasCreated: false,
-      };
-
-      // Mark resources as created if we just created them (not pre-existing)
-      if (needsUserPool && !hasExistingUserPoolForCleanup) {
-        createdResources.userPoolId = userPoolId;
-        createdResources.appClientId = appClientId;
-        createdResources.wasCreated = true;
-      }
-
       // Create the project
       console.log('[CreateProject] Final values before project creation:', {
         userPoolId,
         appClientId,
         authType,
         hasOauthConfig: !!oauthConfig,
-        hasThirdPartyProviderConfig: !!thirdPartyProviderConfig,
-        thirdPartyProviderConfig,
-        createdResources,
       });
       
       const projectData = {
@@ -717,85 +494,19 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         auth_type: authType,
         oauth_config: oauthConfig,
         user_pool_id: userPoolId,
-        app_client_id: appClientId,
-        ...(thirdPartyProviderConfig ? { third_party_provider_config: thirdPartyProviderConfig } : {}),
+        app_client_id: appClientId, // AppClient selected at deployment time (not stored in config)
         environments: Object.keys(environments).length > 0 ? environments : undefined,
-        // Include project_id and api_version for updates
-        ...(currentProject ? {
-          project_id: currentProject.project_id,
-          api_version: currentProject.api_version,
-        } : {}),
       };
 
-      if (currentProject) {
-        console.log('[CreateProject] Updating existing project:', currentProject.project_id);
-      }
-
       console.log('[CreateProject] Deploying project with data:', projectData);
-      
-      let response;
-      try {
-        response = await api.createProject(projectData);
-      } catch (projectError) {
-        // Project creation failed - clean up created resources
-        console.error('[CreateProject] Project creation failed, cleaning up resources:', projectError);
-        
-        if (createdResources.wasCreated && createdResources.userPoolId && createdResources.appClientId) {
-          try {
-            // Try to get provider ID for cleanup (if we created one with bringOwnProvider)
-            if (config.bringOwnProvider) {
-              // For bring-your-own-provider, we created a provider - try to find and delete it
-              try {
-                const providers = await api.listProviders(createdResources.userPoolId, createdResources.appClientId);
-                if (providers && providers.length > 0) {
-                  // Delete all providers (usually just one)
-                  for (const provider of providers) {
-                    try {
-                      await api.removeProvider(createdResources.userPoolId, createdResources.appClientId, provider.id);
-                      console.log('[CreateProject] Cleaned up provider:', provider.id);
-                    } catch (providerError) {
-                      console.error('[CreateProject] Failed to delete provider:', providerError);
-                    }
-                  }
-                }
-              } catch (listError) {
-                console.error('[CreateProject] Failed to list providers for cleanup:', listError);
-              }
-            }
-            // For default GitHub, provider is created server-side, so we can't clean it up individually
-            // But deleting the AppClient should cascade delete the provider
-            
-            // Delete AppClient (this should cascade delete providers)
-            try {
-              await api.deleteAppClient(createdResources.userPoolId, createdResources.appClientId);
-              console.log('[CreateProject] Cleaned up AppClient:', createdResources.appClientId);
-            } catch (appClientError) {
-              console.error('[CreateProject] Failed to delete AppClient:', appClientError);
-            }
-            
-            // Delete UserPool (this should cascade delete AppClients and Providers)
-            try {
-              await api.deleteUserPool(createdResources.userPoolId);
-              console.log('[CreateProject] Cleaned up UserPool:', createdResources.userPoolId);
-            } catch (userPoolError) {
-              console.error('[CreateProject] Failed to delete UserPool:', userPoolError);
-            }
-          } catch (cleanupError) {
-            console.error('[CreateProject] Error during cleanup:', cleanupError);
-            // Continue to show the original error, but log cleanup failure
-          }
-        }
-        
-        // Re-throw the original project creation error
-        throw projectError;
-      }
+      const response = await api.createProject(projectData);
       
       console.log('[CreateProject] Success:', response);
 
       // Success!
       toast({
-        title: currentProject ? 'Project Updated! 🎉' : 'Project Created! 🎉',
-        description: `${config.projectName} has been successfully ${currentProject ? 'updated' : 'deployed'}.`,
+        title: 'Project Created! 🎉',
+        description: `${config.projectName} has been successfully deployed.`,
       });
       
       onOpenChange(false);
@@ -854,44 +565,15 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
   };
 
-  const handleDelete = async () => {
-    const currentProject = fullProject || project;
-    if (!currentProject) return;
-    
-    setIsDeleting(true);
-    try {
-      await deleteProject(currentProject.project_id, currentProject.api_version);
-      
-      toast({
-        title: 'Project Deleted',
-        description: `${currentProject.display_name} has been successfully deleted.`,
-      });
-      
-      setShowDeleteConfirm(false);
-      onOpenChange(false);
-      onSuccess?.();
-    } catch (error) {
-      console.error('Failed to delete project:', error);
-      toast({
-        title: 'Delete Failed',
-        description: error instanceof Error ? error.message : 'Failed to delete project. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-2xl">
-            {currentProject ? 'Edit API Project' : 'Create New API Project'}
+            {project ? 'Edit API Project' : 'Create New API Project'}
           </DialogTitle>
           <DialogDescription>
-            {currentProject 
+            {project 
               ? 'Update your API proxy configuration. Changes will be applied on the next deployment.'
               : 'Configure your API proxy with sensible defaults. Deploy instantly or customize settings across all sections.'}
           </DialogDescription>
@@ -910,15 +592,15 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
           <div className="flex-1 overflow-y-auto mt-4">
             <TabsContent value="general" className="mt-0">
-              <GeneralSection config={config} updateConfig={updateConfig} validationError={validationError} isEditMode={!!currentProject} />
+              <GeneralSection config={config} updateConfig={updateConfig} validationError={validationError} />
             </TabsContent>
 
             <TabsContent value="auth" className="mt-0">
               <AuthenticationSection 
                 config={config} 
-                updateConfig={updateConfig}
-                isEditMode={!!currentProject}
-                project={currentProject}
+                updateConfig={updateConfig} 
+                isEditMode={!!project}
+                project={project || null}
               />
             </TabsContent>
 
@@ -948,7 +630,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           <div className="flex-1">
             {!isSourceConfigured() ? (
               <p className="text-sm text-orange-600">
-                {validationError === 'github-source' && (currentProject ? 'Select a GitHub repository to continue' : 'Select a GitHub repository and spec file to continue')}
+                {validationError === 'github-source' && 'Select a GitHub repository to continue'}
                 {validationError === 'target-url' && 'Enter a target URL to continue'}
                 {validationError === 'upload-file' && 'Upload an OpenAPI spec to continue'}
                 {validationError === 'project-name' && 'Enter a project name to continue'}
@@ -956,39 +638,28 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">
-                {currentProject ? 'Ready to redeploy! Customize other sections or redeploy now.' : 'Ready to deploy! Customize other sections or deploy now.'}
+                Ready to deploy! Customize other sections or deploy now.
               </p>
             )}
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeploying || isDeleting}>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeploying}>
               Cancel
             </Button>
-            {currentProject && (
-              <Button 
-                onClick={() => setShowDeleteConfirm(true)} 
-                disabled={isDeploying || isDeleting}
-                variant="destructive"
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </Button>
-            )}
             <Button 
               onClick={handleDeploy} 
-              disabled={isDeploying || isDeleting || !isSourceConfigured()}
-              variant="default"
+              disabled={isDeploying || !isSourceConfigured()}
               className={!isSourceConfigured() ? 'opacity-50 cursor-not-allowed' : ''}
             >
               {isDeploying ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {currentProject ? 'Redeploying...' : 'Deploying...'}
+                  Deploying...
                 </>
               ) : (
                 <>
                   <Rocket className="mr-2 h-4 w-4" />
-                  {currentProject ? 'Redeploy API' : 'Deploy API'}
+                  Deploy API
                 </>
               )}
             </Button>
@@ -996,37 +667,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         </DialogFooter>
       </DialogContent>
     </Dialog>
-
-    {/* Delete Confirmation Dialog */}
-    <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Delete Project?</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete <strong>{currentProject?.display_name}</strong>? This action cannot be undone and will permanently remove the project and all its data.
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>
-            Cancel
-          </Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-            {isDeleting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete Project
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-    </>
   );
 }
 

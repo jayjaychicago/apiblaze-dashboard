@@ -41,6 +41,17 @@ NEXTAUTH_SECRET=your-random-secret-string-here
 
 ## Optional Variables
 
+### Portal Callback URL (for OAuth configuration)
+```bash
+# Default: https://apiportal.myInstantAPI.com
+# For development/testing on custom domain:
+NEXT_PUBLIC_PORTAL_CALLBACK_URL=http://code.julienjacquet.com:3000
+# or
+NEXT_PUBLIC_PORTAL_CALLBACK_URL=https://your-dev-portal-url.com
+```
+
+**Note**: This URL is shown in the authentication configuration UI as the callback URL that needs to be added to OAuth providers (Google, GitHub, etc.). In development, you can set this to your local or dev environment URL to test OAuth flows without pushing to production.
+
 ### Analytics
 ```bash
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX

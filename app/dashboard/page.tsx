@@ -11,6 +11,7 @@ import { CreateProjectDialog } from '@/components/create-project-dialog';
 import { ProjectList } from '@/components/project-list';
 import { listProjects } from '@/lib/api/projects';
 import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
+import { ProjectConfigDialog } from '@/components/project-config-dialog';
 import { Project } from '@/types/project';
 
 export default function DashboardPage() {
@@ -20,6 +21,7 @@ export default function DashboardPage() {
   const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
   const [hasProjects, setHasProjects] = useState<boolean | null>(null);
   const [checkingProjects, setCheckingProjects] = useState(true);
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   
   useEffect(() => {

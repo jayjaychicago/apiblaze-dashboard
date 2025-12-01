@@ -16,10 +16,9 @@ interface GeneralSectionProps {
   config: ProjectConfig;
   updateConfig: (updates: Partial<ProjectConfig>) => void;
   validationError?: 'project-name' | 'github-source' | 'target-url' | 'upload-file' | null;
-  isEditMode?: boolean;
 }
 
-export function GeneralSection({ config, updateConfig, validationError, isEditMode = false }: GeneralSectionProps) {
+export function GeneralSection({ config, updateConfig, validationError }: GeneralSectionProps) {
   const [checkingName, setCheckingName] = useState(false);
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
   const [repoSelectorOpen, setRepoSelectorOpen] = useState(false);
@@ -198,7 +197,6 @@ export function GeneralSection({ config, updateConfig, validationError, isEditMo
               value={config.projectName}
               onChange={(e) => updateConfig({ projectName: e.target.value })}
               onBlur={handleProjectNameBlur}
-              disabled={isEditMode}
               className={`pr-10 ${validationError === 'project-name' ? 'border-red-500 ring-2 ring-red-500 ring-offset-2' : ''}`}
             />
             {checkingName && (
@@ -217,7 +215,6 @@ export function GeneralSection({ config, updateConfig, validationError, isEditMo
             placeholder="1.0.0"
             value={config.apiVersion}
             onChange={(e) => updateConfig({ apiVersion: e.target.value })}
-            disabled={isEditMode}
             className="w-32"
           />
         </div>
@@ -334,7 +331,7 @@ export function GeneralSection({ config, updateConfig, validationError, isEditMo
             )}
 
             {/* GitHub Spec Selected Summary */}
-            {config.githubUser && config.githubRepo ? (
+            {config.githubUser && config.githubRepo && config.githubPath ? (
               <Card className="border-green-200 bg-green-50/50">
                 <CardContent className="pt-4">
                   <div className="flex items-start justify-between gap-2">
@@ -342,12 +339,11 @@ export function GeneralSection({ config, updateConfig, validationError, isEditMo
                       <div className="flex items-center gap-2 mb-1">
                         <Check className="h-4 w-4 text-green-600" />
                         <span className="text-sm font-medium text-green-900">
-                          {config.githubPath ? 'OpenAPI Spec Selected' : 'GitHub Repository Selected'}
+                          OpenAPI Spec Selected
                         </span>
                       </div>
                       <p className="text-xs text-green-700 font-mono">
-                        {config.githubUser}/{config.githubRepo}
-                        {config.githubPath && `/${config.githubPath}`}
+                        {config.githubUser}/{config.githubRepo}/{config.githubPath}
                       </p>
                       <p className="text-xs text-green-700 mt-1">
                         Branch: {config.githubBranch}
@@ -373,7 +369,7 @@ export function GeneralSection({ config, updateConfig, validationError, isEditMo
                         size="sm"
                         onClick={handleBrowseGitHub}
                       >
-                        {config.githubPath ? 'Change' : 'Select Spec File'}
+                        Change
                       </Button>
                     </div>
                   </div>

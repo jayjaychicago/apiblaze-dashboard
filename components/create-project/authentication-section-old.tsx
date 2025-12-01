@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, Plus, X, Users, Key, Copy, Check, Trash2 } from 'lucide-react';
+import { AlertCircle, Plus, X, Users, Key, Copy, Check } from 'lucide-react';
 import { ProjectConfig, SocialProvider } from './types';
 import { useState, useEffect } from 'react';
 import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
@@ -95,665 +95,12 @@ const PROVIDER_SETUP_GUIDES: Record<SocialProvider, string[]> = {
   other: ['Configure your custom OAuth provider'],
 };
 
-// Edit Mode Management UI Component
-function EditModeManagementUI({ 
-  config, 
-  updateConfig, 
-  project,
-  initialUserPoolId
-}: { 
-  config: ProjectConfig; 
-  updateConfig: (updates: Partial<ProjectConfig>) => void; 
-  project?: Project | null;
-  initialUserPoolId?: string;
-}) {
-  // UserPool management
-  const [userPools, setUserPools] = useState<UserPool[]>([]);
-  const [loadingUserPools, setLoadingUserPools] = useState(false);
-  const [selectedUserPoolId, setSelectedUserPoolId] = useState<string | undefined>(initialUserPoolId || config.userPoolId);
-  
-  // AppClient management
-  const [appClients, setAppClients] = useState<AppClient[]>([]);
-  const [loadingAppClients, setLoadingAppClients] = useState(false);
-  const [selectedAppClientId, setSelectedAppClientId] = useState<string | undefined>(config.appClientId);
-  const [appClientDetails, setAppClientDetails] = useState<AppClientResponse | null>(null);
-  const [loadingAppClientDetails, setLoadingAppClientDetails] = useState(false);
-  const [showAddAppClient, setShowAddAppClient] = useState(false);
-  const [newAppClientName, setNewAppClientName] = useState('');
-  
-  // Provider management
-  const [providers, setProviders] = useState<SocialProviderResponse[]>([]);
-  const [loadingProviders, setLoadingProviders] = useState(false);
-  const [showAddProvider, setShowAddProvider] = useState(false);
-  const [newProvider, setNewProvider] = useState({
-    type: 'google' as SocialProvider,
-    clientId: '',
-    clientSecret: '',
-    domain: '',
-  });
-  
-  // UI state
-  const [copiedField, setCopiedField] = useState<string | null>(null);
-
-  // Load UserPools on mount
-  useEffect(() => {
-    loadUserPools();
-  }, []);
-
-  // In edit mode, load UserPool from project config and prepopulate
-  // Or use initialUserPoolId if provided (for create mode)
-  // This must run before the UserPool selection effect
-  useEffect(() => {
-    if (initialUserPoolId && initialUserPoolId !== selectedUserPoolId) {
-      setSelectedUserPoolId(initialUserPoolId);
-    } else if (project?.config) {
-      const projectConfig = project.config as Record<string, unknown>;
-      const userPoolId = projectConfig.user_pool_id as string | undefined;
-      
-      if (userPoolId && userPoolId !== selectedUserPoolId) {
-        setSelectedUserPoolId(userPoolId);
-        // AppClients will be loaded automatically when UserPool is set
-        // We don't store app_client_id in config anymore, so user selects it
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project, initialUserPoolId, selectedUserPoolId]);
-
-  // Load AppClients when UserPool is selected
-  useEffect(() => {
-    if (selectedUserPoolId) {
-      loadAppClients(selectedUserPoolId);
-      updateConfig({ userPoolId: selectedUserPoolId });
-      // Clear AppClient selection when UserPool changes
-      setSelectedAppClientId(undefined);
-      setAppClientDetails(null);
-      setProviders([]);
-    } else {
-      setAppClients([]);
-      setSelectedAppClientId(undefined);
-      updateConfig({ userPoolId: undefined, appClientId: undefined });
-    }
-  }, [selectedUserPoolId]);
-
-  // Load AppClient details and Providers when AppClient is selected
-  useEffect(() => {
-    if (selectedUserPoolId && selectedAppClientId) {
-      loadAppClientDetails(selectedUserPoolId, selectedAppClientId);
-      loadProviders(selectedUserPoolId, selectedAppClientId);
-      updateConfig({ appClientId: selectedAppClientId });
-    } else {
-      setAppClientDetails(null);
-      setProviders([]);
-      updateConfig({ appClientId: undefined });
-    }
-  }, [selectedUserPoolId, selectedAppClientId]);
-
-  const loadUserPools = async () => {
-    setLoadingUserPools(true);
-    try {
-      const pools = await api.listUserPools();
-      setUserPools(Array.isArray(pools) ? pools : []);
-    } catch (error) {
-      console.error('Error loading user pools:', error);
-      setUserPools([]);
-    } finally {
-      setLoadingUserPools(false);
-    }
-  };
-
-  const loadAppClients = async (poolId: string) => {
-    setLoadingAppClients(true);
-    try {
-      const clients = await api.listAppClients(poolId);
-      const clientsArray = Array.isArray(clients) ? clients : [];
-      setAppClients(clientsArray);
-      
-      // Auto-select the last AppClient if none is selected and clients exist
-      if (clientsArray.length > 0 && !selectedAppClientId) {
-        const lastClient = clientsArray[clientsArray.length - 1];
-        setSelectedAppClientId(lastClient.id);
-      }
-    } catch (error) {
-      console.error('Error loading app clients:', error);
-      setAppClients([]);
-    } finally {
-      setLoadingAppClients(false);
-    }
-  };
-
-  const loadAppClientDetails = async (poolId: string, clientId: string) => {
-    setLoadingAppClientDetails(true);
-    try {
-      const client = await api.getAppClient(poolId, clientId);
-      setAppClientDetails(client);
-    } catch (error) {
-      console.error('Error loading app client details:', error);
-      setAppClientDetails(null);
-    } finally {
-      setLoadingAppClientDetails(false);
-    }
-  };
-
-  const loadProviders = async (poolId: string, clientId: string) => {
-    setLoadingProviders(true);
-    try {
-      const providerList = await api.listProviders(poolId, clientId);
-      setProviders(Array.isArray(providerList) ? providerList : []);
-    } catch (error) {
-      console.error('Error loading providers:', error);
-      setProviders([]);
-    } finally {
-      setLoadingProviders(false);
-    }
-  };
-
-  const handleCreateAppClient = async () => {
-    if (!selectedUserPoolId || !newAppClientName.trim()) return;
-    
-    try {
-      const newClient = await api.createAppClient(selectedUserPoolId, {
-        name: newAppClientName,
-        scopes: ['email', 'openid', 'profile'],
-      });
-      
-      await loadAppClients(selectedUserPoolId);
-      const clientId = (newClient as { id: string }).id;
-      setSelectedAppClientId(clientId);
-      setNewAppClientName('');
-      setShowAddAppClient(false);
-    } catch (error) {
-      console.error('Error creating app client:', error);
-      alert('Failed to create app client');
-    }
-  };
-
-  const handleDeleteAppClient = async (clientId: string) => {
-    if (!selectedUserPoolId) return;
-    if (!confirm('Are you sure you want to delete this AppClient? This action cannot be undone.')) return;
-    
-    try {
-      await api.deleteAppClient(selectedUserPoolId, clientId);
-      await loadAppClients(selectedUserPoolId);
-      if (selectedAppClientId === clientId) {
-        setSelectedAppClientId(undefined);
-      }
-    } catch (error) {
-      console.error('Error deleting app client:', error);
-      alert('Failed to delete app client');
-    }
-  };
-
-  const handleAddProvider = async () => {
-    if (!selectedUserPoolId || !selectedAppClientId) return;
-    if (!newProvider.clientId || !newProvider.clientSecret) {
-      alert('Please provide Client ID and Client Secret');
-      return;
-    }
-    
-    try {
-      await api.addProvider(selectedUserPoolId, selectedAppClientId, {
-        type: newProvider.type,
-        clientId: newProvider.clientId,
-        clientSecret: newProvider.clientSecret,
-        domain: newProvider.domain || PROVIDER_DOMAINS[newProvider.type],
-      });
-      
-      await loadProviders(selectedUserPoolId, selectedAppClientId);
-      setNewProvider({ type: 'google', clientId: '', clientSecret: '', domain: '' });
-      setShowAddProvider(false);
-    } catch (error) {
-      console.error('Error adding provider:', error);
-      alert('Failed to add provider');
-    }
-  };
-
-  const handleDeleteProvider = async (providerId: string) => {
-    if (!selectedUserPoolId || !selectedAppClientId) return;
-    if (!confirm('Are you sure you want to delete this provider?')) return;
-    
-    try {
-      await api.removeProvider(selectedUserPoolId, selectedAppClientId, providerId);
-      await loadProviders(selectedUserPoolId, selectedAppClientId);
-    } catch (error) {
-      console.error('Error deleting provider:', error);
-      alert('Failed to delete provider');
-    }
-  };
-
-  const copyToClipboard = async (text: string, field: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <Label className="text-base font-semibold">OAuth Configuration</Label>
-        <p className="text-sm text-muted-foreground">
-          Manage UserPool, AppClients, and Providers for this project
-        </p>
-      </div>
-
-      {/* UserPool Selection */}
-      <div>
-        <Label htmlFor="userPoolSelect" className="text-sm font-medium">
-          UserPool
-        </Label>
-        <Select
-          value={selectedUserPoolId || ''}
-          onValueChange={(value) => setSelectedUserPoolId(value || undefined)}
-          disabled={loadingUserPools}
-        >
-          <SelectTrigger className="mt-1">
-            <SelectValue placeholder={loadingUserPools ? "Loading..." : "Select a UserPool"} />
-          </SelectTrigger>
-          <SelectContent>
-            {userPools.map((pool) => (
-              <SelectItem key={pool.id} value={pool.id}>
-                {pool.name} ({pool.id})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-muted-foreground mt-1">
-          Note: Changing UserPool will change the AppClient selection
-        </p>
-      </div>
-
-      {/* AppClient Management */}
-      {selectedUserPoolId && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">AppClients</Label>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAddAppClient(!showAddAppClient)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add AppClient
-            </Button>
-          </div>
-
-          {showAddAppClient && (
-            <Card className="border-blue-200 bg-blue-50/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm">Create New AppClient</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <Label htmlFor="appClientName" className="text-xs">Name</Label>
-                  <Input
-                    id="appClientName"
-                    value={newAppClientName}
-                    onChange={(e) => setNewAppClientName(e.target.value)}
-                    placeholder="my-app-client"
-                    className="mt-1"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={handleCreateAppClient}
-                    disabled={!newAppClientName.trim()}
-                  >
-                    Create
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setShowAddAppClient(false);
-                      setNewAppClientName('');
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {loadingAppClients ? (
-            <div className="text-sm text-muted-foreground">Loading AppClients...</div>
-          ) : appClients.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No AppClients found. Create one to continue.</div>
-          ) : (
-            <div className="space-y-2">
-              {appClients.map((client) => (
-                <Card
-                  key={client.id}
-                  className={`cursor-pointer transition-colors ${
-                    selectedAppClientId === client.id
-                      ? 'border-blue-500 bg-blue-50/50'
-                      : 'border-gray-200'
-                  }`}
-                  onClick={() => setSelectedAppClientId(client.id)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium text-sm">{client.name}</div>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          ID: {client.clientId}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {selectedAppClientId === client.id && (
-                          <Badge variant="default" className="text-xs">
-                            Selected
-                          </Badge>
-                        )}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteAppClient(client.id);
-                          }}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* AppClient Details and Providers */}
-      {selectedUserPoolId && selectedAppClientId && (
-        <div className="space-y-4">
-          {/* AppClient Credentials */}
-          {appClientDetails && (
-            <Card className="border-blue-200 bg-blue-50/50">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Key className="h-4 w-4" />
-                  APIBlaze OAuth Credentials
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Use these credentials to configure your OAuth client
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {loadingAppClientDetails ? (
-                  <div className="text-sm text-muted-foreground">Loading credentials...</div>
-                ) : (
-                  <>
-                    <div>
-                      <Label className="text-xs font-medium">Client ID</Label>
-                      <div className="flex items-center gap-2 mt-1">
-                        <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
-                          {appClientDetails.client_id || appClientDetails.clientId}
-                        </code>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(appClientDetails.client_id || appClientDetails.clientId || '', 'clientId')}
-                          className="h-8 w-8 p-0"
-                        >
-                          {copiedField === 'clientId' ? (
-                            <Check className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <Copy className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                    {appClientDetails.clientSecret && (
-                      <div>
-                        <Label className="text-xs font-medium">Client Secret</Label>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          ⚠️ This secret is only shown once. Save it securely.
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
-                            {appClientDetails.clientSecret}
-                          </code>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(appClientDetails.clientSecret!, 'clientSecret')}
-                            className="h-8 w-8 p-0"
-                          >
-                            {copiedField === 'clientSecret' ? (
-                              <Check className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    {project?.urls?.auth && (
-                      <div>
-                        <Label className="text-xs font-medium">Token Signing Key URL (JWKS)</Label>
-                        <p className="text-xs text-muted-foreground mb-1">
-                          Public key endpoint for JWT verification
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
-                            {project.urls.auth}/.well-known/jwks.json
-                          </code>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(`${project.urls.auth}/.well-known/jwks.json`, 'jwksUrl')}
-                            className="h-8 w-8 p-0"
-                          >
-                            {copiedField === 'jwksUrl' ? (
-                              <Check className="h-4 w-4 text-green-600" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    {(() => {
-                      const redirectUris = appClientDetails.redirectUris || appClientDetails.redirect_uris || [];
-                      return redirectUris.length > 0 && (
-                        <div>
-                          <Label className="text-xs font-medium">Authorized Redirect URIs</Label>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            Configure these redirect URIs in your OAuth client
-                          </p>
-                          <div className="space-y-1 mt-1">
-                            {redirectUris.map((uri: string, idx: number) => (
-                              <div key={idx} className="flex items-center gap-2">
-                                <code className="flex-1 text-xs bg-white px-2 py-1 rounded border font-mono break-all">
-                                  {uri}
-                                </code>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => copyToClipboard(uri, `redirectUri-${idx}`)}
-                                  className="h-8 w-8 p-0"
-                                >
-                                  {copiedField === `redirectUri-${idx}` ? (
-                                    <Check className="h-4 w-4 text-green-600" />
-                                  ) : (
-                                    <Copy className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Providers Management */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Third-Party OAuth Providers</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAddProvider(!showAddProvider)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Provider
-              </Button>
-            </div>
-
-            {showAddProvider && (
-              <Card className="border-green-200 bg-green-50/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Add OAuth Provider</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <Label htmlFor="providerType" className="text-xs">Provider Type</Label>
-                    <Select
-                      value={newProvider.type}
-                      onValueChange={(value) => setNewProvider({
-                        ...newProvider,
-                        type: value as SocialProvider,
-                        domain: PROVIDER_DOMAINS[value as SocialProvider],
-                      })}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="google">Google</SelectItem>
-                        <SelectItem value="microsoft">Microsoft</SelectItem>
-                        <SelectItem value="github">GitHub</SelectItem>
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                        <SelectItem value="auth0">Auth0</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="providerDomain" className="text-xs">Domain</Label>
-                    <Input
-                      id="providerDomain"
-                      value={newProvider.domain}
-                      onChange={(e) => setNewProvider({ ...newProvider, domain: e.target.value })}
-                      placeholder="https://accounts.google.com"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="providerClientId" className="text-xs">Client ID</Label>
-                    <Input
-                      id="providerClientId"
-                      value={newProvider.clientId}
-                      onChange={(e) => setNewProvider({ ...newProvider, clientId: e.target.value })}
-                      placeholder="your-client-id"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="providerClientSecret" className="text-xs">Client Secret</Label>
-                    <Input
-                      id="providerClientSecret"
-                      type="password"
-                      value={newProvider.clientSecret}
-                      onChange={(e) => setNewProvider({ ...newProvider, clientSecret: e.target.value })}
-                      placeholder="your-client-secret"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleAddProvider}
-                      disabled={!newProvider.clientId || !newProvider.clientSecret}
-                    >
-                      Add Provider
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setShowAddProvider(false);
-                        setNewProvider({ type: 'google', clientId: '', clientSecret: '', domain: '' });
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {loadingProviders ? (
-              <div className="text-sm text-muted-foreground">Loading providers...</div>
-            ) : providers.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No providers configured. Add one to enable third-party OAuth.</div>
-            ) : (
-              <div className="space-y-2">
-                {providers.map((provider) => (
-                  <Card key={provider.id} className="border-gray-200">
-                    <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-medium text-sm capitalize">{provider.type}</div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Domain: {provider.domain}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Client ID: {provider.client_id || provider.clientId}
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteProvider(provider.id)}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function AuthenticationSection({ config, updateConfig, isEditMode = false, project }: AuthenticationSectionProps) {
   const [newScope, setNewScope] = useState('');
   const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
   const [selectedAppClient, setSelectedAppClient] = useState<AppClient & { userPoolId: string } | null>(null);
   const [existingUserPools, setExistingUserPools] = useState<UserPool[]>([]);
   const [loadingUserPools, setLoadingUserPools] = useState(false);
-  const [selectedUserPoolForCreate, setSelectedUserPoolForCreate] = useState<string | undefined>(config.userPoolId);
   const [appClientDetails, setAppClientDetails] = useState<AppClientResponse | null>(null);
   const [loadingAppClient, setLoadingAppClient] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -902,21 +249,8 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
     setUserPoolModalOpen(false); 
   };
 
-  const handleSelectUserPoolForCreate = (userPoolId: string) => {
-    setSelectedUserPoolForCreate(userPoolId);
-    updateConfig({
-      useUserPool: true,
-      userPoolId: userPoolId,
-      bringOwnProvider: false,
-      identityProviderClientId: '',
-      identityProviderClientSecret: '',
-      identityProviderDomain: '',
-    });
-  };
-
   const handleClearUserPool = () => {
     setSelectedAppClient(null);
-    setSelectedUserPoolForCreate(undefined);
     updateConfig({
       useUserPool: false,
       userPoolId: undefined,
@@ -1128,113 +462,196 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
         {/* OAuth Provider Configuration */}
         {config.enableSocialAuth && (
           <div className="space-y-4 pl-4 border-l-2 border-blue-200">
-            {/* Edit Mode: Show UserPool/AppClient/Provider Management UI */}
-            {isEditMode ? (
-              <EditModeManagementUI
-                config={config}
-                updateConfig={updateConfig}
-                project={project}
-              />
-            ) : (
-              <>
-                {/* Create Mode: Simplified UserPool selection */}
-                {/* Show UserPool selection only if UserPools exist */}
-                {existingUserPools.length > 0 && (
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold">OAuth Provider Configuration</Label>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      Choose one: Use an existing UserPool or configure a new UserPool (a pool of users you&apos;ll be able to reuse between various APIs)
-                    </p>
+            {/* Show UserPool selection only if UserPools exist */}
+            {existingUserPools.length > 0 && (
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">OAuth Provider Configuration</Label>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Choose one: Use an existing UserPool or configure a new UserPool (a pool of users you&apos;ll be able to reuse between various APIs)
+                </p>
 
-                    {/* Option 1: Use Existing UserPool */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          id="useExistingUserPool"
-                          name="oauthOption"
-                          checked={config.useUserPool && !!selectedUserPoolForCreate}
-                          onChange={() => {
-                            // Clear bringOwnProvider when switching to existing UserPool
-                            updateConfig({
-                              bringOwnProvider: false,
-                              identityProviderClientId: '',
-                              identityProviderClientSecret: '',
-                              identityProviderDomain: '',
-                            });
-                          }}
-                          className="h-4 w-4"
-                        />
-                        <Label htmlFor="useExistingUserPool" className="text-sm font-medium cursor-pointer">
-                          Use Existing UserPool
-                        </Label>
-                      </div>
-                      
-                      {/* Simple UserPool Selector */}
-                      {config.useUserPool && selectedUserPoolForCreate ? (
-                        <div className="ml-6 space-y-4">
-                          <div>
-                            <Label htmlFor="userPoolSelect" className="text-sm font-medium">
-                              UserPool
-                            </Label>
-                            <Select
-                              value={selectedUserPoolForCreate}
-                              onValueChange={(value) => handleSelectUserPoolForCreate(value)}
-                              disabled={loadingUserPools}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue placeholder={loadingUserPools ? "Loading..." : "Select a UserPool"} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {existingUserPools.map((pool) => (
-                                  <SelectItem key={pool.id} value={pool.id}>
-                                    {pool.name} ({pool.id})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+
+                {/* Option 1: Use Existing UserPool */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="useExistingUserPool"
+                      name="oauthOption"
+                      checked={config.useUserPool && !!selectedAppClient}
+                      onChange={() => {
+                        // Clear bringOwnProvider when switching to existing UserPool
+                        updateConfig({
+                          bringOwnProvider: false,
+                          identityProviderClientId: '',
+                          identityProviderClientSecret: '',
+                          identityProviderDomain: '',
+                        });
+                        if (!config.useUserPool || !selectedAppClient) {
+                          setUserPoolModalOpen(true);
+                        }
+                      }}
+                      className="h-4 w-4"
+                    />
+                    <Label htmlFor="useExistingUserPool" className="text-sm font-medium cursor-pointer">
+                      Use Existing UserPool
+                    </Label>
+                  </div>
+                  {config.useUserPool && selectedAppClient ? (
+                    <>
+                      <Card className="border-green-200 bg-green-50/50 ml-6">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-sm flex items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              Selected UserPool
+                            </CardTitle>
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
-                              onClick={handleClearUserPool}
-                              className="mt-2"
+                              onClick={() => {
+                                handleClearUserPool();
+                                setUserPoolModalOpen(true);
+                              }}
                             >
-                              Clear Selection
+                              Change
                             </Button>
                           </div>
-                          
-                          {/* Show EditModeManagementUI once UserPool is selected */}
-                          <EditModeManagementUI
-                            config={config}
-                            updateConfig={updateConfig}
-                            project={null}
-                            initialUserPoolId={selectedUserPoolForCreate}
-                          />
-                        </div>
-                      ) : (
-                        <div className="ml-6">
-                          <Label htmlFor="userPoolSelect" className="text-sm font-medium">
-                            Select UserPool
-                          </Label>
-                          <Select
-                            value=""
-                            onValueChange={(value) => handleSelectUserPoolForCreate(value)}
-                            disabled={loadingUserPools}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue placeholder={loadingUserPools ? "Loading..." : "Select a UserPool"} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {existingUserPools.map((pool) => (
-                                <SelectItem key={pool.id} value={pool.id}>
-                                  {pool.name} ({pool.id})
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <div>
+                            <Label className="text-xs">Client ID</Label>
+                            <code className="text-xs bg-white px-2 py-1 rounded border block font-mono">
+                              {selectedAppClient.clientId}
+                            </code>
+                          </div>
+                          {selectedAppClient.scopes && selectedAppClient.scopes.length > 0 && (
+                            <div>
+                              <Label className="text-xs">Scopes</Label>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {selectedAppClient.scopes.map((scope) => (
+                                  <Badge key={scope} variant="secondary" className="text-xs">
+                                    {scope}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+
+                      {/* AppClient Credentials Display */}
+                      {config.useUserPool && config.userPoolId && config.appClientId && (
+                        <Card className="mt-4 border-blue-200 bg-blue-50/50 ml-6">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <Key className="h-4 w-4" />
+                            App Client Credentials
+                          </CardTitle>
+                          <CardDescription className="text-xs">
+                            Use these credentials to configure your OAuth client
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          {loadingAppClient ? (
+                            <div className="text-sm text-muted-foreground">Loading credentials...</div>
+                          ) : appClientDetails ? (
+                            <>
+                              <div>
+                                <Label className="text-xs font-medium">Client ID</Label>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
+                                    {appClientDetails.client_id || appClientDetails.clientId}
+                                  </code>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => copyToClipboard(appClientDetails.client_id || appClientDetails.clientId, 'clientId')}
+                                    className="h-8 w-8 p-0"
+                                  >
+                                    {copiedField === 'clientId' ? (
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    ) : (
+                                      <Copy className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                              {appClientDetails.clientSecret && (
+                                <div>
+                                  <Label className="text-xs font-medium">Client Secret</Label>
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    ⚠️ This secret is only shown once. Save it securely.
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <code className="flex-1 text-xs bg-white px-3 py-2 rounded border font-mono break-all">
+                                      {appClientDetails.clientSecret}
+                                    </code>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => copyToClipboard(appClientDetails.clientSecret!, 'clientSecret')}
+                                      className="h-8 w-8 p-0"
+                                    >
+                                      {copiedField === 'clientSecret' ? (
+                                        <Check className="h-4 w-4 text-green-600" />
+                                      ) : (
+                                        <Copy className="h-4 w-4" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                              {(appClientDetails.scopes || []).length > 0 && (
+                                <div>
+                                  <Label className="text-xs font-medium">Scopes</Label>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {appClientDetails.scopes.map((scope) => (
+                                      <Badge key={scope} variant="secondary" className="text-xs">
+                                        {scope}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {(appClientDetails.redirectUris || appClientDetails.redirect_uris || []).length > 0 && (
+                                <div>
+                                  <Label className="text-xs font-medium">Redirect URIs</Label>
+                                  <div className="space-y-1 mt-1">
+                                    {(appClientDetails.redirectUris || appClientDetails.redirect_uris || []).map((uri: string, idx: number) => (
+                                      <code key={idx} className="block text-xs bg-white px-2 py-1 rounded border font-mono">
+                                        {uri}
+                                      </code>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <div className="text-sm text-muted-foreground">Unable to load credentials</div>
+                          )}
+                        </CardContent>
+                      </Card>
                       )}
+                    </>
+                  ) : (
+                    <div className="ml-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setUserPoolModalOpen(true);
+                        }}
+                      >
+                        <Users className="mr-2 h-4 w-4" />
+                        Select UserPool
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Option 2: Configure New UserPool */}
@@ -1604,8 +1021,6 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                   </div>
                 )}
               </div>
-            )}
-              </>
             )}
           </div>
         )}

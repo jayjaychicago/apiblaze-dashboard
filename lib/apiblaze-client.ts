@@ -32,14 +32,6 @@ export interface CreateProxyPayload {
     client_secret: string;
     scopes?: string;
   };
-  user_pool_id?: string;
-  app_client_id?: string;
-  third_party_provider_config?: {
-    provider_type: string;
-    client_id: string;
-    domain?: string;
-    scopes?: string[];
-  };
   environments?: Record<string, { target: string; description?: string }>;
 }
 
