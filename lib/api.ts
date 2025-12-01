@@ -79,7 +79,31 @@ class ApiClient {
       throw new Error(error.error || 'API request failed');
     }
     
-    return (await response.json()) as T;
+    // Handle responses with no body (204 No Content, 205 Reset Content, etc.)
+    // These are common for DELETE operations
+    if (response.status === 204 || response.status === 205) {
+      return {} as T;
+    }
+    
+    // Check if response has content to parse
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      // No JSON content, return empty object
+      return {} as T;
+    }
+    
+    // Try to parse JSON, but handle empty responses gracefully
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      return {} as T;
+    }
+    
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      // If JSON parsing fails, return empty object
+      return {} as T;
+    }
   }
   
   // Projects
@@ -114,6 +138,12 @@ class ApiClient {
     };
     user_pool_id?: string;
     app_client_id?: string;
+    third_party_provider_config?: {
+      provider_type: string;
+      client_id: string;
+      domain?: string;
+      scopes?: string[];
+    };
     environments?: Record<string, { target: string }>;
     project_id?: string; // For updates
     api_version?: string; // For updates
@@ -152,6 +182,9 @@ class ApiClient {
     }
     if (data.app_client_id) {
       backendData.app_client_id = data.app_client_id;
+    }
+    if (data.third_party_provider_config) {
+      backendData.third_party_provider_config = data.third_party_provider_config;
     }
     if (data.environments) {
       backendData.environments = data.environments;
@@ -205,8 +238,8 @@ class ApiClient {
     });
   }
 
-  async deleteUserPool(poolId: string) {
-    return this.request(`/user-pools/${poolId}`, {
+  async deleteUserPool(poolId: string): Promise<void> {
+    await this.request(`/user-pools/${poolId}`, {
       method: 'DELETE',
     });
   }
@@ -250,8 +283,8 @@ class ApiClient {
     });
   }
 
-  async deleteAppClient(poolId: string, clientId: string) {
-    return this.request(`/user-pools/${poolId}/app-clients/${clientId}`, {
+  async deleteAppClient(poolId: string, clientId: string): Promise<void> {
+    await this.request(`/user-pools/${poolId}/app-clients/${clientId}`, {
       method: 'DELETE',
     });
   }
@@ -273,8 +306,8 @@ class ApiClient {
     });
   }
 
-  async removeProvider(poolId: string, clientId: string, providerId: string) {
-    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers/${providerId}`, {
+  async removeProvider(poolId: string, clientId: string, providerId: string): Promise<void> {
+    await this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers/${providerId}`, {
       method: 'DELETE',
     });
   }

@@ -219,11 +219,13 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     // The auth_config.client_id might be APIBlaze's client ID, not the third-party provider's
     const oauthConfig = projectConfig?.oauth_config as Record<string, unknown> | undefined;
     const authConfigForOAuth = projectConfig?.auth_config as Record<string, unknown> | undefined;
+    const thirdPartyProviderConfig = projectConfig?.third_party_provider_config as Record<string, unknown> | undefined;
     
     // IMPORTANT: Never extract client_id from auth_config as it might be APIBlaze's client ID
-    // Third-party provider credentials should ONLY come from:
-    // 1. oauth_config (old format, when NOT using UserPool)
-    // 2. Provider API (when using UserPool)
+    // Third-party provider credentials should come from (in priority order):
+    // 1. third_party_provider_config (new format, explicitly stores third-party provider details)
+    // 2. oauth_config (old format, when NOT using UserPool)
+    // 3. Provider API (when using UserPool, fetched via loadThirdPartyProvider)
     // The auth_config.client_id is likely APIBlaze's client ID, not the third-party provider's
     
     let providerType = 'github';
@@ -232,10 +234,24 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     let scopes: string[] = ['email', 'openid', 'profile'];
     let hasOAuthConfig = false;
     
-    // Only extract from oauth_config (old format) - never from auth_config
-    // auth_config is for APIBlaze's own configuration, not third-party provider
-    if (oauthConfig) {
-      // Old format with explicit oauth_config
+    // Priority 1: Check third_party_provider_config (new format)
+    if (thirdPartyProviderConfig) {
+      hasOAuthConfig = true;
+      providerType = (thirdPartyProviderConfig.provider_type as string || 'github');
+      providerClientId = (thirdPartyProviderConfig.client_id as string || '');
+      providerDomain = (thirdPartyProviderConfig.domain as string || '');
+      
+      // Extract scopes
+      if (thirdPartyProviderConfig.scopes) {
+        const providerScopes = thirdPartyProviderConfig.scopes;
+        scopes = Array.isArray(providerScopes) 
+          ? providerScopes as string[]
+          : typeof providerScopes === 'string'
+            ? providerScopes.split(' ')
+            : ['email', 'openid', 'profile'];
+      }
+    } else if (oauthConfig) {
+      // Priority 2: Old format with explicit oauth_config
       hasOAuthConfig = true;
       providerType = (oauthConfig.provider_type as string || 'github');
       providerClientId = (oauthConfig.client_id as string || '');
@@ -251,7 +267,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             : ['email', 'openid', 'profile'];
       }
     } else if (hasUserPool || hasAppClient) {
-      // Using UserPool: provider info should be fetched from Provider API
+      // Priority 3: Using UserPool: provider info should be fetched from Provider API
       // Don't extract from auth_config as it contains APIBlaze credentials
       // Will be populated when provider is fetched via loadThirdPartyProvider
       hasOAuthConfig = false; // Will be determined by whether providers exist
@@ -469,6 +485,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       let userPoolId: string | undefined;
       let appClientId: string | undefined;
       let oauthConfig;
+      let thirdPartyProviderConfig: {
+        provider_type: string;
+        client_id: string;
+        domain?: string;
+        scopes?: string[];
+      } | undefined;
 
       // Handle UserPool creation/selection
       // Defensive check: if authType is oauth, we MUST have a UserPool
@@ -550,6 +572,15 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               appClientId,
               provider: config.socialProvider,
             });
+            
+            // Store third-party provider config for the backend
+            // This will be sent separately from auth_config to avoid confusion
+            thirdPartyProviderConfig = {
+              provider_type: config.socialProvider,
+              client_id: config.identityProviderClientId,
+              domain: config.identityProviderDomain || undefined,
+              scopes: config.authorizedScopes,
+            };
           } catch (error) {
             console.error('Error creating UserPool automatically:', error);
             toast({
@@ -663,6 +694,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         oauth_config: oauthConfig,
         user_pool_id: userPoolId,
         app_client_id: appClientId,
+        third_party_provider_config: thirdPartyProviderConfig,
         environments: Object.keys(environments).length > 0 ? environments : undefined,
         // Include project_id and api_version for updates
         ...(currentProject ? {
