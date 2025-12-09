@@ -358,10 +358,14 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         } else if (config.bringOwnProvider) {
           console.log('[CreateProject] Creating UserPool with user-provided OAuth provider');
           // Validate OAuth provider fields
-          if (!config.identityProviderClientId || !config.identityProviderClientSecret) {
+          // Check if providers array exists and has items, otherwise check legacy fields
+          const hasProviders = config.providers && config.providers.length > 0;
+          const hasLegacyProvider = config.identityProviderClientId && config.identityProviderClientSecret;
+          
+          if (!hasProviders && !hasLegacyProvider) {
             toast({
               title: 'Validation Error',
-              description: 'Please provide Client ID and Client Secret for your OAuth provider',
+              description: 'Please add at least one OAuth provider with Client ID and Client Secret',
               variant: 'destructive',
             });
             setActiveTab('auth');
@@ -384,13 +388,27 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             const createdAppClientId = (appClient as { id: string }).id;
             const createdAppClientClientId = (appClient as { clientId: string }).clientId;
 
-            // 3. Add Provider to AppClient
-            await api.addProvider(createdUserPoolId, createdAppClientId, {
-              type: config.socialProvider,
-              clientId: config.identityProviderClientId,
-              clientSecret: config.identityProviderClientSecret,
-              domain: config.identityProviderDomain || undefined,
-            });
+            // 3. Add Provider(s) to AppClient
+            // Use providers array if available, otherwise fall back to legacy single provider
+            const providersToAdd = config.providers && config.providers.length > 0
+              ? config.providers
+              : (config.identityProviderClientId && config.identityProviderClientSecret
+                  ? [{
+                      type: config.socialProvider,
+                      clientId: config.identityProviderClientId,
+                      clientSecret: config.identityProviderClientSecret,
+                      domain: config.identityProviderDomain || undefined,
+                    }]
+                  : []);
+
+            for (const provider of providersToAdd) {
+              await api.addProvider(createdUserPoolId, createdAppClientId, {
+                type: provider.type,
+                clientId: provider.clientId,
+                clientSecret: provider.clientSecret,
+                domain: provider.domain || undefined,
+              });
+            }
 
             // Use the created UserPool and AppClient
             userPoolId = createdUserPoolId;

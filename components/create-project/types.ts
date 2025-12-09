@@ -47,6 +47,13 @@ export interface ProjectConfig {
   identityProviderClientId: string;
   identityProviderClientSecret: string;
   authorizedScopes: string[];
+  // Multiple providers for create mode (when bringOwnProvider is true)
+  providers?: Array<{
+    type: SocialProvider;
+    domain: string;
+    clientId: string;
+    clientSecret: string;
+  }>;
   
   // Target Servers
   targetServers: TargetServer[];

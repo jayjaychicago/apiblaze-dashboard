@@ -759,6 +759,14 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [thirdPartyProvider, setThirdPartyProvider] = useState<SocialProviderResponse | null>(null);
   const [loadingProvider, setLoadingProvider] = useState(false);
+  
+  // Multiple providers for create mode
+  const [newProvider, setNewProvider] = useState<{
+    type: SocialProvider;
+    domain: string;
+    clientId: string;
+    clientSecret: string;
+  } | null>(null);
 
   // Load existing UserPools when social auth is enabled
   useEffect(() => {
@@ -1139,7 +1147,7 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
               <>
                 {/* Create Mode: Simplified UserPool selection */}
                 {/* Show UserPool selection only if UserPools exist */}
-                {existingUserPools.length > 0 && (
+                {existingUserPools.length > 0 && !loadingUserPools && (
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold">OAuth Provider Configuration</Label>
                     <p className="text-xs text-muted-foreground mb-3">
@@ -1426,13 +1434,13 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                   )}
                 </div>
               </div>
-            )}
+                )}
 
-            {/* If no UserPools exist, show simplified UI - UserPool will be created automatically */}
-            {existingUserPools.length === 0 && !loadingUserPools && (
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-semibold">OAuth Provider Configuration</Label>
+                {/* If no UserPools exist, show simplified UI - UserPool will be created automatically */}
+                {existingUserPools.length === 0 && !loadingUserPools && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-semibold">OAuth Provider Configuration</Label>
                   <p className="text-xs text-muted-foreground mb-3 italic">
                     A user pool is a pool of users you&apos;ll be able to reuse between various APIs. A new UserPool will be created automatically.
                   </p>
@@ -1458,113 +1466,269 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                   />
                 </div>
 
-                {/* Provider Configuration - Two Column Layout */}
+                {/* Provider Configuration - Multiple Providers */}
                 {config.bringOwnProvider && (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left Column - Configuration Fields */}
-                    <div className="space-y-4">
-                      {/* Provider Selection */}
-                      <div>
-                        <Label htmlFor="socialProvider" className="text-sm">OAuth Provider</Label>
-                        <Select
-                          value={config.socialProvider}
-                          onValueChange={(value) => handleProviderChange(value as SocialProvider)}
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="google">Google</SelectItem>
-                            <SelectItem value="microsoft">Microsoft</SelectItem>
-                            <SelectItem value="github">GitHub</SelectItem>
-                            <SelectItem value="facebook">Facebook</SelectItem>
-                            <SelectItem value="auth0">Auth0</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {/* Provider Details */}
-                      <div>
-                        <Label htmlFor="identityProviderDomain" className="text-sm">
-                          Identity Provider Domain
-                        </Label>
-                        <Input
-                          id="identityProviderDomain"
-                          placeholder="https://accounts.google.com"
-                          value={config.identityProviderDomain}
-                          onChange={(e) => updateConfig({ identityProviderDomain: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="identityProviderClientId" className="text-sm">
-                          Client ID
-                        </Label>
-                        <Input
-                          id="identityProviderClientId"
-                          placeholder="your-client-id"
-                          value={config.identityProviderClientId}
-                          onChange={(e) => updateConfig({ identityProviderClientId: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="identityProviderClientSecret" className="text-sm">
-                          Client Secret
-                        </Label>
-                        <Input
-                          id="identityProviderClientSecret"
-                          type="password"
-                          placeholder="your-client-secret"
-                          value={config.identityProviderClientSecret}
-                          onChange={(e) => updateConfig({ identityProviderClientSecret: e.target.value })}
-                          className="mt-1"
-                        />
-                      </div>
-
-                      {/* Authorized Scopes */}
-                      <div>
-                        <Label className="text-sm">Authorized Scopes</Label>
-                        <p className="text-xs text-muted-foreground mb-2">
-                          Default mandatory scopes: email, openid, profile
-                        </p>
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {config.authorizedScopes.map((scope) => (
-                            <Badge key={scope} variant="secondary" className="text-xs">
-                              {scope}
-                              {!['email', 'openid', 'profile'].includes(scope) && (
-                                <X
-                                  className="ml-1 h-3 w-3 cursor-pointer"
-                                  onClick={() => removeScope(scope)}
-                                />
-                              )}
-                            </Badge>
-                          ))}
-                        </div>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Add custom scope"
-                            value={newScope}
-                            onChange={(e) => setNewScope(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                                addScope();
-                              }
-                            }}
-                          />
-                          <Button type="button" size="sm" onClick={addScope}>
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-semibold">OAuth Providers</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewProvider({
+                          type: 'google',
+                          domain: PROVIDER_DOMAINS.google,
+                          clientId: '',
+                          clientSecret: '',
+                        })}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Provider
+                      </Button>
                     </div>
 
-                    {/* Right Column - Important Messages & Setup Guide */}
-                    <div className="space-y-4">
+                    {/* Existing Providers List */}
+                    {config.providers && config.providers.length > 0 && (
+                      <div className="space-y-2">
+                        {config.providers.map((provider, index) => (
+                          <Card key={index} className="border-gray-200">
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 space-y-3">
+                                  <div>
+                                    <Label className="text-xs font-medium">Provider Type</Label>
+                                    <div className="text-sm font-medium capitalize mt-1">{provider.type}</div>
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs font-medium">Domain</Label>
+                                    <code className="text-xs bg-white px-2 py-1 rounded border block font-mono mt-1">
+                                      {provider.domain}
+                                    </code>
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs font-medium">Client ID</Label>
+                                    <code className="text-xs bg-white px-2 py-1 rounded border block font-mono mt-1">
+                                      {provider.clientId}
+                                    </code>
+                                  </div>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    const updatedProviders = config.providers?.filter((_, i) => i !== index) || [];
+                                    updateConfig({ providers: updatedProviders });
+                                  }}
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Add New Provider Form */}
+                    {newProvider && (
+                      <Card className="border-green-200 bg-green-50/50">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm">Add OAuth Provider</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label htmlFor="newProviderType" className="text-xs">Provider Type</Label>
+                            <Select
+                              value={newProvider.type}
+                              onValueChange={(value) => setNewProvider({
+                                ...newProvider,
+                                type: value as SocialProvider,
+                                domain: PROVIDER_DOMAINS[value as SocialProvider],
+                              })}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="google">Google</SelectItem>
+                                <SelectItem value="microsoft">Microsoft</SelectItem>
+                                <SelectItem value="github">GitHub</SelectItem>
+                                <SelectItem value="facebook">Facebook</SelectItem>
+                                <SelectItem value="auth0">Auth0</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="newProviderDomain" className="text-xs">Domain</Label>
+                            <Input
+                              id="newProviderDomain"
+                              value={newProvider.domain}
+                              onChange={(e) => setNewProvider({ ...newProvider, domain: e.target.value })}
+                              placeholder="https://accounts.google.com"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="newProviderClientId" className="text-xs">Client ID</Label>
+                            <Input
+                              id="newProviderClientId"
+                              value={newProvider.clientId}
+                              onChange={(e) => setNewProvider({ ...newProvider, clientId: e.target.value })}
+                              placeholder="your-client-id"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="newProviderClientSecret" className="text-xs">Client Secret</Label>
+                            <Input
+                              id="newProviderClientSecret"
+                              type="password"
+                              value={newProvider.clientSecret}
+                              onChange={(e) => setNewProvider({ ...newProvider, clientSecret: e.target.value })}
+                              placeholder="your-client-secret"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => {
+                                if (!newProvider.clientId || !newProvider.clientSecret) {
+                                  alert('Please provide Client ID and Client Secret');
+                                  return;
+                                }
+                                const updatedProviders = [...(config.providers || []), newProvider];
+                                updateConfig({ providers: updatedProviders });
+                                setNewProvider(null);
+                              }}
+                              disabled={!newProvider.clientId || !newProvider.clientSecret}
+                            >
+                              Add Provider
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setNewProvider(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Legacy single provider fields (for backward compatibility, but hidden if providers array exists) */}
+                    {(!config.providers || config.providers.length === 0) && (
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Left Column - Configuration Fields */}
+                        <div className="space-y-4">
+                          {/* Provider Selection */}
+                          <div>
+                            <Label htmlFor="socialProvider" className="text-sm">OAuth Provider</Label>
+                            <Select
+                              value={config.socialProvider}
+                              onValueChange={(value) => handleProviderChange(value as SocialProvider)}
+                            >
+                              <SelectTrigger className="mt-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="google">Google</SelectItem>
+                                <SelectItem value="microsoft">Microsoft</SelectItem>
+                                <SelectItem value="github">GitHub</SelectItem>
+                                <SelectItem value="facebook">Facebook</SelectItem>
+                                <SelectItem value="auth0">Auth0</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {/* Provider Details */}
+                          <div>
+                            <Label htmlFor="identityProviderDomain" className="text-sm">
+                              Identity Provider Domain
+                            </Label>
+                            <Input
+                              id="identityProviderDomain"
+                              placeholder="https://accounts.google.com"
+                              value={config.identityProviderDomain}
+                              onChange={(e) => updateConfig({ identityProviderDomain: e.target.value })}
+                              className="mt-1"
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="identityProviderClientId" className="text-sm">
+                              Client ID
+                            </Label>
+                            <Input
+                              id="identityProviderClientId"
+                              placeholder="your-client-id"
+                              value={config.identityProviderClientId}
+                              onChange={(e) => updateConfig({ identityProviderClientId: e.target.value })}
+                              className="mt-1"
+                            />
+                          </div>
+
+                          <div>
+                            <Label htmlFor="identityProviderClientSecret" className="text-sm">
+                              Client Secret
+                            </Label>
+                            <Input
+                              id="identityProviderClientSecret"
+                              type="password"
+                              placeholder="your-client-secret"
+                              value={config.identityProviderClientSecret}
+                              onChange={(e) => updateConfig({ identityProviderClientSecret: e.target.value })}
+                              className="mt-1"
+                            />
+                          </div>
+
+                          {/* Authorized Scopes */}
+                          <div>
+                            <Label className="text-sm">Authorized Scopes</Label>
+                            <p className="text-xs text-muted-foreground mb-2">
+                              Default mandatory scopes: email, openid, profile
+                            </p>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              {config.authorizedScopes.map((scope) => (
+                                <Badge key={scope} variant="secondary" className="text-xs">
+                                  {scope}
+                                  {!['email', 'openid', 'profile'].includes(scope) && (
+                                    <X
+                                      className="ml-1 h-3 w-3 cursor-pointer"
+                                      onClick={() => removeScope(scope)}
+                                    />
+                                  )}
+                                </Badge>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Add custom scope"
+                                value={newScope}
+                                onChange={(e) => setNewScope(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    addScope();
+                                  }
+                                }}
+                              />
+                              <Button type="button" size="sm" onClick={addScope}>
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Column - Important Messages & Setup Guide */}
+                        <div className="space-y-4">
                       {/* Important Callback URL */}
                       <Card className="border-orange-200 bg-orange-50/50">
                         <CardHeader className="pb-3">
@@ -1602,9 +1766,11 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                       </Card>
                     </div>
                   </div>
+                    )}
+                  </div>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
               </>
             )}
           </div>

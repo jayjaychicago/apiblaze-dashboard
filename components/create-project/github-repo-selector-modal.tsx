@@ -25,6 +25,7 @@ import {
   GitBranch,
 } from 'lucide-react';
 import { ProjectConfig } from './types';
+import { fetchGitHubAPI } from '@/lib/github-api';
 
 interface GitHubRepoSelectorModalProps {
   open: boolean;
@@ -93,13 +94,19 @@ export function GitHubRepoSelectorModal({
     setIsLoading(true);
     try {
       // Call backend API to get user's GitHub repositories (using NextAuth session)
-      const response = await fetch('/api/github/repos', {
-        credentials: 'include', // Include session cookie
-      });
+      const response = await fetchGitHubAPI('/api/github/repos');
 
       if (!response.ok) {
-        // If we get 401/403, GitHub app likely not installed
-        if (response.status === 401 || response.status === 403) {
+        // If we get 401, fetchGitHubAPI will automatically log out the user
+        if (response.status === 401) {
+          // Close modal - user will be redirected to login
+          onOpenChange(false);
+          // Clear installation status
+          localStorage.removeItem('github_app_installed');
+          return;
+        }
+        // If we get 403, GitHub app likely not installed
+        if (response.status === 403) {
           // Close modal and trigger reinstall
           onOpenChange(false);
           // Clear installation status
@@ -115,9 +122,7 @@ export function GitHubRepoSelectorModal({
       // If we get an empty array, might be installation issue
       if (!data || data.length === 0) {
         // Double-check installation status
-        const statusResponse = await fetch('/api/github/installation-status', {
-          credentials: 'include', // Include session cookie
-        });
+        const statusResponse = await fetchGitHubAPI('/api/github/installation-status');
         
         if (statusResponse.ok) {
           const status = (await statusResponse.json()) as { installed?: boolean };
@@ -128,6 +133,11 @@ export function GitHubRepoSelectorModal({
             // Parent component will handle showing install modal
             return;
           }
+        } else if (statusResponse.status === 401) {
+          // Credentials expired, user will be logged out
+          onOpenChange(false);
+          localStorage.removeItem('github_app_installed');
+          return;
         }
       }
       
@@ -167,11 +177,14 @@ export function GitHubRepoSelectorModal({
     try {
       // Call backend API to scan repository for OpenAPI specs (using NextAuth session)
       const [owner, repoName] = repo.full_name.split('/');
-      const response = await fetch(`/api/github/repos/${owner}/${repoName}/openapi-specs`, {
-        credentials: 'include', // Include session cookie
-      });
+      const response = await fetchGitHubAPI(`/api/github/repos/${owner}/${repoName}/openapi-specs`);
 
       if (!response.ok) {
+        // If 401, fetchGitHubAPI will automatically log out the user
+        if (response.status === 401) {
+          onOpenChange(false);
+          return;
+        }
         throw new Error('Failed to detect OpenAPI specs');
       }
 
@@ -197,12 +210,11 @@ export function GitHubRepoSelectorModal({
       const [owner, repoName] = selectedRepo.full_name.split('/');
       
       // Fetch and parse the OpenAPI spec to extract version and other details (using NextAuth session)
-      const response = await fetch('/api/openapi/parse', {
+      const response = await fetchGitHubAPI('/api/openapi/parse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include session cookie
         body: JSON.stringify({
           owner,
           repo: repoName,

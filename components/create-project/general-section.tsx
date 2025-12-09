@@ -11,6 +11,7 @@ import { ProjectConfig, SourceType } from './types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { GitHubRepoSelectorModal } from './github-repo-selector-modal';
 import { GitHubAppInstallModal } from './github-app-install-modal';
+import { fetchGitHubAPI } from '@/lib/github-api';
 
 interface GeneralSectionProps {
   config: ProjectConfig;
@@ -25,7 +26,6 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
   const [installModalOpen, setInstallModalOpen] = useState(false);
   const [githubAppInstalled, setGithubAppInstalled] = useState(false);
   const [checkingInstallation, setCheckingInstallation] = useState(true);
-  const [authError, setAuthError] = useState(false);
 
   useEffect(() => {
     // Check if GitHub App is installed
@@ -68,8 +68,7 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
 
       // Always check actual installation status via API (using NextAuth session)
       console.log('[GitHub] Calling API to check installation status');
-      const response = await fetch('/api/github/installation-status', {
-        credentials: 'include', // Include session cookie
+      const response = await fetchGitHubAPI('/api/github/installation-status', {
         cache: 'no-store', // Don't cache this, always get fresh status
       });
 
@@ -89,24 +88,20 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
         }
         
         setGithubAppInstalled(isInstalled);
+        setAuthError(false); // Clear any previous auth errors
       } else if (response.status === 401) {
         // 401 = Not authenticated or token invalid
-        console.warn('[GitHub] 401 Unauthorized - Access token may be invalid');
-        const errorData = await response.json().catch(() => ({}));
-        console.warn('[GitHub] Error details:', errorData);
-        
-        // Set error state to show help message
-        setAuthError(true);
-        
-        // Assume not installed but don't clear auth
-        // User can still use other sources (Target URL, Upload)
+        // fetchGitHubAPI will automatically log out the user, so we just need to clean up local state
+        console.warn('[GitHub] 401 Unauthorized - User will be logged out');
         localStorage.removeItem('github_app_installed');
         setGithubAppInstalled(false);
+        setAuthError(false); // Don't show error message since user is being logged out
       } else {
         // Other errors - assume not installed
         console.error('[GitHub] API check failed with status:', response.status);
         localStorage.removeItem('github_app_installed');
         setGithubAppInstalled(false);
+        setAuthError(false);
       }
     } catch (error) {
       console.error('[GitHub] Error checking installation:', error);
@@ -123,8 +118,7 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
     // Re-check installation status before opening (using NextAuth session)
     try {
       console.log('[GitHub] handleBrowseGitHub - checking installation');
-      const response = await fetch('/api/github/installation-status', {
-        credentials: 'include', // Include session cookie
+      const response = await fetchGitHubAPI('/api/github/installation-status', {
         cache: 'no-store',
       });
 
@@ -144,6 +138,12 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
           setGithubAppInstalled(false);
           setInstallModalOpen(true);
         }
+      } else if (response.status === 401) {
+        // 401 = Credentials expired, fetchGitHubAPI will log out the user
+        console.warn('[GitHub] 401 Unauthorized - User will be logged out');
+        localStorage.removeItem('github_app_installed');
+        setGithubAppInstalled(false);
+        // User will be redirected to login, so we don't need to show install modal
       } else {
         // On error, show install modal
         localStorage.removeItem('github_app_installed');
@@ -302,33 +302,6 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
         {/* GitHub Source */}
         {config.sourceType === 'github' && (
           <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-            {/* Auth Error Message */}
-            {authError && (
-              <Card className="border-orange-200 bg-orange-50/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm flex items-center gap-2 text-orange-900">
-                    <AlertCircle className="h-4 w-4" />
-                    GitHub Authentication Issue
-                  </CardTitle>
-                  <CardDescription className="text-xs text-orange-800">
-                    Your GitHub authentication may have expired. Please try logging out and logging back in, or use Target URL / Upload options instead.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      // Clear auth and redirect to login
-                      localStorage.clear();
-                      window.location.href = '/auth/login';
-                    }}
-                  >
-                    Re-authenticate with GitHub
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
 
             {/* GitHub Spec Selected Summary */}
             {config.githubUser && config.githubRepo && config.githubPath ? (
