@@ -88,20 +88,17 @@ export function GeneralSection({ config, updateConfig, validationError }: Genera
         }
         
         setGithubAppInstalled(isInstalled);
-        setAuthError(false); // Clear any previous auth errors
       } else if (response.status === 401) {
         // 401 = Not authenticated or token invalid
         // fetchGitHubAPI will automatically log out the user, so we just need to clean up local state
         console.warn('[GitHub] 401 Unauthorized - User will be logged out');
         localStorage.removeItem('github_app_installed');
         setGithubAppInstalled(false);
-        setAuthError(false); // Don't show error message since user is being logged out
       } else {
         // Other errors - assume not installed
         console.error('[GitHub] API check failed with status:', response.status);
         localStorage.removeItem('github_app_installed');
         setGithubAppInstalled(false);
-        setAuthError(false);
       }
     } catch (error) {
       console.error('[GitHub] Error checking installation:', error);
