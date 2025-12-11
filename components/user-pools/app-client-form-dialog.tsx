@@ -17,6 +17,10 @@ import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import type { AppClient, CreateAppClientRequest } from '@/types/user-pool';
 
+type CreateAppClientResponse = AppClient & {
+  clientSecret?: string;
+};
+
 interface AppClientFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -135,7 +139,7 @@ export function AppClientFormDialog({
           description: 'App client updated successfully',
         });
       } else {
-        const result = await api.createAppClient(poolId, data) as any;
+        const result = await api.createAppClient(poolId, data) as CreateAppClientResponse;
         if (result.clientSecret) {
           setClientSecret(result.clientSecret);
           toast({
