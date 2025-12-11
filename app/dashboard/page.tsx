@@ -3,14 +3,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Zap, Plus, GitBranch, Globe, Users, Rocket, Bot } from 'lucide-react';
+import { Zap, Plus, GitBranch, Globe, Users, Rocket, Bot, UserCog } from 'lucide-react';
 import { UserMenu } from '@/components/user-menu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreateProjectDialog } from '@/components/create-project-dialog';
 import { ProjectList } from '@/components/project-list';
 import { listProjects } from '@/lib/api/projects';
-import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
 import { ProjectConfigDialog } from '@/components/project-config-dialog';
 import { Project } from '@/types/project';
 
@@ -18,7 +17,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
   const [hasProjects, setHasProjects] = useState<boolean | null>(null);
   const [checkingProjects, setCheckingProjects] = useState(true);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
@@ -113,6 +111,10 @@ export default function DashboardPage() {
             </div>
           
             <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={() => router.push('/dashboard/user-pools')}>
+                <UserCog className="mr-2 h-4 w-4" />
+                User Pools
+              </Button>
               <Button variant="outline" onClick={() => router.push('/dashboard/llm')}>
                 <Bot className="mr-2 h-4 w-4" />
                 Enable your API on LLMs
@@ -146,15 +148,6 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6">
-              <Button
-                size="lg"
-                variant="outline"
-                className="h-12 px-8"
-                onClick={() => setUserPoolModalOpen(true)}
-              >
-                <Plus className="mr-2 h-5 w-5" />
-                Add a User Pool
-              </Button>
               <Button size="lg" className="h-12 px-8" onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="mr-2 h-5 w-5" />
                 Create Project
@@ -217,11 +210,6 @@ export default function DashboardPage() {
           onSuccess={handleProjectCreated}
           openToGitHub={typeof window !== 'undefined' && localStorage.getItem('github_app_just_installed') === 'true'}
         />
-        <UserPoolModal
-          open={userPoolModalOpen}
-          onOpenChange={setUserPoolModalOpen}
-          mode="manage"
-        />
       </div>
     );
   }
@@ -243,13 +231,13 @@ export default function DashboardPage() {
           </div>
           
           <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => router.push('/dashboard/user-pools')}>
+              <UserCog className="mr-2 h-4 w-4" />
+              User Pools
+            </Button>
             <Button variant="outline" onClick={() => router.push('/dashboard/llm')}>
               <Bot className="mr-2 h-4 w-4" />
               Enable your API on LLMs
-            </Button>
-            <Button variant="outline" onClick={() => setUserPoolModalOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add a User Pool
             </Button>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
@@ -283,11 +271,6 @@ export default function DashboardPage() {
         onSuccess={handleProjectCreated}
         openToGitHub={typeof window !== 'undefined' && localStorage.getItem('github_app_just_installed') === 'true'}
         project={selectedProject}
-      />
-      <UserPoolModal
-        open={userPoolModalOpen}
-        onOpenChange={setUserPoolModalOpen}
-        mode="manage"
       />
     </div>
   );

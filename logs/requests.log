@@ -1,3 +1,443 @@
+2025-12-11 22:02:30 |   (log) --> GET /user-pools [32m200[0m 31ms
+2025-12-11 22:02:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 22:02:30 |   (log) <-- GET /user-pools
+2025-12-11 22:02:30 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 10:02:30 PM
+2025-12-11 22:02:30 |   (log) --> GET /user-pools [32m200[0m 31ms
+2025-12-11 22:02:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 22:02:30 |   (log) <-- GET /user-pools
+2025-12-11 22:02:30 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 10:02:29 PM
+2025-12-11 22:02:29 |   (log) --> GET /user-pools [32m200[0m 46ms
+2025-12-11 22:02:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 22:02:29 |   (log) <-- GET /user-pools
+2025-12-11 22:02:29 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 10:02:29 PM
+2025-12-11 22:02:26 |   (log) --> GET /user-pools [32m200[0m 215ms
+2025-12-11 22:02:26 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 22:02:26 |   (log) <-- GET /user-pools
+2025-12-11 22:02:26 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 10:02:25 PM
+2025-12-11 22:00:26 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 76ms
+2025-12-11 22:00:26 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 22:00:26 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-11 22:00:26 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/11/2025, 10:00:25 PM
+2025-12-11 22:00:25 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 208ms
+2025-12-11 22:00:25 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 22:00:25 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-11 22:00:25 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/11/2025, 10:00:25 PM
+2025-12-11 22:00:25 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 84ms
+2025-12-11 22:00:25 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 22:00:25 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-11 22:00:25 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/11/2025, 10:00:25 PM
+2025-12-11 22:00:24 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 331ms
+2025-12-11 22:00:24 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 22:00:24 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-11 22:00:24 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/11/2025, 10:00:24 PM
+2025-12-11 21:51:06 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 78ms
+2025-12-11 21:51:06 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:51:06 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-11 21:51:06 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/11/2025, 9:51:05 PM
+2025-12-11 21:51:05 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 229ms
+2025-12-11 21:51:05 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:51:05 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-11 21:51:05 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/11/2025, 9:51:05 PM
+2025-12-11 21:51:05 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 182ms
+2025-12-11 21:51:05 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:51:05 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-11 21:51:05 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/11/2025, 9:51:04 PM
+2025-12-11 21:50:33 |   (log) --> GET /user-pools [32m200[0m 37ms
+2025-12-11 21:50:33 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:33 |   (log) <-- GET /user-pools
+2025-12-11 21:50:33 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:50:32 PM
+2025-12-11 21:50:33 |   (log) --> GET /user-pools [32m200[0m 25ms
+2025-12-11 21:50:33 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:33 |   (log) <-- GET /user-pools
+2025-12-11 21:50:33 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:50:32 PM
+2025-12-11 21:50:33 |   (log) --> GET /user-pools [32m200[0m 28ms
+2025-12-11 21:50:33 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:33 |   (log) <-- GET /user-pools
+2025-12-11 21:50:33 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:50:31 PM
+2025-12-11 21:50:33 |   (log) --> GET /user-pools [32m200[0m 44ms
+2025-12-11 21:50:33 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:33 |   (log) <-- GET /user-pools
+2025-12-11 21:50:33 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:50:31 PM
+2025-12-11 21:50:33 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o [32m200[0m 70ms
+2025-12-11 21:50:33 |   (log) [getAppClient] Response has client_secret: true
+2025-12-11 21:50:32 |   (log) [getAppClient] Response has clientSecret: true
+2025-12-11 21:50:32 | ]
+2025-12-11 21:50:32 |   'client_secret'
+2025-12-11 21:50:32 |   'clientSecret',
+2025-12-11 21:50:32 |   'updated_at',
+2025-12-11 21:50:32 |   'created_at',
+2025-12-11 21:50:32 |   'scopes',
+2025-12-11 21:50:32 |   'signoutUris',
+2025-12-11 21:50:32 |   'redirectUris',
+2025-12-11 21:50:32 |   'accessTokenExpiry',
+2025-12-11 21:50:32 |   'idTokenExpiry',
+2025-12-11 21:50:32 |   'refreshTokenExpiry',
+2025-12-11 21:50:32 |   'clientId',
+2025-12-11 21:50:32 |   'name',
+2025-12-11 21:50:32 |   'id',
+2025-12-11 21:50:32 |   (log) [getAppClient] Response keys: [
+2025-12-11 21:50:32 |   (log) [getAppClient] Added clientSecret to response
+2025-12-11 21:50:32 |   (log) [getAppClient] client_secret value: EXISTS (length: 43)
+2025-12-11 21:50:32 |   (log) [getAppClient] client_secret in result: true
+2025-12-11 21:50:32 | ]
+2025-12-11 21:50:32 |   'updated_at'
+2025-12-11 21:50:32 |   'created_at',
+2025-12-11 21:50:32 |   'scopes',
+2025-12-11 21:50:32 |   'signout_uris',
+2025-12-11 21:50:32 |   'redirect_uris',
+2025-12-11 21:50:32 |   'access_token_expiry',
+2025-12-11 21:50:32 |   'id_token_expiry',
+2025-12-11 21:50:32 |   'refresh_token_expiry',
+2025-12-11 21:50:32 |   'client_secret',
+2025-12-11 21:50:32 |   'client_id',
+2025-12-11 21:50:32 |   'name',
+2025-12-11 21:50:32 |   'id',
+2025-12-11 21:50:32 |   (log) [getAppClient] DB result keys: [
+2025-12-11 21:50:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:32 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o
+2025-12-11 21:50:32 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o - Ok @ 12/11/2025, 9:50:31 PM
+2025-12-11 21:50:32 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o/providers [32m200[0m 92ms
+2025-12-11 21:50:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:32 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o/providers
+2025-12-11 21:50:32 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o/providers - Ok @ 12/11/2025, 9:50:31 PM
+2025-12-11 21:50:32 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg [32m200[0m 92ms
+2025-12-11 21:50:32 |   (log) [getAppClient] Response has client_secret: true
+2025-12-11 21:50:32 |   (log) [getAppClient] Response has clientSecret: true
+2025-12-11 21:50:32 | ]
+2025-12-11 21:50:32 |   'client_secret'
+2025-12-11 21:50:32 |   'clientSecret',
+2025-12-11 21:50:32 |   'updated_at',
+2025-12-11 21:50:32 |   'created_at',
+2025-12-11 21:50:32 |   'scopes',
+2025-12-11 21:50:32 |   'signoutUris',
+2025-12-11 21:50:32 |   'redirectUris',
+2025-12-11 21:50:32 |   'accessTokenExpiry',
+2025-12-11 21:50:32 |   'idTokenExpiry',
+2025-12-11 21:50:32 |   'refreshTokenExpiry',
+2025-12-11 21:50:32 |   'clientId',
+2025-12-11 21:50:32 |   'name',
+2025-12-11 21:50:32 |   'id',
+2025-12-11 21:50:32 |   (log) [getAppClient] Response keys: [
+2025-12-11 21:50:32 |   (log) [getAppClient] Added clientSecret to response
+2025-12-11 21:50:32 |   (log) [getAppClient] client_secret value: EXISTS (length: 43)
+2025-12-11 21:50:32 |   (log) [getAppClient] client_secret in result: true
+2025-12-11 21:50:32 | ]
+2025-12-11 21:50:32 |   'updated_at'
+2025-12-11 21:50:32 |   'created_at',
+2025-12-11 21:50:32 |   'scopes',
+2025-12-11 21:50:32 |   'signout_uris',
+2025-12-11 21:50:32 |   'redirect_uris',
+2025-12-11 21:50:32 |   'access_token_expiry',
+2025-12-11 21:50:32 |   'id_token_expiry',
+2025-12-11 21:50:32 |   'refresh_token_expiry',
+2025-12-11 21:50:32 |   'client_secret',
+2025-12-11 21:50:32 |   'client_id',
+2025-12-11 21:50:32 |   'name',
+2025-12-11 21:50:32 |   'id',
+2025-12-11 21:50:32 |   (log) [getAppClient] DB result keys: [
+2025-12-11 21:50:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:32 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg
+2025-12-11 21:50:32 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg - Ok @ 12/11/2025, 9:50:31 PM
+2025-12-11 21:50:32 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg/providers [32m200[0m 103ms
+2025-12-11 21:50:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:32 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg/providers
+2025-12-11 21:50:32 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg/providers - Ok @ 12/11/2025, 9:50:30 PM
+2025-12-11 21:50:32 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva [32m200[0m 80ms
+2025-12-11 21:50:32 |   (log) [getAppClient] Response has client_secret: true
+2025-12-11 21:50:32 |   (log) [getAppClient] Response has clientSecret: true
+2025-12-11 21:50:32 | ]
+2025-12-11 21:50:32 |   'client_secret'
+2025-12-11 21:50:32 |   'clientSecret',
+2025-12-11 21:50:32 |   'updated_at',
+2025-12-11 21:50:32 |   'created_at',
+2025-12-11 21:50:32 |   'scopes',
+2025-12-11 21:50:32 |   'signoutUris',
+2025-12-11 21:50:32 |   'redirectUris',
+2025-12-11 21:50:32 |   'accessTokenExpiry',
+2025-12-11 21:50:32 |   'idTokenExpiry',
+2025-12-11 21:50:32 |   'refreshTokenExpiry',
+2025-12-11 21:50:32 |   'clientId',
+2025-12-11 21:50:32 |   'name',
+2025-12-11 21:50:32 |   'id',
+2025-12-11 21:50:32 |   (log) [getAppClient] Response keys: [
+2025-12-11 21:50:32 |   (log) [getAppClient] Added clientSecret to response
+2025-12-11 21:50:32 |   (log) [getAppClient] client_secret value: EXISTS (length: 43)
+2025-12-11 21:50:32 |   (log) [getAppClient] client_secret in result: true
+2025-12-11 21:50:32 | ]
+2025-12-11 21:50:32 |   'updated_at'
+2025-12-11 21:50:32 |   'created_at',
+2025-12-11 21:50:32 |   'scopes',
+2025-12-11 21:50:32 |   'signout_uris',
+2025-12-11 21:50:32 |   'redirect_uris',
+2025-12-11 21:50:32 |   'access_token_expiry',
+2025-12-11 21:50:32 |   'id_token_expiry',
+2025-12-11 21:50:32 |   'refresh_token_expiry',
+2025-12-11 21:50:32 |   'client_secret',
+2025-12-11 21:50:32 |   'client_id',
+2025-12-11 21:50:32 |   'name',
+2025-12-11 21:50:32 |   'id',
+2025-12-11 21:50:32 |   (log) [getAppClient] DB result keys: [
+2025-12-11 21:50:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:32 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva
+2025-12-11 21:50:32 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva - Ok @ 12/11/2025, 9:50:30 PM
+2025-12-11 21:50:32 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq/providers [32m200[0m 83ms
+2025-12-11 21:50:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:32 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq/providers
+2025-12-11 21:50:32 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq/providers - Ok @ 12/11/2025, 9:50:30 PM
+2025-12-11 21:50:32 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva/providers [32m200[0m 111ms
+2025-12-11 21:50:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:32 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva/providers
+2025-12-11 21:50:32 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva/providers - Ok @ 12/11/2025, 9:50:30 PM
+2025-12-11 21:50:32 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq [32m200[0m 46ms
+2025-12-11 21:50:32 |   (log) [getAppClient] Response has client_secret: true
+2025-12-11 21:50:32 |   (log) [getAppClient] Response has clientSecret: true
+2025-12-11 21:50:32 | ]
+2025-12-11 21:50:32 |   'client_secret'
+2025-12-11 21:50:32 |   'clientSecret',
+2025-12-11 21:50:32 |   'updated_at',
+2025-12-11 21:50:32 |   'created_at',
+2025-12-11 21:50:32 |   'scopes',
+2025-12-11 21:50:32 |   'signoutUris',
+2025-12-11 21:50:32 |   'redirectUris',
+2025-12-11 21:50:32 |   'accessTokenExpiry',
+2025-12-11 21:50:32 |   'idTokenExpiry',
+2025-12-11 21:50:32 |   'refreshTokenExpiry',
+2025-12-11 21:50:32 |   'clientId',
+2025-12-11 21:50:32 |   'name',
+2025-12-11 21:50:32 |   'id',
+2025-12-11 21:50:32 |   (log) [getAppClient] Response keys: [
+2025-12-11 21:50:32 |   (log) [getAppClient] Added clientSecret to response
+2025-12-11 21:50:32 |   (log) [getAppClient] client_secret value: EXISTS (length: 43)
+2025-12-11 21:50:32 |   (log) [getAppClient] client_secret in result: true
+2025-12-11 21:50:32 | ]
+2025-12-11 21:50:32 |   'updated_at'
+2025-12-11 21:50:32 |   'created_at',
+2025-12-11 21:50:32 |   'scopes',
+2025-12-11 21:50:32 |   'signout_uris',
+2025-12-11 21:50:32 |   'redirect_uris',
+2025-12-11 21:50:32 |   'access_token_expiry',
+2025-12-11 21:50:32 |   'id_token_expiry',
+2025-12-11 21:50:32 |   'refresh_token_expiry',
+2025-12-11 21:50:32 |   'client_secret',
+2025-12-11 21:50:32 |   'client_id',
+2025-12-11 21:50:32 |   'name',
+2025-12-11 21:50:32 |   'id',
+2025-12-11 21:50:32 |   (log) [getAppClient] DB result keys: [
+2025-12-11 21:50:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:32 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq
+2025-12-11 21:50:32 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq - Ok @ 12/11/2025, 9:50:30 PM
+2025-12-11 21:50:32 |   (log) --> GET /user-pools [32m200[0m 48ms
+2025-12-11 21:50:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:32 |   (log) <-- GET /user-pools
+2025-12-11 21:50:32 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:50:30 PM
+2025-12-11 21:50:32 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o [32m200[0m 71ms
+2025-12-11 21:50:32 |   (log) [getAppClient] Response has client_secret: true
+2025-12-11 21:50:32 |   (log) [getAppClient] Response has clientSecret: true
+2025-12-11 21:50:32 | ]
+2025-12-11 21:50:32 |   'client_secret'
+2025-12-11 21:50:32 |   'clientSecret',
+2025-12-11 21:50:32 |   'updated_at',
+2025-12-11 21:50:32 |   'created_at',
+2025-12-11 21:50:32 |   'scopes',
+2025-12-11 21:50:32 |   'signoutUris',
+2025-12-11 21:50:32 |   'redirectUris',
+2025-12-11 21:50:32 |   'accessTokenExpiry',
+2025-12-11 21:50:32 |   'idTokenExpiry',
+2025-12-11 21:50:32 |   'refreshTokenExpiry',
+2025-12-11 21:50:31 |   'clientId',
+2025-12-11 21:50:31 |   'name',
+2025-12-11 21:50:31 |   'id',
+2025-12-11 21:50:31 |   (log) [getAppClient] Response keys: [
+2025-12-11 21:50:31 |   (log) [getAppClient] Added clientSecret to response
+2025-12-11 21:50:31 |   (log) [getAppClient] client_secret value: EXISTS (length: 43)
+2025-12-11 21:50:31 |   (log) [getAppClient] client_secret in result: true
+2025-12-11 21:50:31 | ]
+2025-12-11 21:50:31 |   'updated_at'
+2025-12-11 21:50:31 |   'created_at',
+2025-12-11 21:50:31 |   'scopes',
+2025-12-11 21:50:31 |   'signout_uris',
+2025-12-11 21:50:31 |   'redirect_uris',
+2025-12-11 21:50:31 |   'access_token_expiry',
+2025-12-11 21:50:31 |   'id_token_expiry',
+2025-12-11 21:50:31 |   'refresh_token_expiry',
+2025-12-11 21:50:31 |   'client_secret',
+2025-12-11 21:50:31 |   'client_id',
+2025-12-11 21:50:31 |   'name',
+2025-12-11 21:50:31 |   'id',
+2025-12-11 21:50:31 |   (log) [getAppClient] DB result keys: [
+2025-12-11 21:50:31 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:31 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o
+2025-12-11 21:50:31 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o - Ok @ 12/11/2025, 9:50:30 PM
+2025-12-11 21:50:31 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o/providers [32m200[0m 141ms
+2025-12-11 21:50:31 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:31 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o/providers
+2025-12-11 21:50:31 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o/providers - Ok @ 12/11/2025, 9:50:29 PM
+2025-12-11 21:50:31 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg [32m200[0m 62ms
+2025-12-11 21:50:31 |   (log) [getAppClient] Response has client_secret: true
+2025-12-11 21:50:31 |   (log) [getAppClient] Response has clientSecret: true
+2025-12-11 21:50:31 | ]
+2025-12-11 21:50:31 |   'client_secret'
+2025-12-11 21:50:31 |   'clientSecret',
+2025-12-11 21:50:31 |   'updated_at',
+2025-12-11 21:50:31 |   'created_at',
+2025-12-11 21:50:31 |   'scopes',
+2025-12-11 21:50:31 |   'signoutUris',
+2025-12-11 21:50:31 |   'redirectUris',
+2025-12-11 21:50:31 |   'accessTokenExpiry',
+2025-12-11 21:50:31 |   'idTokenExpiry',
+2025-12-11 21:50:31 |   'refreshTokenExpiry',
+2025-12-11 21:50:31 |   'clientId',
+2025-12-11 21:50:31 |   'name',
+2025-12-11 21:50:31 |   'id',
+2025-12-11 21:50:31 |   (log) [getAppClient] Response keys: [
+2025-12-11 21:50:31 |   (log) [getAppClient] Added clientSecret to response
+2025-12-11 21:50:31 |   (log) [getAppClient] client_secret value: EXISTS (length: 43)
+2025-12-11 21:50:31 |   (log) [getAppClient] client_secret in result: true
+2025-12-11 21:50:31 | ]
+2025-12-11 21:50:31 |   'updated_at'
+2025-12-11 21:50:31 |   'created_at',
+2025-12-11 21:50:31 |   'scopes',
+2025-12-11 21:50:31 |   'signout_uris',
+2025-12-11 21:50:31 |   'redirect_uris',
+2025-12-11 21:50:31 |   'access_token_expiry',
+2025-12-11 21:50:31 |   'id_token_expiry',
+2025-12-11 21:50:31 |   'refresh_token_expiry',
+2025-12-11 21:50:31 |   'client_secret',
+2025-12-11 21:50:31 |   'client_id',
+2025-12-11 21:50:31 |   'name',
+2025-12-11 21:50:31 |   'id',
+2025-12-11 21:50:31 |   (log) [getAppClient] DB result keys: [
+2025-12-11 21:50:31 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:31 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg
+2025-12-11 21:50:31 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg - Ok @ 12/11/2025, 9:50:29 PM
+2025-12-11 21:50:31 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva [32m200[0m 96ms
+2025-12-11 21:50:31 |   (log) [getAppClient] Response has client_secret: true
+2025-12-11 21:50:31 |   (log) [getAppClient] Response has clientSecret: true
+2025-12-11 21:50:31 | ]
+2025-12-11 21:50:31 |   'client_secret'
+2025-12-11 21:50:31 |   'clientSecret',
+2025-12-11 21:50:30 |   'updated_at',
+2025-12-11 21:50:30 |   'created_at',
+2025-12-11 21:50:30 |   'scopes',
+2025-12-11 21:50:30 |   'signoutUris',
+2025-12-11 21:50:30 |   'redirectUris',
+2025-12-11 21:50:30 |   'accessTokenExpiry',
+2025-12-11 21:50:30 |   'idTokenExpiry',
+2025-12-11 21:50:30 |   'refreshTokenExpiry',
+2025-12-11 21:50:30 |   'clientId',
+2025-12-11 21:50:30 |   'name',
+2025-12-11 21:50:30 |   'id',
+2025-12-11 21:50:30 |   (log) [getAppClient] Response keys: [
+2025-12-11 21:50:30 |   (log) [getAppClient] Added clientSecret to response
+2025-12-11 21:50:30 |   (log) [getAppClient] client_secret value: EXISTS (length: 43)
+2025-12-11 21:50:30 |   (log) [getAppClient] client_secret in result: true
+2025-12-11 21:50:30 | ]
+2025-12-11 21:50:30 |   'updated_at'
+2025-12-11 21:50:30 |   'created_at',
+2025-12-11 21:50:30 |   'scopes',
+2025-12-11 21:50:30 |   'signout_uris',
+2025-12-11 21:50:30 |   'redirect_uris',
+2025-12-11 21:50:30 |   'access_token_expiry',
+2025-12-11 21:50:30 |   'id_token_expiry',
+2025-12-11 21:50:30 |   'refresh_token_expiry',
+2025-12-11 21:50:30 |   'client_secret',
+2025-12-11 21:50:30 |   'client_id',
+2025-12-11 21:50:30 |   'name',
+2025-12-11 21:50:30 |   'id',
+2025-12-11 21:50:30 |   (log) [getAppClient] DB result keys: [
+2025-12-11 21:50:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:30 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva
+2025-12-11 21:50:30 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva - Ok @ 12/11/2025, 9:50:29 PM
+2025-12-11 21:50:30 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg/providers [32m200[0m 96ms
+2025-12-11 21:50:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:30 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg/providers
+2025-12-11 21:50:30 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765487964523_zqlw4eg/providers - Ok @ 12/11/2025, 9:50:29 PM
+2025-12-11 21:50:30 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq/providers [32m200[0m 93ms
+2025-12-11 21:50:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:30 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq/providers
+2025-12-11 21:50:30 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq/providers - Ok @ 12/11/2025, 9:50:29 PM
+2025-12-11 21:50:30 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq [32m200[0m 61ms
+2025-12-11 21:50:30 |   (log) [getAppClient] Response has client_secret: true
+2025-12-11 21:50:30 |   (log) [getAppClient] Response has clientSecret: true
+2025-12-11 21:50:30 | ]
+2025-12-11 21:50:30 |   'client_secret'
+2025-12-11 21:50:30 |   'clientSecret',
+2025-12-11 21:50:30 |   'updated_at',
+2025-12-11 21:50:30 |   'created_at',
+2025-12-11 21:50:30 |   'scopes',
+2025-12-11 21:50:30 |   'signoutUris',
+2025-12-11 21:50:30 |   'redirectUris',
+2025-12-11 21:50:30 |   'accessTokenExpiry',
+2025-12-11 21:50:30 |   'idTokenExpiry',
+2025-12-11 21:50:29 |   'refreshTokenExpiry',
+2025-12-11 21:50:29 |   'clientId',
+2025-12-11 21:50:29 |   'name',
+2025-12-11 21:50:29 |   'id',
+2025-12-11 21:50:29 |   (log) [getAppClient] Response keys: [
+2025-12-11 21:50:29 |   (log) [getAppClient] Added clientSecret to response
+2025-12-11 21:50:29 |   (log) [getAppClient] client_secret value: EXISTS (length: 43)
+2025-12-11 21:50:29 |   (log) [getAppClient] client_secret in result: true
+2025-12-11 21:50:29 | ]
+2025-12-11 21:50:29 |   'updated_at'
+2025-12-11 21:50:29 |   'created_at',
+2025-12-11 21:50:29 |   'scopes',
+2025-12-11 21:50:29 |   'signout_uris',
+2025-12-11 21:50:29 |   'redirect_uris',
+2025-12-11 21:50:29 |   'access_token_expiry',
+2025-12-11 21:50:29 |   'id_token_expiry',
+2025-12-11 21:50:29 |   'refresh_token_expiry',
+2025-12-11 21:50:29 |   'client_secret',
+2025-12-11 21:50:29 |   'client_id',
+2025-12-11 21:50:29 |   'name',
+2025-12-11 21:50:29 |   'id',
+2025-12-11 21:50:29 |   (log) [getAppClient] DB result keys: [
+2025-12-11 21:50:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:29 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq
+2025-12-11 21:50:29 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488520984_cgmo8uq - Ok @ 12/11/2025, 9:50:29 PM
+2025-12-11 21:50:29 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva/providers [32m200[0m 128ms
+2025-12-11 21:50:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:29 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva/providers
+2025-12-11 21:50:29 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765488018911_yww9fva/providers - Ok @ 12/11/2025, 9:50:29 PM
+2025-12-11 21:50:29 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients [32m200[0m 68ms
+2025-12-11 21:50:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:29 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients
+2025-12-11 21:50:29 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients - Ok @ 12/11/2025, 9:50:28 PM
+2025-12-11 21:50:28 |   (log) --> GET /user-pools [32m200[0m 50ms
+2025-12-11 21:50:28 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:28 |   (log) <-- GET /user-pools
+2025-12-11 21:50:28 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:50:28 PM
+2025-12-11 21:50:28 |   (log) --> GET /user-pools [32m200[0m 35ms
+2025-12-11 21:50:28 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:28 |   (log) <-- GET /user-pools
+2025-12-11 21:50:28 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:50:28 PM
+2025-12-11 21:50:28 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients [32m200[0m 81ms
+2025-12-11 21:50:28 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:28 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients
+2025-12-11 21:50:28 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients - Ok @ 12/11/2025, 9:50:28 PM
+2025-12-11 21:50:28 |   (log) --> GET /user-pools [32m200[0m 26ms
+2025-12-11 21:50:28 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:28 |   (log) <-- GET /user-pools
+2025-12-11 21:50:28 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:50:28 PM
+2025-12-11 21:50:28 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients [32m200[0m 78ms
+2025-12-11 21:50:28 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:28 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients
+2025-12-11 21:50:28 | GET https://internalapi.apiblaze.com/user-pools/pool_1765485858340_xnh5wqq/app-clients - Ok @ 12/11/2025, 9:50:28 PM
+2025-12-11 21:50:28 |   (log) --> GET /user-pools [32m200[0m 32ms
+2025-12-11 21:50:28 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:50:28 |   (log) <-- GET /user-pools
+2025-12-11 21:50:28 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:50:28 PM
+2025-12-11 21:49:15 |   (log) --> GET /user-pools [32m200[0m 32ms
+2025-12-11 21:49:15 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:49:15 |   (log) <-- GET /user-pools
+2025-12-11 21:49:15 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:49:14 PM
+2025-12-11 21:49:14 |   (log) --> GET /user-pools [32m200[0m 29ms
+2025-12-11 21:49:14 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:49:14 |   (log) <-- GET /user-pools
+2025-12-11 21:49:14 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:49:14 PM
+2025-12-11 21:49:14 |   (log) --> GET /user-pools [32m200[0m 58ms
+2025-12-11 21:49:14 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-11 21:49:14 |   (log) <-- GET /user-pools
+2025-12-11 21:49:14 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/11/2025, 9:49:14 PM
 2025-12-11 21:48:57 |   (log) --> GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o/providers [32m200[0m 99ms
 2025-12-11 21:48:56 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
 2025-12-11 21:48:56 |   (log) <-- GET /user-pools/pool_1765485858340_xnh5wqq/app-clients/client_1765485859960_37gap7o/providers

@@ -195,6 +195,7 @@ function EditModeManagementUI({
     clientId: string;
     clientSecret: string;
     domain: string;
+    tokenType: 'apiblaze' | 'thirdParty';
   }>>({});
   
   // UI state
@@ -498,6 +499,7 @@ function EditModeManagementUI({
         clientId: provider.clientId,
         clientSecret: provider.clientSecret,
         domain: provider.domain || PROVIDER_DOMAINS[provider.type],
+        tokenType: provider.tokenType || 'thirdParty',
       });
       
       await loadProviders(selectedUserPoolId, clientId);
@@ -873,6 +875,7 @@ function EditModeManagementUI({
                                       clientId: prev[client.id]?.clientId || '',
                                       clientSecret: prev[client.id]?.clientSecret || '',
                                       domain: PROVIDER_DOMAINS[value as SocialProvider],
+                                      tokenType: prev[client.id]?.tokenType || 'thirdParty',
                                     }
                                   }))}
                                 >
@@ -897,7 +900,7 @@ function EditModeManagementUI({
                                   onChange={(e) => setNewProvider(prev => ({
                                     ...prev,
                                     [client.id]: {
-                                      ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '' }),
+                                      ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '', tokenType: 'thirdParty' }),
                                       domain: e.target.value
                                     }
                                   }))}
@@ -913,7 +916,7 @@ function EditModeManagementUI({
                                   onChange={(e) => setNewProvider(prev => ({
                                     ...prev,
                                     [client.id]: {
-                                      ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '' }),
+                                      ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '', tokenType: 'thirdParty' }),
                                       clientId: e.target.value
                                     }
                                   }))}
@@ -930,13 +933,40 @@ function EditModeManagementUI({
                                   onChange={(e) => setNewProvider(prev => ({
                                     ...prev,
                                     [client.id]: {
-                                      ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '' }),
+                                      ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '', tokenType: 'thirdParty' }),
                                       clientSecret: e.target.value
                                     }
                                   }))}
                                   placeholder="your-client-secret"
                                   className="mt-1"
                                 />
+                              </div>
+                              <div>
+                                <Label htmlFor={`providerTokenType-${client.id}`} className="text-xs">Token Type</Label>
+                                <Select
+                                  value={newProvider[client.id]?.tokenType || 'thirdParty'}
+                                  onValueChange={(value) => setNewProvider(prev => ({
+                                    ...prev,
+                                    [client.id]: {
+                                      ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '', tokenType: 'thirdParty' }),
+                                      tokenType: value as 'apiblaze' | 'thirdParty'
+                                    }
+                                  }))}
+                                >
+                                  <SelectTrigger className="mt-1">
+                                    <SelectValue>
+                                      {newProvider[client.id]?.tokenType === 'apiblaze' 
+                                        ? 'APIBlaze' 
+                                        : `${(newProvider[client.id]?.type || 'google').charAt(0).toUpperCase() + (newProvider[client.id]?.type || 'google').slice(1)} token`}
+                                    </SelectValue>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="apiblaze">APIBlaze</SelectItem>
+                                    <SelectItem value="thirdParty">
+                                      {(newProvider[client.id]?.type || 'google').charAt(0).toUpperCase() + (newProvider[client.id]?.type || 'google').slice(1)} token
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
                               </div>
                               <div className="flex gap-2">
                                 <Button
@@ -1010,7 +1040,7 @@ function EditModeManagementUI({
                       {isLoadingProviders ? (
                         <div className="text-xs text-muted-foreground py-2">Loading providers...</div>
                       ) : clientProviders.length === 0 ? (
-                        <div className="text-xs text-muted-foreground italic py-2">No providers configured. Add one to enable third-party OAuth.</div>
+                        <div className="text-xs text-muted-foreground italic py-2">No providers configured. The default APIBlaze Github login will be used.</div>
                       ) : (
                         <div className="space-y-2">
                           {clientProviders.map((provider) => (
@@ -1489,6 +1519,28 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                           onChange={(e) => updateConfig({ identityProviderClientSecret: e.target.value })}
                           className="mt-1"
                         />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="tokenType" className="text-sm">Token Type</Label>
+                        <Select
+                          value={config.tokenType || 'thirdParty'}
+                          onValueChange={(value) => updateConfig({ tokenType: value as 'apiblaze' | 'thirdParty' })}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue>
+                              {config.tokenType === 'apiblaze' 
+                                ? 'APIBlaze' 
+                                : `${config.socialProvider.charAt(0).toUpperCase() + config.socialProvider.slice(1)} token`}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="apiblaze">APIBlaze</SelectItem>
+                            <SelectItem value="thirdParty">
+                              {config.socialProvider.charAt(0).toUpperCase() + config.socialProvider.slice(1)} token
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       {/* Authorized Scopes */}
