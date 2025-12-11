@@ -38,9 +38,29 @@ export async function POST(request: NextRequest) {
       jwtPrivateKey: process.env.JWT_PRIVATE_KEY,
     });
 
-    // 1. Create UserPool
-    const userPool = await client.createUserPool(userClaims, { name: userPoolName });
-    const userPoolId = (userPool as { id: string }).id;
+    // 1. Check if UserPool with this name already exists, otherwise create it
+    let userPoolId: string;
+    const existingUserPools = await client.listUserPools(userClaims);
+    const existingUserPool = Array.isArray(existingUserPools)
+      ? existingUserPools.find((pool: { name: string; id: string }) => pool.name === userPoolName)
+      : null;
+
+    if (existingUserPool) {
+      // Reuse existing user pool
+      console.log('[create-with-default-github] Reusing existing UserPool:', {
+        id: existingUserPool.id,
+        name: existingUserPool.name,
+      });
+      userPoolId = existingUserPool.id;
+    } else {
+      // Create new user pool
+      const userPool = await client.createUserPool(userClaims, { name: userPoolName });
+      userPoolId = (userPool as { id: string }).id;
+      console.log('[create-with-default-github] Created new UserPool:', {
+        id: userPoolId,
+        name: userPoolName,
+      });
+    }
 
     // 2. Create AppClient
     const appClient = await client.createAppClient(userClaims, userPoolId, {
