@@ -129,15 +129,6 @@ function EditModeManagementUI({
     return undefined;
   };
 
-  const getInitialAppClientId = () => {
-    if (config.appClientId) return config.appClientId;
-    if (project?.config) {
-      const projectConfig = project.config as Record<string, unknown>;
-      return projectConfig.app_client_id as string | undefined;
-    }
-    return undefined;
-  };
-
   const getInitialAppClients = (): AppClient[] => {
     const userPoolId = getInitialUserPoolId();
     if (userPoolId && preloadedAppClients?.[userPoolId]) {
@@ -146,13 +137,18 @@ function EditModeManagementUI({
     return [];
   };
 
-  const getInitialProviders = (): SocialProviderResponse[] => {
+  const getInitialProviders = (): Record<string, SocialProviderResponse[]> => {
     const userPoolId = getInitialUserPoolId();
-    const appClientId = getInitialAppClientId();
-    if (userPoolId && appClientId && preloadedProviders?.[`${userPoolId}-${appClientId}`]) {
-      return preloadedProviders[`${userPoolId}-${appClientId}`] as SocialProviderResponse[];
+    const result: Record<string, SocialProviderResponse[]> = {};
+    if (userPoolId && preloadedAppClients?.[userPoolId]) {
+      preloadedAppClients[userPoolId].forEach((client) => {
+        const key = `${userPoolId}-${client.id}`;
+        if (preloadedProviders?.[key]) {
+          result[client.id] = preloadedProviders[key] as SocialProviderResponse[];
+        }
+      });
     }
-    return [];
+    return result;
   };
 
   // UserPool management
@@ -163,38 +159,43 @@ function EditModeManagementUI({
   // AppClient management
   const [appClients, setAppClients] = useState<AppClient[]>(getInitialAppClients());
   const [loadingAppClients, setLoadingAppClients] = useState(false);
-  const [selectedAppClientId, setSelectedAppClientId] = useState<string | undefined>(getInitialAppClientId());
-  const [appClientDetails, setAppClientDetails] = useState<AppClientResponse | null>(null);
-  const [loadingAppClientDetails, setLoadingAppClientDetails] = useState(false);
+  const [appClientDetails, setAppClientDetails] = useState<Record<string, AppClientResponse>>({});
+  const [loadingAppClientDetails, setLoadingAppClientDetails] = useState<Record<string, boolean>>({});
   const [revealedSecrets, setRevealedSecrets] = useState<Record<string, string>>({});
   const [loadingSecret, setLoadingSecret] = useState<string | null>(null);
   const [showAddAppClient, setShowAddAppClient] = useState(false);
   const [newAppClientName, setNewAppClientName] = useState('');
   
-  // Provider management
-  const [providers, setProviders] = useState<SocialProviderResponse[]>(getInitialProviders());
-  const [loadingProviders, setLoadingProviders] = useState(false);
+  // Provider management - keyed by app client ID
+  const [providers, setProviders] = useState<Record<string, SocialProviderResponse[]>>(getInitialProviders());
+  const [loadingProviders, setLoadingProviders] = useState<Record<string, boolean>>({});
+  const [showAddProvider, setShowAddProvider] = useState<Record<string, boolean>>({});
   
   // Update with preloaded app clients and providers when they become available
   useEffect(() => {
     const userPoolId = getInitialUserPoolId();
-    const appClientId = getInitialAppClientId();
     
     if (userPoolId && preloadedAppClients?.[userPoolId] && appClients.length === 0) {
       setAppClients(preloadedAppClients[userPoolId]);
-    }
-    
-    if (userPoolId && appClientId && preloadedProviders?.[`${userPoolId}-${appClientId}`] && providers.length === 0) {
-      setProviders(preloadedProviders[`${userPoolId}-${appClientId}`] as SocialProviderResponse[]);
+      // Load providers for all app clients
+      preloadedAppClients[userPoolId].forEach((client) => {
+        const key = `${userPoolId}-${client.id}`;
+        if (preloadedProviders?.[key]) {
+          setProviders(prev => ({
+            ...prev,
+            [client.id]: preloadedProviders[key] as SocialProviderResponse[]
+          }));
+        }
+      });
     }
   }, [preloadedAppClients, preloadedProviders]);
-  const [showAddProvider, setShowAddProvider] = useState(false);
-  const [newProvider, setNewProvider] = useState({
-    type: 'google' as SocialProvider,
-    clientId: '',
-    clientSecret: '',
-    domain: '',
-  });
+  
+  const [newProvider, setNewProvider] = useState<Record<string, {
+    type: SocialProvider;
+    clientId: string;
+    clientSecret: string;
+    domain: string;
+  }>>({});
   
   // UI state
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -214,7 +215,7 @@ function EditModeManagementUI({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preloadedUserPools]);
 
-  // In edit mode, load UserPool and AppClient from project config and prepopulate
+  // In edit mode, load UserPool from project config and prepopulate
   // Or use initialUserPoolId if provided (for create mode)
   // This must run before the UserPool selection effect
   useEffect(() => {
@@ -223,15 +224,9 @@ function EditModeManagementUI({
     } else if (project?.config) {
       const projectConfig = project.config as Record<string, unknown>;
       const userPoolId = projectConfig.user_pool_id as string | undefined;
-      const appClientId = projectConfig.app_client_id as string | undefined;
       
       if (userPoolId && userPoolId !== selectedUserPoolId) {
         setSelectedUserPoolId(userPoolId);
-      }
-      
-      // Set AppClient from project config if available
-      if (appClientId && appClientId !== selectedAppClientId) {
-        setSelectedAppClientId(appClientId);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -248,55 +243,46 @@ function EditModeManagementUI({
       const hasPreloaded = preloadedAppClients?.[selectedUserPoolId] && preloadedAppClients[selectedUserPoolId].length > 0;
       if (hasPreloaded && appClients.length === 0) {
         // Use preloaded data immediately
-        setAppClients(preloadedAppClients[selectedUserPoolId]);
+        const clients = preloadedAppClients[selectedUserPoolId];
+        setAppClients(clients);
+        // Load providers for all app clients
+        clients.forEach((client) => {
+          const key = `${selectedUserPoolId}-${client.id}`;
+          if (preloadedProviders?.[key]) {
+            setProviders(prev => ({
+              ...prev,
+              [client.id]: preloadedProviders[key] as SocialProviderResponse[]
+            }));
+          } else {
+            // Load providers from API if not preloaded
+            loadProviders(selectedUserPoolId, client.id, false);
+          }
+          // Load app client details
+          loadAppClientDetails(selectedUserPoolId, client.id);
+        });
       } else if (!hasPreloaded) {
         // Load if not preloaded
         loadAppClients(selectedUserPoolId, true);
       }
       updateConfig({ userPoolId: selectedUserPoolId });
       
-      // Only clear AppClient selection if UserPool actually changed (not on initial load)
+      // Only clear data if UserPool actually changed (not on initial load)
       if (isInitialLoadRef.current) {
         isInitialLoadRef.current = false;
-        // Keep the initial appClientId if it matches the selected UserPool
       } else if (selectedUserPoolId !== initialUserPoolIdRef.current) {
-        // UserPool changed, clear AppClient selection
-        setSelectedAppClientId(undefined);
-        setAppClientDetails(null);
-        setProviders([]);
+        // UserPool changed, clear all data
+        setAppClientDetails({});
+        setProviders({});
       }
     } else {
       setAppClients([]);
-      setSelectedAppClientId(undefined);
+      setAppClientDetails({});
+      setProviders({});
       updateConfig({ userPoolId: undefined, appClientId: undefined });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUserPoolId]);
 
-  // Load AppClient details and Providers when AppClient is selected
-  useEffect(() => {
-    if (selectedUserPoolId && selectedAppClientId) {
-      // Always load app client details (needed for Client ID/Secret display)
-      loadAppClientDetails(selectedUserPoolId, selectedAppClientId);
-      
-      // Use preloaded data if available, otherwise load
-      const preloadKey = `${selectedUserPoolId}-${selectedAppClientId}`;
-      const hasPreloaded = preloadedProviders?.[preloadKey] && preloadedProviders[preloadKey].length > 0;
-      if (hasPreloaded && providers.length === 0) {
-        // Use preloaded data immediately
-        setProviders(preloadedProviders[preloadKey] as SocialProviderResponse[]);
-      } else if (!hasPreloaded) {
-        // Load if not preloaded
-        loadProviders(selectedUserPoolId, selectedAppClientId, true);
-      }
-      updateConfig({ appClientId: selectedAppClientId });
-    } else {
-      setAppClientDetails(null);
-      setProviders([]);
-      updateConfig({ appClientId: undefined });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedUserPoolId, selectedAppClientId]);
 
   const loadUserPools = async () => {
     setLoadingUserPools(true);
@@ -314,12 +300,23 @@ function EditModeManagementUI({
   const loadAppClients = async (poolId: string, showLoading = true) => {
     // Check if we have preloaded data first
     if (preloadedAppClients?.[poolId] && preloadedAppClients[poolId].length > 0) {
-      setAppClients(preloadedAppClients[poolId]);
-      // Auto-select the last AppClient if none is selected and clients exist
-      if (!selectedAppClientId) {
-        const lastClient = preloadedAppClients[poolId][preloadedAppClients[poolId].length - 1];
-        setSelectedAppClientId(lastClient.id);
-      }
+      const clients = preloadedAppClients[poolId];
+      setAppClients(clients);
+      // Load providers and details for all app clients
+      clients.forEach((client) => {
+        const key = `${poolId}-${client.id}`;
+        if (preloadedProviders?.[key]) {
+          setProviders(prev => ({
+            ...prev,
+            [client.id]: preloadedProviders[key] as SocialProviderResponse[]
+          }));
+        } else {
+          // Load providers from API if not preloaded
+          loadProviders(poolId, client.id, false);
+        }
+        // Load app client details
+        loadAppClientDetails(poolId, client.id);
+      });
       return;
     }
     
@@ -331,11 +328,11 @@ function EditModeManagementUI({
       const clientsArray = Array.isArray(clients) ? clients : [];
       setAppClients(clientsArray);
       
-      // Auto-select the last AppClient if none is selected and clients exist
-      if (clientsArray.length > 0 && !selectedAppClientId) {
-        const lastClient = clientsArray[clientsArray.length - 1];
-        setSelectedAppClientId(lastClient.id);
-      }
+      // Load providers and details for all app clients
+      clientsArray.forEach((client) => {
+        loadProviders(poolId, client.id, false);
+        loadAppClientDetails(poolId, client.id);
+      });
     } catch (error) {
       console.error('Error loading app clients:', error);
       setAppClients([]);
@@ -347,10 +344,13 @@ function EditModeManagementUI({
   };
 
   const loadAppClientDetails = async (poolId: string, clientId: string) => {
-    setLoadingAppClientDetails(true);
+    setLoadingAppClientDetails(prev => ({ ...prev, [clientId]: true }));
     try {
       const client = await api.getAppClient(poolId, clientId);
-      setAppClientDetails(client);
+      setAppClientDetails(prev => ({
+        ...prev,
+        [clientId]: client
+      }));
       // If secret is in the response, store it in revealedSecrets
       if (client.clientSecret) {
         setRevealedSecrets(prev => ({
@@ -360,9 +360,8 @@ function EditModeManagementUI({
       }
     } catch (error) {
       console.error('Error loading app client details:', error);
-      setAppClientDetails(null);
     } finally {
-      setLoadingAppClientDetails(false);
+      setLoadingAppClientDetails(prev => ({ ...prev, [clientId]: false }));
     }
   };
 
@@ -378,13 +377,14 @@ function EditModeManagementUI({
           ...prev,
           [clientId]: secret
         }));
-        // Also update appClientDetails if this is the selected client
-        if (selectedAppClientId === clientId) {
-          setAppClientDetails({
+        // Also update appClientDetails
+        setAppClientDetails(prev => ({
+          ...prev,
+          [clientId]: {
             ...client,
             clientSecret: secret
-          } as AppClientResponse);
-        }
+          } as AppClientResponse
+        }));
       } else {
         console.error('Secret not found in API response:', client);
         alert('Secret not available. Please check the backend API response.');
@@ -401,22 +401,31 @@ function EditModeManagementUI({
     // Check if we have preloaded data first
     const preloadKey = `${poolId}-${clientId}`;
     if (preloadedProviders?.[preloadKey] && preloadedProviders[preloadKey].length > 0) {
-      setProviders(preloadedProviders[preloadKey] as SocialProviderResponse[]);
+      setProviders(prev => ({
+        ...prev,
+        [clientId]: preloadedProviders[preloadKey] as SocialProviderResponse[]
+      }));
       return;
     }
     
     if (showLoading) {
-      setLoadingProviders(true);
+      setLoadingProviders(prev => ({ ...prev, [clientId]: true }));
     }
     try {
       const providerList = await api.listProviders(poolId, clientId);
-      setProviders(Array.isArray(providerList) ? providerList : []);
+      setProviders(prev => ({
+        ...prev,
+        [clientId]: Array.isArray(providerList) ? providerList : []
+      }));
     } catch (error) {
       console.error('Error loading providers:', error);
-      setProviders([]);
+      setProviders(prev => ({
+        ...prev,
+        [clientId]: []
+      }));
     } finally {
       if (showLoading) {
-        setLoadingProviders(false);
+        setLoadingProviders(prev => ({ ...prev, [clientId]: false }));
       }
     }
   };
@@ -431,8 +440,6 @@ function EditModeManagementUI({
       });
       
       await loadAppClients(selectedUserPoolId);
-      const clientId = (newClient as { id: string }).id;
-      setSelectedAppClientId(clientId);
       setNewAppClientName('');
       setShowAddAppClient(false);
     } catch (error) {
@@ -447,47 +454,60 @@ function EditModeManagementUI({
     
     try {
       await api.deleteAppClient(selectedUserPoolId, clientId);
-      await loadAppClients(selectedUserPoolId);
-      if (selectedAppClientId === clientId) {
-        setSelectedAppClientId(undefined);
-      }
+      // Remove from state
+      setAppClients(prev => prev.filter(c => c.id !== clientId));
+      setAppClientDetails(prev => {
+        const next = { ...prev };
+        delete next[clientId];
+        return next;
+      });
+      setProviders(prev => {
+        const next = { ...prev };
+        delete next[clientId];
+        return next;
+      });
     } catch (error) {
       console.error('Error deleting app client:', error);
       alert('Failed to delete app client');
     }
   };
 
-  const handleAddProvider = async () => {
-    if (!selectedUserPoolId || !selectedAppClientId) return;
-    if (!newProvider.clientId || !newProvider.clientSecret) {
+  const handleAddProvider = async (clientId: string) => {
+    if (!selectedUserPoolId) return;
+    const provider = newProvider[clientId];
+    if (!provider || !provider.clientId || !provider.clientSecret) {
       alert('Please provide Client ID and Client Secret');
       return;
     }
     
     try {
-      await api.addProvider(selectedUserPoolId, selectedAppClientId, {
-        type: newProvider.type,
-        clientId: newProvider.clientId,
-        clientSecret: newProvider.clientSecret,
-        domain: newProvider.domain || PROVIDER_DOMAINS[newProvider.type],
+      await api.addProvider(selectedUserPoolId, clientId, {
+        type: provider.type,
+        clientId: provider.clientId,
+        clientSecret: provider.clientSecret,
+        domain: provider.domain || PROVIDER_DOMAINS[provider.type],
       });
       
-      await loadProviders(selectedUserPoolId, selectedAppClientId);
-      setNewProvider({ type: 'google', clientId: '', clientSecret: '', domain: '' });
-      setShowAddProvider(false);
+      await loadProviders(selectedUserPoolId, clientId);
+      setNewProvider(prev => {
+        const next = { ...prev };
+        delete next[clientId];
+        return next;
+      });
+      setShowAddProvider(prev => ({ ...prev, [clientId]: false }));
     } catch (error) {
       console.error('Error adding provider:', error);
       alert('Failed to add provider');
     }
   };
 
-  const handleDeleteProvider = async (providerId: string) => {
-    if (!selectedUserPoolId || !selectedAppClientId) return;
+  const handleDeleteProvider = async (clientId: string, providerId: string) => {
+    if (!selectedUserPoolId) return;
     if (!confirm('Are you sure you want to delete this provider?')) return;
     
     try {
-      await api.removeProvider(selectedUserPoolId, selectedAppClientId, providerId);
-      await loadProviders(selectedUserPoolId, selectedAppClientId);
+      await api.removeProvider(selectedUserPoolId, clientId, providerId);
+      await loadProviders(selectedUserPoolId, clientId);
     } catch (error) {
       console.error('Error deleting provider:', error);
       alert('Failed to delete provider');
@@ -675,92 +695,40 @@ function EditModeManagementUI({
           ) : appClients.length === 0 ? (
             <div className="text-sm text-muted-foreground">No AppClients found. Create one to continue.</div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {appClients.map((client) => {
-                const clientDetails = selectedAppClientId === client.id ? appClientDetails : null;
+                const clientDetails = appClientDetails[client.id];
+                const clientProviders = providers[client.id] || [];
+                const isLoadingProviders = loadingProviders[client.id];
+                const isShowingAddProvider = showAddProvider[client.id];
                 return (
-                  <Card
-                    key={client.id}
-                    className={`cursor-pointer transition-colors ${
-                      selectedAppClientId === client.id
-                        ? 'border-blue-500 bg-blue-50/50'
-                        : 'border-gray-200'
-                    }`}
-                    onClick={() => setSelectedAppClientId(client.id)}
-                  >
-                    <CardContent className="p-3">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">{client.name}</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {selectedAppClientId === client.id && (
-                              <Badge variant="default" className="text-xs">
-                                Selected
-                              </Badge>
-                            )}
+                  <div key={client.id} className="space-y-3">
+                    <Card className="border-gray-200">
+                      <CardContent className="p-3">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{client.name}</div>
+                            </div>
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteAppClient(client.id);
-                              }}
+                              onClick={() => handleDeleteAppClient(client.id)}
                               className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                             >
                               <X className="h-4 w-4" />
                             </Button>
                           </div>
-                        </div>
-                        {clientDetails && (
-                          <div className="space-y-2 pt-2">
-                            <div className="space-y-1.5">
-                              <div>
-                                <Label className="text-xs text-muted-foreground">Client ID</Label>
-                                <div className="flex items-center gap-1 mt-0.5">
-                                  <code className="flex-1 text-xs bg-white px-2 py-1 rounded border font-mono break-all">
-                                    {clientDetails.client_id || clientDetails.clientId || '••••••••'}
-                                  </code>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={async (e) => {
-                                      e.stopPropagation();
-                                      e.preventDefault();
-                                      await copyToClipboard(clientDetails.client_id || clientDetails.clientId || '', 'clientId');
-                                    }}
-                                    className="h-6 w-6 p-0"
-                                  >
-                                    {copiedField === 'clientId' ? (
-                                      <Check className="h-3 w-3 text-green-600" />
-                                    ) : (
-                                      <Copy className="h-3 w-3" />
-                                    )}
-                                  </Button>
-                                </div>
-                              </div>
-                              <div>
-                                <Label className="text-xs text-muted-foreground">Client Secret</Label>
-                                <div className="flex items-center gap-1 mt-0.5">
-                                  <code className="flex-1 text-xs bg-white px-2 py-1 rounded border font-mono">
-                                    {(() => {
-                                      const secret = revealedSecrets[client.id] || 
-                                                    (clientDetails as AppClientResponse).clientSecret;
-                                      if (secret) {
-                                        // Show first 4 and last 4 characters
-                                        if (secret.length <= 8) {
-                                          return secret; // Show full secret if it's short
-                                        }
-                                        return `${secret.substring(0, 4)}...${secret.substring(secret.length - 4)}`;
-                                      }
-                                      return '••••••••••••••••';
-                                    })()}
-                                  </code>
-                                  {revealedSecrets[client.id] || 
-                                   (clientDetails as AppClientResponse).clientSecret ? (
+                          {clientDetails && (
+                            <div className="space-y-2 pt-2">
+                              <div className="space-y-1.5">
+                                <div>
+                                  <Label className="text-xs text-muted-foreground">Client ID</Label>
+                                  <div className="flex items-center gap-1 mt-0.5">
+                                    <code className="flex-1 text-xs bg-white px-2 py-1 rounded border font-mono break-all">
+                                      {clientDetails.client_id || clientDetails.clientId || '••••••••'}
+                                    </code>
                                     <Button
                                       type="button"
                                       variant="ghost"
@@ -768,45 +736,245 @@ function EditModeManagementUI({
                                       onClick={async (e) => {
                                         e.stopPropagation();
                                         e.preventDefault();
-                                        const secret = revealedSecrets[client.id] || 
-                                                      (clientDetails as AppClientResponse).clientSecret;
-                                        if (secret) {
-                                          await copyToClipboard(secret, 'clientSecret');
-                                        }
+                                        await copyToClipboard(clientDetails.client_id || clientDetails.clientId || '', `clientId-${client.id}`);
                                       }}
                                       className="h-6 w-6 p-0"
                                     >
-                                      {copiedField === 'clientSecret' ? (
+                                      {copiedField === `clientId-${client.id}` ? (
                                         <Check className="h-3 w-3 text-green-600" />
                                       ) : (
                                         <Copy className="h-3 w-3" />
                                       )}
                                     </Button>
-                                  ) : (
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (selectedUserPoolId) {
-                                          revealClientSecret(selectedUserPoolId, client.id);
+                                  </div>
+                                </div>
+                                <div>
+                                  <Label className="text-xs text-muted-foreground">Client Secret</Label>
+                                  <div className="flex items-center gap-1 mt-0.5">
+                                    <code className="flex-1 text-xs bg-white px-2 py-1 rounded border font-mono">
+                                      {(() => {
+                                        const secret = revealedSecrets[client.id] || 
+                                                      (clientDetails as AppClientResponse).clientSecret;
+                                        if (secret) {
+                                          // Show first 4 and last 4 characters
+                                          if (secret.length <= 8) {
+                                            return secret; // Show full secret if it's short
+                                          }
+                                          return `${secret.substring(0, 4)}...${secret.substring(secret.length - 4)}`;
                                         }
-                                      }}
-                                      className="h-6 px-2 text-xs"
-                                      disabled={loadingSecret === client.id}
-                                    >
-                                      {loadingSecret === client.id ? '...' : 'Reveal'}
-                                    </Button>
-                                  )}
+                                        return '••••••••••••••••';
+                                      })()}
+                                    </code>
+                                    {revealedSecrets[client.id] || 
+                                     (clientDetails as AppClientResponse).clientSecret ? (
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          e.preventDefault();
+                                          const secret = revealedSecrets[client.id] || 
+                                                        (clientDetails as AppClientResponse).clientSecret;
+                                          if (secret) {
+                                            await copyToClipboard(secret, `clientSecret-${client.id}`);
+                                          }
+                                        }}
+                                        className="h-6 w-6 p-0"
+                                      >
+                                        {copiedField === `clientSecret-${client.id}` ? (
+                                          <Check className="h-3 w-3 text-green-600" />
+                                        ) : (
+                                          <Copy className="h-3 w-3" />
+                                        )}
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          if (selectedUserPoolId) {
+                                            revealClientSecret(selectedUserPoolId, client.id);
+                                          }
+                                        }}
+                                        className="h-6 px-2 text-xs"
+                                        disabled={loadingSecret === client.id}
+                                      >
+                                        {loadingSecret === client.id ? '...' : 'Reveal'}
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Providers nested under each app client */}
+                    <div className="ml-6 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium">Third-Party OAuth Providers</Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAddProvider(prev => ({ ...prev, [client.id]: !prev[client.id] }))}
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Provider
+                        </Button>
                       </div>
-                    </CardContent>
-                  </Card>
+
+                      {isShowingAddProvider && (
+                        <Card className="border-green-200 bg-green-50/50">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm">Add OAuth Provider</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div>
+                              <Label htmlFor={`providerType-${client.id}`} className="text-xs">Provider Type</Label>
+                              <Select
+                                value={newProvider[client.id]?.type || 'google'}
+                                onValueChange={(value) => setNewProvider(prev => ({
+                                  ...prev,
+                                  [client.id]: {
+                                    type: value as SocialProvider,
+                                    clientId: prev[client.id]?.clientId || '',
+                                    clientSecret: prev[client.id]?.clientSecret || '',
+                                    domain: PROVIDER_DOMAINS[value as SocialProvider],
+                                  }
+                                }))}
+                              >
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="google">Google</SelectItem>
+                                  <SelectItem value="microsoft">Microsoft</SelectItem>
+                                  <SelectItem value="github">GitHub</SelectItem>
+                                  <SelectItem value="facebook">Facebook</SelectItem>
+                                  <SelectItem value="auth0">Auth0</SelectItem>
+                                  <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label htmlFor={`providerDomain-${client.id}`} className="text-xs">Domain</Label>
+                              <Input
+                                id={`providerDomain-${client.id}`}
+                                value={newProvider[client.id]?.domain || ''}
+                                onChange={(e) => setNewProvider(prev => ({
+                                  ...prev,
+                                  [client.id]: {
+                                    ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '' }),
+                                    domain: e.target.value
+                                  }
+                                }))}
+                                placeholder="https://accounts.google.com"
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`providerClientId-${client.id}`} className="text-xs">Client ID</Label>
+                              <Input
+                                id={`providerClientId-${client.id}`}
+                                value={newProvider[client.id]?.clientId || ''}
+                                onChange={(e) => setNewProvider(prev => ({
+                                  ...prev,
+                                  [client.id]: {
+                                    ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '' }),
+                                    clientId: e.target.value
+                                  }
+                                }))}
+                                placeholder="your-client-id"
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`providerClientSecret-${client.id}`} className="text-xs">Client Secret</Label>
+                              <Input
+                                id={`providerClientSecret-${client.id}`}
+                                type="password"
+                                value={newProvider[client.id]?.clientSecret || ''}
+                                onChange={(e) => setNewProvider(prev => ({
+                                  ...prev,
+                                  [client.id]: {
+                                    ...(prev[client.id] || { type: 'google', clientId: '', clientSecret: '', domain: '' }),
+                                    clientSecret: e.target.value
+                                  }
+                                }))}
+                                placeholder="your-client-secret"
+                                className="mt-1"
+                              />
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                onClick={() => handleAddProvider(client.id)}
+                                disabled={!newProvider[client.id]?.clientId || !newProvider[client.id]?.clientSecret}
+                              >
+                                Add Provider
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setShowAddProvider(prev => ({ ...prev, [client.id]: false }));
+                                  setNewProvider(prev => {
+                                    const next = { ...prev };
+                                    delete next[client.id];
+                                    return next;
+                                  });
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {isLoadingProviders ? (
+                        <div className="text-sm text-muted-foreground">Loading providers...</div>
+                      ) : clientProviders.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">No providers configured. Add one to enable third-party OAuth.</div>
+                      ) : (
+                        <div className="space-y-2">
+                          {clientProviders.map((provider) => (
+                            <Card key={provider.id} className="border-gray-200">
+                              <CardContent className="p-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-sm capitalize">{provider.type}</div>
+                                    <div className="text-xs text-muted-foreground mt-1">
+                                      Domain: {provider.domain}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Client ID: {provider.client_id || provider.clientId}
+                                    </div>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteProvider(client.id, provider.id)}
+                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -814,146 +982,6 @@ function EditModeManagementUI({
         </div>
       )}
 
-      {/* AppClient Details and Providers */}
-      {selectedUserPoolId && selectedAppClientId && (
-        <div className="space-y-4">
-          {/* Providers Management */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">Third-Party OAuth Providers</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAddProvider(!showAddProvider)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Provider
-              </Button>
-            </div>
-
-            {showAddProvider && (
-              <Card className="border-green-200 bg-green-50/50">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Add OAuth Provider</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <Label htmlFor="providerType" className="text-xs">Provider Type</Label>
-                    <Select
-                      value={newProvider.type}
-                      onValueChange={(value) => setNewProvider({
-                        ...newProvider,
-                        type: value as SocialProvider,
-                        domain: PROVIDER_DOMAINS[value as SocialProvider],
-                      })}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="google">Google</SelectItem>
-                        <SelectItem value="microsoft">Microsoft</SelectItem>
-                        <SelectItem value="github">GitHub</SelectItem>
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                        <SelectItem value="auth0">Auth0</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="providerDomain" className="text-xs">Domain</Label>
-                    <Input
-                      id="providerDomain"
-                      value={newProvider.domain}
-                      onChange={(e) => setNewProvider({ ...newProvider, domain: e.target.value })}
-                      placeholder="https://accounts.google.com"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="providerClientId" className="text-xs">Client ID</Label>
-                    <Input
-                      id="providerClientId"
-                      value={newProvider.clientId}
-                      onChange={(e) => setNewProvider({ ...newProvider, clientId: e.target.value })}
-                      placeholder="your-client-id"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="providerClientSecret" className="text-xs">Client Secret</Label>
-                    <Input
-                      id="providerClientSecret"
-                      type="password"
-                      value={newProvider.clientSecret}
-                      onChange={(e) => setNewProvider({ ...newProvider, clientSecret: e.target.value })}
-                      placeholder="your-client-secret"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleAddProvider}
-                      disabled={!newProvider.clientId || !newProvider.clientSecret}
-                    >
-                      Add Provider
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setShowAddProvider(false);
-                        setNewProvider({ type: 'google', clientId: '', clientSecret: '', domain: '' });
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {loadingProviders ? (
-              <div className="text-sm text-muted-foreground">Loading providers...</div>
-            ) : providers.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No providers configured. Add one to enable third-party OAuth.</div>
-            ) : (
-              <div className="space-y-2">
-                {providers.map((provider) => (
-                  <Card key={provider.id} className="border-gray-200">
-                    <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-medium text-sm capitalize">{provider.type}</div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Domain: {provider.domain}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Client ID: {provider.client_id || provider.clientId}
-                          </div>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteProvider(provider.id)}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
