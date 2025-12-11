@@ -12,7 +12,7 @@ export interface AppClient {
   id: string;
   name: string;
   clientId: string;
-  clientSecret?: string; // Only shown once on creation
+  clientSecret?: string; // Can be retrieved via getAppClient
   refreshTokenExpiry: number; // seconds
   idTokenExpiry: number;
   accessTokenExpiry: number;
@@ -30,6 +30,7 @@ export interface SocialProvider {
   clientId: string;
   clientSecret: string;
   domain?: string;
+  tokenType?: 'apiblaze' | 'thirdParty';
   created_at: string;
   updated_at: string;
 }
@@ -63,5 +64,6 @@ export interface CreateProviderRequest {
   clientId: string;
   clientSecret: string;
   domain?: string;
+  tokenType?: 'apiblaze' | 'thirdParty';
 }
 

@@ -264,9 +264,23 @@ class ApiClient {
     clientId: string;
     clientSecret: string;
     domain?: string;
+    tokenType?: 'apiblaze' | 'thirdParty';
   }) {
     return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers`, {
       method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateProvider(poolId: string, clientId: string, providerId: string, data: {
+    type: string;
+    clientId: string;
+    clientSecret: string;
+    domain?: string;
+    tokenType?: 'apiblaze' | 'thirdParty';
+  }) {
+    return this.request(`/user-pools/${poolId}/app-clients/${clientId}/providers/${providerId}`, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     });
   }

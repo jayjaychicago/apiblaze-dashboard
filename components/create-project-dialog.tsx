@@ -100,54 +100,54 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   const getInitialConfig = (): ProjectConfig => {
     if (!project) {
       return {
-        // General
-        projectName: '',
-        apiVersion: '1.0.0',
-        sourceType: 'github',
-        githubUser: '',
-        githubRepo: '',
-        githubPath: '',
-        githubBranch: 'main',
-        targetUrl: '',
-        uploadedFile: null,
-        
-        // Authentication
-        userGroupName: '',
-        enableApiKey: true,
-        enableSocialAuth: false,
+    // General
+    projectName: '',
+    apiVersion: '1.0.0',
+    sourceType: 'github',
+    githubUser: '',
+    githubRepo: '',
+    githubPath: '',
+    githubBranch: 'main',
+    targetUrl: '',
+    uploadedFile: null,
+    
+    // Authentication
+    userGroupName: '',
+    enableApiKey: true,
+    enableSocialAuth: false,
         useUserPool: false,
         userPoolId: undefined,
         appClientId: undefined,
-        bringOwnProvider: false,
-        socialProvider: 'github',
-        identityProviderDomain: '',
-        identityProviderClientId: '',
-        identityProviderClientSecret: '',
-        authorizedScopes: ['email', 'openid', 'profile'],
-        
-        // Target Servers
-        targetServers: [
-          { stage: 'dev', targetUrl: '', config: [] },
-          { stage: 'test', targetUrl: '', config: [] },
-          { stage: 'prod', targetUrl: '', config: [] },
-        ],
-        
-        // Portal
-        createPortal: true,
-        portalLogoUrl: '',
-        
-        // Throttling
-        throttlingRate: 10,
-        throttlingBurst: 20,
-        quota: 1000,
-        quotaInterval: 'day',
-        
-        // Pre/Post Processing
-        preProcessingPath: '',
-        postProcessingPath: '',
-        
-        // Domains (placeholder)
-        customDomains: [],
+    bringOwnProvider: false,
+    socialProvider: 'github',
+    identityProviderDomain: '',
+    identityProviderClientId: '',
+    identityProviderClientSecret: '',
+    authorizedScopes: ['email', 'openid', 'profile'],
+    
+    // Target Servers
+    targetServers: [
+      { stage: 'dev', targetUrl: '', config: [] },
+      { stage: 'test', targetUrl: '', config: [] },
+      { stage: 'prod', targetUrl: '', config: [] },
+    ],
+    
+    // Portal
+    createPortal: true,
+    portalLogoUrl: '',
+    
+    // Throttling
+    throttlingRate: 10,
+    throttlingBurst: 20,
+    quota: 1000,
+    quotaInterval: 'day',
+    
+    // Pre/Post Processing
+    preProcessingPath: '',
+    postProcessingPath: '',
+    
+    // Domains (placeholder)
+    customDomains: [],
       };
     }
 

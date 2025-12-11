@@ -47,6 +47,7 @@ export interface ProjectConfig {
   identityProviderClientId: string;
   identityProviderClientSecret: string;
   authorizedScopes: string[];
+  tokenType?: 'apiblaze' | 'thirdParty';
   // Multiple providers for create mode (when bringOwnProvider is true)
   providers?: Array<{
     type: SocialProvider;
