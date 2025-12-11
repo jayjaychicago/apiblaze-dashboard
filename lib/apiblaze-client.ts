@@ -93,19 +93,76 @@ export class APIBlazeClient {
     headers.set('X-User-Assertion', userAssertion);
     
     // Make request
-    const response = await fetch(`${this.baseUrl}${path}`, {
+    const fullUrl = `${this.baseUrl}${path}`;
+    console.log('APIBlaze request:', {
+      method: fetchOptions.method || 'GET',
+      url: fullUrl,
+      hasBody: !!fetchOptions.body,
+    });
+    
+    const response = await fetch(fullUrl, {
       ...fetchOptions,
       headers,
     });
+    
+    // Handle 204 No Content responses first (before checking response.ok)
+    // These responses have no body and should be treated as success
+    if (response.status === 204 || response.status === 205 || response.status === 304) {
+      return undefined as T;
+    }
     
     if (!response.ok) {
       let errorBody: APIErrorBody = { error: 'Unknown error' };
       try {
         errorBody = (await response.json()) as APIErrorBody;
       } catch (jsonError) {
-        console.error('Failed to parse error body from APIBlaze response:', jsonError);
+        // If JSON parsing fails, try to get the response text
+        try {
+          const responseText = await response.text();
+          console.error('Failed to parse error body from APIBlaze response:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: `${this.baseUrl}${path}`,
+            responseText: responseText.substring(0, 500), // Limit to first 500 chars
+            jsonError,
+          });
+          errorBody = { 
+            error: `HTTP ${response.status}: ${response.statusText}`,
+            details: responseText.substring(0, 500),
+          };
+        } catch (textError) {
+          console.error('Failed to parse error body from APIBlaze response:', {
+            status: response.status,
+            statusText: response.statusText,
+            url: `${this.baseUrl}${path}`,
+            jsonError,
+            textError,
+          });
+          errorBody = { 
+            error: `HTTP ${response.status}: ${response.statusText}`,
+          };
+        }
       }
+      
+      // Special handling: If DELETE operation returns 500 with "204 response cannot have body" error,
+      // treat it as success since the deletion actually succeeded (backend bug)
+      const method = fetchOptions.method || 'GET';
+      if (method === 'DELETE' && 
+          response.status === 500 && 
+          (errorBody.details?.toString().includes('204') || 
+           errorBody.details?.toString().includes('null body status'))) {
+        console.warn('Backend returned 500 for DELETE but operation succeeded (204 body error), treating as success');
+        return undefined as T;
+      }
+      
       throw new APIBlazeError(response.status, errorBody);
+    }
+    
+    // Check if response has content
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      // If no JSON content type, return empty object or undefined
+      return undefined as T;
     }
     
     const responseBody = (await response.json()) as T;

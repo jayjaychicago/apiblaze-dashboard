@@ -8,9 +8,23 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ poolId: string; clientId: string; providerId: string }> }
 ) {
+  let poolId: string | undefined;
+  let clientId: string | undefined;
+  let providerId: string | undefined;
+  
   try {
     const userClaims = await getUserClaims();
-    const { poolId, clientId, providerId } = await params;
+    const resolvedParams = await params;
+    poolId = resolvedParams.poolId;
+    clientId = resolvedParams.clientId;
+    providerId = resolvedParams.providerId;
+    
+    console.log('DELETE provider request:', {
+      poolId,
+      clientId,
+      providerId,
+      providerIdLength: providerId?.length,
+    });
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,
@@ -24,6 +38,15 @@ export async function DELETE(
     console.error('Error removing provider:', error);
     
     if (error instanceof APIBlazeError) {
+      console.error('APIBlazeError details:', {
+        status: error.status,
+        body: error.body,
+        message: error.message,
+        poolId,
+        clientId,
+        providerId,
+      });
+      
       return NextResponse.json(
         {
           error: error.body?.error || 'Failed to remove provider',
