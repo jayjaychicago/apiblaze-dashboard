@@ -23,7 +23,9 @@ import { DomainsSection } from './create-project/domains-section';
 import { ProjectConfig } from './create-project/types';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { fetchGitHubAPI } from '@/lib/github-api';
 import type { Project } from '@/types/project';
+import type { UserPool, AppClient, SocialProvider as UserPoolSocialProvider } from '@/types/user-pool';
 
 type ProjectCreationSuggestions = string[];
 
@@ -95,6 +97,10 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('general');
   const [isDeploying, setIsDeploying] = useState(false);
+  const [preloadedUserPools, setPreloadedUserPools] = useState<UserPool[]>([]);
+  const [preloadedGitHubRepos, setPreloadedGitHubRepos] = useState<Array<{ id: number; name: string; full_name: string; description: string; default_branch: string; updated_at: string; language: string; stargazers_count: number }>>([]);
+  const [preloadedAppClients, setPreloadedAppClients] = useState<Record<string, AppClient[]>>({}); // keyed by userPoolId
+  const [preloadedProviders, setPreloadedProviders] = useState<Record<string, UserPoolSocialProvider[]>>({}); // keyed by `${userPoolId}-${appClientId}`
 
   // Initialize config from project if in edit mode
   const getInitialConfig = (): ProjectConfig => {
@@ -112,7 +118,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     uploadedFile: null,
     
     // Authentication
-    userGroupName: '',
+    userGroupName: 'my-api-users',
     enableApiKey: true,
     enableSocialAuth: false,
         useUserPool: false,
@@ -221,6 +227,99 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   useEffect(() => {
     if (open) {
       setConfig(getInitialConfig());
+    }
+  }, [open, project]);
+
+  // Preload data when dialog opens - this ensures instant response
+  useEffect(() => {
+    if (open) {
+      // Load user pools in the background immediately when dialog opens
+      const loadUserPools = async () => {
+        try {
+          const pools = await api.listUserPools();
+          setPreloadedUserPools(Array.isArray(pools) ? pools : []);
+        } catch (error) {
+          console.error('Error preloading user pools:', error);
+          setPreloadedUserPools([]);
+        }
+      };
+
+      // Preload GitHub repos if GitHub app is installed
+      const loadGitHubRepos = async () => {
+        try {
+          // Check if GitHub app is installed first
+          const statusResponse = await fetchGitHubAPI('/api/github/installation-status', {
+            cache: 'no-store',
+          });
+          
+          if (statusResponse.ok) {
+            const status = await statusResponse.json() as { installed?: boolean };
+            if (status.installed) {
+              // App is installed, preload repos
+              const reposResponse = await fetchGitHubAPI('/api/github/repos');
+              if (reposResponse.ok) {
+                const repos = await reposResponse.json() as Array<{ id: number; name: string; full_name: string; description: string; default_branch: string; updated_at: string; language: string; stargazers_count: number }>;
+                setPreloadedGitHubRepos(Array.isArray(repos) ? repos : []);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error preloading GitHub repos:', error);
+          // Silently fail - not critical
+        }
+      };
+
+      // Preload AppClients and Providers for edit mode if project has userPoolId and appClientId
+      const loadEditModeData = async () => {
+        if (!project) return;
+        
+        try {
+          const projectConfig = project.config as Record<string, unknown> | undefined;
+          const userPoolId = projectConfig?.user_pool_id as string | undefined;
+          const appClientId = projectConfig?.app_client_id as string | undefined;
+          
+          if (userPoolId) {
+            // Preload AppClients for this userPool
+            try {
+              const clients = await api.listAppClients(userPoolId);
+              const clientsArray = Array.isArray(clients) ? clients : [];
+              setPreloadedAppClients(prev => ({
+                ...prev,
+                [userPoolId]: clientsArray,
+              }));
+              
+              // If we also have an appClientId, preload providers
+              if (appClientId && clientsArray.length > 0) {
+                try {
+                  const providers = await api.listProviders(userPoolId, appClientId);
+                  const providersArray = Array.isArray(providers) ? providers : [];
+                  setPreloadedProviders(prev => ({
+                    ...prev,
+                    [`${userPoolId}-${appClientId}`]: providersArray,
+                  }));
+                } catch (error) {
+                  console.error('Error preloading providers:', error);
+                }
+              }
+            } catch (error) {
+              console.error('Error preloading app clients:', error);
+            }
+          }
+        } catch (error) {
+          console.error('Error preloading edit mode data:', error);
+        }
+      };
+
+      // Load all data in parallel
+      void loadUserPools();
+      void loadGitHubRepos();
+      void loadEditModeData();
+    } else {
+      // Clear preloaded data when dialog closes
+      setPreloadedUserPools([]);
+      setPreloadedGitHubRepos([]);
+      setPreloadedAppClients({});
+      setPreloadedProviders({});
     }
   }, [open, project]);
 
@@ -375,10 +474,32 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
           // Create UserPool, AppClient, and Provider automatically
           try {
-            // 1. Create UserPool
+            // 1. Check if UserPool with this name already exists, otherwise create it
             const userPoolName = config.userGroupName || `${config.projectName}-userpool`;
-            const userPool = await api.createUserPool({ name: userPoolName });
-            const createdUserPoolId = (userPool as { id: string }).id;
+            let createdUserPoolId: string;
+            
+            // Check for existing user pool with the same name
+            const existingUserPools = await api.listUserPools();
+            const existingUserPool = Array.isArray(existingUserPools) 
+              ? existingUserPools.find((pool: { name: string; id: string }) => pool.name === userPoolName)
+              : null;
+            
+            if (existingUserPool) {
+              // Reuse existing user pool
+              console.log('[CreateProject] Reusing existing UserPool:', {
+                id: existingUserPool.id,
+                name: existingUserPool.name,
+              });
+              createdUserPoolId = existingUserPool.id;
+            } else {
+              // Create new user pool
+              const userPool = await api.createUserPool({ name: userPoolName });
+              createdUserPoolId = (userPool as { id: string }).id;
+              console.log('[CreateProject] Created new UserPool:', {
+                id: createdUserPoolId,
+                name: userPoolName,
+              });
+            }
 
             // 2. Create AppClient
             const appClient = await api.createAppClient(createdUserPoolId, {
@@ -433,6 +554,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         } else {
           // Default GitHub case - create UserPool/AppClient/Provider automatically
           // This is done server-side to keep GitHub client secret secure
+          // The server-side endpoint will check for existing user pools by name
           console.warn('[CreateProject] 🚀 DEFAULT GITHUB CASE - Creating UserPool with default GitHub provider (server-side)');
           try {
             const userPoolName = config.userGroupName || `${config.projectName}-userpool`;
@@ -610,7 +732,12 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
           <div className="flex-1 overflow-y-auto mt-4">
             <TabsContent value="general" className="mt-0">
-              <GeneralSection config={config} updateConfig={updateConfig} validationError={validationError} />
+              <GeneralSection 
+                config={config} 
+                updateConfig={updateConfig} 
+                validationError={validationError}
+                preloadedGitHubRepos={preloadedGitHubRepos}
+              />
             </TabsContent>
 
             <TabsContent value="auth" className="mt-0">
@@ -619,6 +746,9 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
                 updateConfig={updateConfig} 
                 isEditMode={!!project}
                 project={project || null}
+                preloadedUserPools={preloadedUserPools}
+                preloadedAppClients={preloadedAppClients}
+                preloadedProviders={preloadedProviders}
               />
             </TabsContent>
 

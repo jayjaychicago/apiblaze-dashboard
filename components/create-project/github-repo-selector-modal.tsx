@@ -32,6 +32,7 @@ interface GitHubRepoSelectorModalProps {
   onOpenChange: (open: boolean) => void;
   config: ProjectConfig;
   updateConfig: (updates: Partial<ProjectConfig>) => void;
+  preloadedRepos?: GitHubRepo[];
 }
 
 interface GitHubRepo {
@@ -63,11 +64,12 @@ export function GitHubRepoSelectorModal({
   open, 
   onOpenChange, 
   config, 
-  updateConfig 
+  updateConfig,
+  preloadedRepos
 }: GitHubRepoSelectorModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [repos, setRepos] = useState<GitHubRepo[]>([]);
-  const [filteredRepos, setFilteredRepos] = useState<GitHubRepo[]>([]);
+  const [repos, setRepos] = useState<GitHubRepo[]>(preloadedRepos || []);
+  const [filteredRepos, setFilteredRepos] = useState<GitHubRepo[]>(preloadedRepos || []);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRepo, setSelectedRepo] = useState<GitHubRepo | null>(null);
   const [detectedSpecs, setDetectedSpecs] = useState<OpenAPIFile[]>([]);
@@ -153,20 +155,32 @@ export function GitHubRepoSelectorModal({
     }
   }, [onOpenChange]);
 
-  // Load repositories when modal opens
+  // Initialize with preloaded repos if available
+  useEffect(() => {
+    if (preloadedRepos && preloadedRepos.length > 0) {
+      setRepos(preloadedRepos);
+      setFilteredRepos(preloadedRepos);
+    }
+  }, [preloadedRepos]);
+
+  // Load repositories when modal opens (only if not preloaded)
   useEffect(() => {
     if (open) {
-      void loadRepositories();
+      // Only load if we don't have preloaded data
+      if (!preloadedRepos || preloadedRepos.length === 0) {
+        void loadRepositories();
+      }
     } else {
       // Reset state when modal closes
-      setRepos([]);
-      setFilteredRepos([]);
+      setRepos(preloadedRepos || []);
+      setFilteredRepos(preloadedRepos || []);
       setSelectedRepo(null);
       setDetectedSpecs([]);
       setSelectedSpec(null);
       setSearchQuery('');
     }
-  }, [open, loadRepositories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const detectOpenAPISpecs = async (repo: GitHubRepo) => {
     setIsDetecting(true);
