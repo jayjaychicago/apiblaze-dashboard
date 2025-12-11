@@ -305,6 +305,19 @@ class ApiClient {
       body: JSON.stringify(data),
     });
   }
+
+  // TODO: Users and Groups management methods
+  // These will be implemented when the backend API routes are available:
+  // - listUsers(poolId: string)
+  // - getUser(poolId: string, userId: string)
+  // - createUser(poolId: string, data: {...})
+  // - updateUser(poolId: string, userId: string, data: {...})
+  // - deleteUser(poolId: string, userId: string)
+  // - listGroups(poolId: string)
+  // - getGroup(poolId: string, groupId: string)
+  // - createGroup(poolId: string, data: {...})
+  // - updateGroup(poolId: string, groupId: string, data: {...})
+  // - deleteGroup(poolId: string, groupId: string)
 }
 
 export const api = new ApiClient();
