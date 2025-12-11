@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Zap, ArrowLeft } from 'lucide-react';
+import { Zap, ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/user-menu';
 import { UserPoolList } from '@/components/user-pools/user-pool-list';
@@ -12,7 +12,7 @@ import { AppClientDetail } from '@/components/user-pools/app-client-detail';
 import { ProviderDetail } from '@/components/user-pools/provider-detail';
 import { BreadcrumbNav } from '@/components/user-pools/breadcrumb-nav';
 
-export default function UserPoolsPage() {
+function UserPoolsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
@@ -130,5 +130,36 @@ export default function UserPoolsPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function UserPoolsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+          <header className="border-b bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm sticky top-0 z-50">
+            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold">APIBlaze v3.0</h1>
+                  <p className="text-xs text-muted-foreground">User Pools Management</p>
+                </div>
+              </div>
+            </div>
+          </header>
+          <main className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          </main>
+        </div>
+      }
+    >
+      <UserPoolsContent />
+    </Suspense>
   );
 }
