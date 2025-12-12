@@ -40,6 +40,7 @@ export interface ProjectConfig {
   useUserPool: boolean;
   userPoolId?: string;
   appClientId?: string;
+  defaultAppClient?: string; // ID of the default app client for this project
   // Legacy OAuth fields (deprecated, use UserPool instead)
   bringOwnProvider: boolean;
   socialProvider: SocialProvider;

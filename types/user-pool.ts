@@ -6,6 +6,7 @@ export interface UserPool {
   app_clients_count?: number;
   users_count?: number;
   groups_count?: number;
+  default_app_client_id?: string;
 }
 
 export interface AppClient {

@@ -57,14 +57,23 @@ export function AppClientDetail({ poolId, clientId, onBack }: AppClientDetailPro
     }
   };
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    toast({
-      title: 'Copied',
-      description: 'Copied to clipboard',
-    });
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast({
+        title: 'Copied',
+        description: 'Copied to clipboard',
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to copy to clipboard. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -291,3 +300,7 @@ export function AppClientDetail({ poolId, clientId, onBack }: AppClientDetailPro
     </>
   );
 }
+
+
+
+

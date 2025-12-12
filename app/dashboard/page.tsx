@@ -148,7 +148,10 @@ export default function DashboardPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-6">
-              <Button size="lg" className="h-12 px-8" onClick={() => setCreateDialogOpen(true)}>
+              <Button size="lg" className="h-12 px-8" onClick={() => {
+                setSelectedProject(null);
+                setCreateDialogOpen(true);
+              }}>
                 <Plus className="mr-2 h-5 w-5" />
                 Create Project
               </Button>
@@ -239,7 +242,10 @@ export default function DashboardPage() {
               <Bot className="mr-2 h-4 w-4" />
               Enable your API on LLMs
             </Button>
-            <Button onClick={() => setCreateDialogOpen(true)}>
+            <Button onClick={() => {
+              setSelectedProject(null);
+              setCreateDialogOpen(true);
+            }}>
               <Plus className="mr-2 h-4 w-4" />
               Create Project
             </Button>
@@ -271,6 +277,10 @@ export default function DashboardPage() {
         onSuccess={handleProjectCreated}
         openToGitHub={typeof window !== 'undefined' && localStorage.getItem('github_app_just_installed') === 'true'}
         project={selectedProject}
+        onProjectUpdate={(updatedProject) => {
+          // Update selectedProject so dialog reflects changes immediately
+          setSelectedProject(updatedProject);
+        }}
       />
     </div>
   );

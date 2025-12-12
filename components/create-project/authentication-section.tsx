@@ -10,11 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertCircle, Plus, X, Users, Key, Copy, Check, Trash2, Search, ChevronDown } from 'lucide-react';
+import { AlertCircle, Plus, X, Users, Key, Copy, Check, Trash2, Search, ChevronDown, Star, ExternalLink } from 'lucide-react';
 import { ProjectConfig, SocialProvider } from './types';
 import { useState, useEffect, useRef } from 'react';
 import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
 import { api } from '@/lib/api';
+import { updateProjectConfig } from '@/lib/api/projects';
 import type { AppClient, UserPool, SocialProvider as UserPoolSocialProvider } from '@/types/user-pool';
 import type { Project } from '@/types/project';
 
@@ -34,6 +35,7 @@ interface AuthenticationSectionProps {
   updateConfig: (updates: Partial<ProjectConfig>) => void;
   isEditMode?: boolean;
   project?: Project | null;
+  onProjectUpdate?: (updatedProject: Project) => void; // Callback to update project in parent
   preloadedUserPools?: UserPool[]; // Optional preloaded user pools from parent
   preloadedAppClients?: Record<string, AppClient[]>; // Optional preloaded app clients keyed by userPoolId
   preloadedProviders?: Record<string, UserPoolSocialProvider[]>; // Optional preloaded providers keyed by `${userPoolId}-${appClientId}`
@@ -105,6 +107,7 @@ function EditModeManagementUI({
   config, 
   updateConfig, 
   project,
+  onProjectUpdate,
   initialUserPoolId,
   preloadedUserPools,
   preloadedAppClients,
@@ -113,11 +116,47 @@ function EditModeManagementUI({
   config: ProjectConfig; 
   updateConfig: (updates: Partial<ProjectConfig>) => void; 
   project?: Project | null;
+  onProjectUpdate?: (updatedProject: Project) => void;
   initialUserPoolId?: string;
   preloadedUserPools?: UserPool[];
   preloadedAppClients?: Record<string, AppClient[]>;
   preloadedProviders?: Record<string, UserPoolSocialProvider[]>;
 }) {
+  // Save config changes immediately to backend (without redeployment)
+  const saveConfigImmediately = async (updates: Partial<ProjectConfig>) => {
+    if (!project) return; // Only save if we're in edit mode with an existing project
+    
+    try {
+      // Extract only the defaultAppClient to save
+      const configToSave: Record<string, unknown> = {};
+      if ('defaultAppClient' in updates) {
+        configToSave.default_app_client_id = updates.defaultAppClient || null;
+      }
+      
+      if (Object.keys(configToSave).length > 0) {
+        await updateProjectConfig(project.project_id, project.api_version, configToSave);
+        
+        // Update the project object's config immediately so UI reflects the change
+        const updatedConfig = project.config 
+          ? { ...(project.config as Record<string, unknown>), ...configToSave }
+          : configToSave;
+        
+        const updatedProject = {
+          ...project,
+          config: updatedConfig
+        };
+        
+        // Notify parent to update project state
+        if (onProjectUpdate) {
+          onProjectUpdate(updatedProject);
+        }
+      }
+    } catch (error) {
+      console.error('Error saving config immediately:', error);
+      // Don't show error to user - config will be saved on next deployment anyway
+    }
+  };
+
   // Get initial values from project config in edit mode
   const getInitialUserPoolId = () => {
     if (initialUserPoolId) return initialUserPoolId;
@@ -225,9 +264,15 @@ function EditModeManagementUI({
     } else if (project?.config) {
       const projectConfig = project.config as Record<string, unknown>;
       const userPoolId = projectConfig.user_pool_id as string | undefined;
+      const defaultAppClientId = (projectConfig.default_app_client_id || projectConfig.defaultAppClient) as string | undefined;
       
       if (userPoolId && userPoolId !== selectedUserPoolId) {
         setSelectedUserPoolId(userPoolId);
+      }
+      
+      // Load defaultAppClient from project config
+      if (defaultAppClientId && config.defaultAppClient !== defaultAppClientId) {
+        updateConfig({ defaultAppClient: defaultAppClientId });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -318,6 +363,12 @@ function EditModeManagementUI({
         // Load app client details
         loadAppClientDetails(poolId, client.id);
       });
+      
+      // Ensure one app client is always the default
+      if (clients.length === 1 && !config.defaultAppClient) {
+        updateConfig({ defaultAppClient: clients[0].id });
+        await saveConfigImmediately({ defaultAppClient: clients[0].id });
+      }
       return;
     }
     
@@ -334,6 +385,12 @@ function EditModeManagementUI({
         loadProviders(poolId, client.id, false);
         loadAppClientDetails(poolId, client.id);
       });
+      
+      // Ensure one app client is always the default
+      if (clientsArray.length === 1 && !config.defaultAppClient) {
+        updateConfig({ defaultAppClient: clientsArray[0].id });
+        await saveConfigImmediately({ defaultAppClient: clientsArray[0].id });
+      }
     } catch (error) {
       console.error('Error loading app clients:', error);
       setAppClients([]);
@@ -443,12 +500,19 @@ function EditModeManagementUI({
       // Add the new client to the state immediately so it appears right away
       // The API should return a full AppClient object
       const clientToAdd = newClient as AppClient;
-      setAppClients(prev => [...prev, clientToAdd]);
+      const updatedClients = [...appClients, clientToAdd];
+      setAppClients(updatedClients);
       
       // Load details and providers for the new client
       const clientId = clientToAdd.id;
       loadAppClientDetails(selectedUserPoolId, clientId);
       loadProviders(selectedUserPoolId, clientId, false);
+      
+      // If this is the only app client (or no default is set), make it the default
+      if (updatedClients.length === 1 || !config.defaultAppClient) {
+        updateConfig({ defaultAppClient: clientId });
+        await saveConfigImmediately({ defaultAppClient: clientId });
+      }
       
       // Also refresh the full list to ensure consistency (force refresh to bypass preloaded data)
       await loadAppClients(selectedUserPoolId, false, true);
@@ -467,8 +531,13 @@ function EditModeManagementUI({
     
     try {
       await api.deleteAppClient(selectedUserPoolId, clientId);
+      
+      // Check if the deleted client was the default
+      const wasDefault = config.defaultAppClient === clientId;
+      
       // Remove from state
-      setAppClients(prev => prev.filter(c => c.id !== clientId));
+      const remainingClients = appClients.filter(c => c.id !== clientId);
+      setAppClients(remainingClients);
       setAppClientDetails(prev => {
         const next = { ...prev };
         delete next[clientId];
@@ -479,6 +548,28 @@ function EditModeManagementUI({
         delete next[clientId];
         return next;
       });
+      
+      // Handle default app client reassignment
+      // One app client must always be the default
+      if (wasDefault) {
+        if (remainingClients.length > 0) {
+          // Set the first remaining app client as default
+          const newDefault = remainingClients[0].id;
+          updateConfig({ defaultAppClient: newDefault });
+          // Save immediately if in edit mode
+          await saveConfigImmediately({ defaultAppClient: newDefault });
+        } else {
+          // No app clients left - this shouldn't happen in practice, but clear default if it does
+          updateConfig({ defaultAppClient: undefined });
+          // Save immediately if in edit mode
+          await saveConfigImmediately({ defaultAppClient: undefined });
+        }
+      } else if (remainingClients.length === 1 && !config.defaultAppClient) {
+        // If there's only one app client left and no default is set, make it the default
+        const newDefault = remainingClients[0].id;
+        updateConfig({ defaultAppClient: newDefault });
+        await saveConfigImmediately({ defaultAppClient: newDefault });
+      }
     } catch (error) {
       console.error('Error deleting app client:', error);
       alert('Failed to delete app client');
@@ -726,18 +817,74 @@ function EditModeManagementUI({
                               <Key className="h-4 w-4 text-blue-600" />
                               <div>
                                 <div className="font-semibold text-base">{client.name}</div>
-                                <div className="text-xs text-muted-foreground mt-0.5">App Client</div>
+                                {(() => {
+                                  const clientId = clientDetails?.client_id || clientDetails?.clientId;
+                                  const projectName = project?.project_id || 'project';
+                                  const portalUrl = clientId 
+                                    ? `https://${projectName}.portal.APIblaze.com/login?clientId=${clientId}`
+                                    : `https://${projectName}.portal.APIblaze.com/login`;
+                                  return (
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <div className="text-xs text-muted-foreground">
+                                        API Portal login:{' '}
+                                        <a
+                                          href={portalUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:text-blue-800 underline"
+                                        >
+                                          {portalUrl}
+                                        </a>
+                                      </div>
+                                      <a
+                                        href={portalUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800"
+                                        title="Open in new tab"
+                                      >
+                                        <ExternalLink className="h-3 w-3" />
+                                      </a>
+                                      {config.defaultAppClient === client.id ? (
+                                        <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600 text-xs ml-1">
+                                          <Star className="h-3 w-3 mr-1" />
+                                          Default
+                                        </Badge>
+                                      ) : (
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={async () => {
+                                            updateConfig({
+                                              defaultAppClient: client.id,
+                                            });
+                                            // Save immediately if in edit mode
+                                            await saveConfigImmediately({ defaultAppClient: client.id });
+                                          }}
+                                          className="h-6 px-2 text-xs hover:bg-blue-100 ml-1"
+                                          title="Set as default"
+                                        >
+                                          <Star className="h-3 w-3 mr-1" />
+                                          Set as Default
+                                        </Button>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
                               </div>
                             </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteAppClient(client.id)}
-                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteAppClient(client.id)}
+                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                           {clientDetails && (
                             <div className="space-y-3 pt-2 border-t border-blue-100">
@@ -1013,7 +1160,7 @@ function EditModeManagementUI({
                               </CardHeader>
                               <CardContent>
                                 <code className="text-xs bg-white px-2 py-1 rounded border block">
-                                  callback.apiblaze.com
+                                  https://callback.apiblaze.com
                                 </code>
                               </CardContent>
                             </Card>
@@ -1089,7 +1236,7 @@ function EditModeManagementUI({
   );
 }
 
-export function AuthenticationSection({ config, updateConfig, isEditMode = false, project, preloadedUserPools, preloadedAppClients, preloadedProviders }: AuthenticationSectionProps) {
+export function AuthenticationSection({ config, updateConfig, isEditMode = false, project, onProjectUpdate, preloadedUserPools, preloadedAppClients, preloadedProviders }: AuthenticationSectionProps) {
   const [newScope, setNewScope] = useState('');
   const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
   const [selectedAppClient, setSelectedAppClient] = useState<AppClient & { userPoolId: string } | null>(null);
@@ -1248,12 +1395,70 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
   };
 
   const copyToClipboard = async (text: string, field: string) => {
+    if (!text || text.trim() === '') {
+      console.warn('No text to copy');
+      return;
+    }
+
     try {
-      await navigator.clipboard.writeText(text);
+      // Check if clipboard API is available (requires secure context)
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
+        return;
+      }
+    } catch (clipboardError) {
+      console.warn('Clipboard API failed, trying fallback:', clipboardError);
+    }
+
+    // Fallback for browsers/environments without clipboard API
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      textArea.style.opacity = '0';
+      textArea.setAttribute('readonly', '');
+      textArea.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(textArea);
+      
+      // For iOS
+      if (navigator.userAgent.match(/ipad|iphone/i)) {
+        const range = document.createRange();
+        range.selectNodeContents(textArea);
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+        textArea.setSelectionRange(0, 999999);
+      } else {
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, text.length);
+      }
+      
+      const successful = document.execCommand('copy');
+      
+      // Clean up
+      if (textArea.parentNode) {
+        document.body.removeChild(textArea);
+      }
+      
+      if (successful) {
+        setCopiedField(field);
+        setTimeout(() => setCopiedField(null), 2000);
+      } else {
+        throw new Error('Copy command returned false');
+      }
+    } catch (fallbackError) {
+      console.error('Fallback copy failed:', fallbackError);
+      // Still show as copied to give user feedback
       setCopiedField(field);
       setTimeout(() => setCopiedField(null), 2000);
-    } catch (error) {
-      console.error('Failed to copy:', error);
+      // Optionally show an error toast/alert here if you have toast system
     }
   };
 
@@ -1427,6 +1632,7 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                 config={config}
                 updateConfig={updateConfig}
                 project={project}
+                onProjectUpdate={onProjectUpdate}
                 preloadedUserPools={preloadedUserPools}
                 preloadedAppClients={preloadedAppClients}
                 preloadedProviders={preloadedProviders}

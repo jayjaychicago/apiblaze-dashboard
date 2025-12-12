@@ -32,6 +32,9 @@ export interface CreateProxyPayload {
     client_secret: string;
     scopes?: string;
   };
+  user_pool_id?: string;
+  app_client_id?: string;
+  default_app_client_id?: string;
   environments?: Record<string, { target: string; description?: string }>;
 }
 
@@ -232,6 +235,22 @@ export class APIBlazeClient {
   }
 
   /**
+   * Update project config (without redeployment)
+   */
+  async updateProxyConfig(
+    userClaims: UserAssertionClaims,
+    projectId: string,
+    version: string,
+    config: Record<string, unknown>
+  ) {
+    return this.request(`/${projectId}/${version}/config`, {
+      method: 'PATCH',
+      body: JSON.stringify(config),
+      userClaims,
+    });
+  }
+
+  /**
    * UserPool methods
    */
   async createUserPool(
@@ -262,7 +281,7 @@ export class APIBlazeClient {
   async updateUserPool(
     userClaims: UserAssertionClaims,
     poolId: string,
-    data: { name?: string }
+    data: { name?: string; default_app_client_id?: string }
   ) {
     return this.request(`/user-pools/${poolId}`, {
       method: 'PATCH',

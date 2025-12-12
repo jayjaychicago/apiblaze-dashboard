@@ -1,10 +1,13 @@
+'use client';
+
+import { useState } from 'react';
 import Image from 'next/image';
 import { Project } from '@/types/project';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DeploymentStatus } from '@/components/deployment-status';
-import { ExternalLink, Settings, Trash2, Github, Globe } from 'lucide-react';
+import { ExternalLink, Settings, Trash2, Github, Globe, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { MoreVertical } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface ProjectCardProps {
   project: Project;
@@ -21,11 +25,49 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardProps) {
-  const handleOpenPortal = () => {
-    const portalUrl = project.api_version
-      ? `${project.urls.portal}/${project.api_version}`
-      : project.urls.portal;
-    window.open(portalUrl, '_blank');
+  const [loadingClientId, setLoadingClientId] = useState(false);
+
+  const handleOpenPortal = async () => {
+    try {
+      setLoadingClientId(true);
+      
+      // Get defaultAppClient and userPoolId from project config
+      const projectConfig = project.config as Record<string, unknown> | undefined;
+      const defaultAppClientId = (projectConfig?.default_app_client_id || projectConfig?.defaultAppClient) as string | undefined;
+      const userPoolId = projectConfig?.user_pool_id as string | undefined;
+      
+      let portalUrl = project.api_version
+        ? `${project.urls.portal}/${project.api_version}`
+        : project.urls.portal;
+      
+      // If we have a default app client, fetch its clientId and add it as a query parameter
+      if (defaultAppClientId && userPoolId) {
+        try {
+          const appClient = await api.getAppClient(userPoolId, defaultAppClientId);
+          const clientId = (appClient as { client_id?: string; clientId?: string }).client_id || appClient.clientId;
+          
+          if (clientId) {
+            const url = new URL(portalUrl);
+            url.searchParams.set('clientId', clientId);
+            portalUrl = url.toString();
+          }
+        } catch (error) {
+          console.error('Error fetching app client details:', error);
+          // Continue without clientId if fetch fails
+        }
+      }
+      
+      window.open(portalUrl, '_blank');
+    } catch (error) {
+      console.error('Error opening portal:', error);
+      // Fallback to opening portal without clientId
+      const portalUrl = project.api_version
+        ? `${project.urls.portal}/${project.api_version}`
+        : project.urls.portal;
+      window.open(portalUrl, '_blank');
+    } finally {
+      setLoadingClientId(false);
+    }
   };
 
   return (
@@ -58,8 +100,12 @@ export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardPr
                   Update Config
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={handleOpenPortal}>
-                <ExternalLink className="mr-2 h-4 w-4" />
+              <DropdownMenuItem onClick={handleOpenPortal} disabled={loadingClientId}>
+                {loadingClientId ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                )}
                 Open Portal
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -144,8 +190,12 @@ export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardPr
       </CardContent>
 
       <CardFooter className="flex gap-2">
-        <Button variant="outline" size="sm" onClick={handleOpenPortal} className="flex-1">
-          <ExternalLink className="mr-2 h-4 w-4" />
+        <Button variant="outline" size="sm" onClick={handleOpenPortal} className="flex-1" disabled={loadingClientId}>
+          {loadingClientId ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <ExternalLink className="mr-2 h-4 w-4" />
+          )}
           Open Portal
         </Button>
         {onUpdateConfig && (

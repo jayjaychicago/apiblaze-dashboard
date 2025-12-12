@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import type { AppClient } from '@/types/user-pool';
+import type { AppClient, UserPool } from '@/types/user-pool';
 import { AppClientFormDialog } from './app-client-form-dialog';
 
 interface AppClientListProps {
@@ -41,12 +41,16 @@ export function AppClientList({ poolId, onRefresh }: AppClientListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<AppClient | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [userPool, setUserPool] = useState<UserPool | null>(null);
 
   const fetchAppClients = useCallback(async () => {
     try {
       setLoading(true);
       const clients = await api.listAppClients(poolId);
       setAppClients(clients);
+      // Fetch user pool for general info (default app client is now stored in project config, not user pool)
+      const pool = await api.getUserPool(poolId);
+      setUserPool(pool);
     } catch (error) {
       console.error('Error fetching app clients:', error);
       toast({
@@ -116,6 +120,9 @@ export function AppClientList({ poolId, onRefresh }: AppClientListProps) {
     onRefresh?.();
   };
 
+  // Removed handleSetDefault - default app client is now stored in project config, not in user pool table
+  // const handleSetDefault = async (client: AppClient) => { ... }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -158,43 +165,67 @@ export function AppClientList({ poolId, onRefresh }: AppClientListProps) {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {appClients.map((client) => (
-              <Card key={client.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg mb-1">{client.name}</CardTitle>
-                      <CardDescription className="font-mono text-xs break-all">
-                        {client.clientId}
-                      </CardDescription>
+            {appClients.map((client) => {
+              const isDefault = userPool?.default_app_client_id === client.id;
+              return (
+                <Card key={client.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <CardTitle className="text-lg">{client.name}</CardTitle>
+                          {isDefault && (
+                            <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600">
+                              <Star className="h-3 w-3 mr-1" />
+                              Default
+                            </Badge>
+                          )}
+                        </div>
+                        <CardDescription className="font-mono text-xs break-all">
+                          {client.clientId}
+                        </CardDescription>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleViewDetails(client)}>
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(client)}>
+                            <Settings className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleSetDefault(client)}
+                            disabled={settingDefault === client.id}
+                          >
+                            {settingDefault === client.id ? (
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : isDefault ? (
+                              <StarOff className="mr-2 h-4 w-4" />
+                            ) : (
+                              <Star className="mr-2 h-4 w-4" />
+                            )}
+                            {isDefault ? 'Remove as Default' : 'Set as Default'}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteClick(client)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewDetails(client)}>
-                          <ExternalLink className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(client)}>
-                          <Settings className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteClick(client)}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardHeader>
+                  </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Providers:</span>
@@ -220,7 +251,8 @@ export function AppClientList({ poolId, onRefresh }: AppClientListProps) {
                   </Button>
                 </CardFooter>
               </Card>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>
@@ -280,3 +312,7 @@ export function AppClientList({ poolId, onRefresh }: AppClientListProps) {
     </>
   );
 }
+
+
+
+

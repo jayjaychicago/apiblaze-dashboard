@@ -43,10 +43,11 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
       return;
     }
 
-    // Extract user_pool_id and app_client_id from project config
+    // Extract user_pool_id and default_app_client_id from project config
     const config = project.config as Record<string, unknown> | undefined;
     const userPoolId = config?.user_pool_id as string | undefined;
-    const appClientId = config?.app_client_id as string | undefined;
+    const defaultAppClientId = (config?.default_app_client_id || config?.defaultAppClient) as string | undefined;
+    const appClientId = defaultAppClientId || (config?.app_client_id as string | undefined);
 
     if (!userPoolId || !appClientId) {
       // No user pool configured for this project
@@ -86,8 +87,28 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
 
   const config = project.config as Record<string, unknown> | undefined;
   const userPoolId = config?.user_pool_id as string | undefined;
-  const appClientId = config?.app_client_id as string | undefined;
+  const defaultAppClientId = (config?.default_app_client_id || config?.defaultAppClient) as string | undefined;
+  const appClientId = defaultAppClientId || (config?.app_client_id as string | undefined);
   const hasUserPool = !!userPoolId && !!appClientId;
+  
+  // Build portal URL with clientId if available
+  const getPortalUrl = () => {
+    let portalUrl = project.urls.portal;
+    if (appClient && appClient.clientId) {
+      const clientId = (appClient as AppClientResponse).client_id || appClient.clientId;
+      if (clientId) {
+        try {
+          const url = new URL(portalUrl);
+          url.searchParams.set('clientId', clientId);
+          return url.toString();
+        } catch {
+          // If URL parsing fails, return original URL
+          return portalUrl;
+        }
+      }
+    }
+    return portalUrl;
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -153,12 +174,12 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Portal</span>
                     <a
-                      href={project.urls.portal}
+                      href={getPortalUrl()}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-blue-600 hover:underline flex items-center gap-1"
                     >
-                      {project.urls.portal}
+                      {getPortalUrl()}
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>

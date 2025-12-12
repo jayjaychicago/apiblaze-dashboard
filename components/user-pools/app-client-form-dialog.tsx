@@ -208,12 +208,21 @@ export function AppClientFormDialog({
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(clientSecret);
-                      toast({
-                        title: 'Copied',
-                        description: 'Client secret copied to clipboard',
-                      });
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(clientSecret);
+                        toast({
+                          title: 'Copied',
+                          description: 'Client secret copied to clipboard',
+                        });
+                      } catch (error) {
+                        console.error('Failed to copy to clipboard:', error);
+                        toast({
+                          title: 'Error',
+                          description: 'Failed to copy to clipboard. Please try again.',
+                          variant: 'destructive',
+                        });
+                      }
                     }}
                   >
                     Copy
@@ -423,3 +432,7 @@ export function AppClientFormDialog({
     </Dialog>
   );
 }
+
+
+
+

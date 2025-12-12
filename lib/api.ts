@@ -114,6 +114,7 @@ class ApiClient {
     };
     user_pool_id?: string;
     app_client_id?: string;
+    default_app_client_id?: string;
     environments?: Record<string, { target: string }>;
   }): Promise<Record<string, unknown>> {
     // Map frontend data to backend API format
@@ -150,6 +151,9 @@ class ApiClient {
     }
     if (data.app_client_id) {
       backendData.app_client_id = data.app_client_id;
+    }
+    if (data.default_app_client_id) {
+      backendData.default_app_client_id = data.default_app_client_id;
     }
     if (data.environments) {
       backendData.environments = data.environments;
@@ -196,7 +200,7 @@ class ApiClient {
     });
   }
 
-  async updateUserPool(poolId: string, data: { name?: string }) {
+  async updateUserPool(poolId: string, data: { name?: string; default_app_client_id?: string }) {
     return this.request(`/user-pools/${poolId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
