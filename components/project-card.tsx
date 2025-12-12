@@ -55,6 +55,9 @@ export function ProjectCard({ project, onUpdateConfig, onDelete }: ProjectCardPr
           console.error('Error fetching app client details:', error);
           // Continue without clientId if fetch fails
         }
+      } else if (defaultAppClientId) {
+        // If we have defaultAppClientId but no userPoolId, log a warning
+        console.warn('Default app client ID found but no user pool ID', { defaultAppClientId });
       }
       
       window.open(portalUrl, '_blank');

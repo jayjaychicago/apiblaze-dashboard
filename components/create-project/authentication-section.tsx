@@ -820,9 +820,17 @@ function EditModeManagementUI({
                                 {(() => {
                                   const clientId = clientDetails?.client_id || clientDetails?.clientId;
                                   const projectName = project?.project_id || 'project';
-                                  const portalUrl = clientId 
-                                    ? `https://${projectName}.portal.APIblaze.com/login?clientId=${clientId}`
-                                    : `https://${projectName}.portal.APIblaze.com/login`;
+                                  const apiVersion = project?.api_version || '1.0.0';
+                                  const isDefault = config.defaultAppClient === client.id;
+                                  
+                                  // Default app client: https://{projectName}.portal.apiblaze.com/{apiVersion}
+                                  // Non-default: https://{projectName}.portal.apiblaze.com/{apiVersion}/login?clientId={clientId}
+                                  const portalUrl = isDefault
+                                    ? `https://${projectName}.portal.apiblaze.com/${apiVersion}`
+                                    : clientId
+                                      ? `https://${projectName}.portal.apiblaze.com/${apiVersion}/login?clientId=${clientId}`
+                                      : `https://${projectName}.portal.apiblaze.com/${apiVersion}/login`;
+                                  
                                   return (
                                     <div className="flex items-center gap-2 mt-0.5">
                                       <div className="text-xs text-muted-foreground">
@@ -845,7 +853,7 @@ function EditModeManagementUI({
                                       >
                                         <ExternalLink className="h-3 w-3" />
                                       </a>
-                                      {config.defaultAppClient === client.id ? (
+                                      {isDefault ? (
                                         <Badge variant="default" className="bg-yellow-500 hover:bg-yellow-600 text-xs ml-1">
                                           <Star className="h-3 w-3 mr-1" />
                                           Default
