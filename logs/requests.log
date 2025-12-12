@@ -1,55 +1,6 @@
-2025-12-12 06:27:45 |   (log) --> POST / [32m201[0m 1s
-2025-12-12 06:27:45 |   (log) [CreateProxy] Project created successfully: {"tenantName":"pokapi10","apiVersion":"2.7.0","endpoints":["default"]}
-2025-12-12 06:27:45 |   (log) [CreateProxy] Using provided project name: {"name":"pokapi10","source":"subdomain"}
-2025-12-12 06:27:45 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
-2025-12-12 06:27:45 |   (log) [CreateProxy] GitHub fetch successful
-2025-12-12 06:27:45 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
-2025-12-12 06:27:45 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"oauth","hasGithub":true,"hasOpenapi":false}
-2025-12-12 06:27:45 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
-2025-12-12 06:27:45 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-12-12 06:27:45 |   (log) <-- POST /
-2025-12-12 06:27:45 | POST https://internalapi.apiblaze.com/ - Ok @ 12/12/2025, 6:27:44 AM
-2025-12-12 06:27:44 |   (log) --> POST /user-pools/pool_1765520833094_d9zw2cc/app-clients/client_1765520863636_s9mu9ne/providers [32m201[0m 112ms
-2025-12-12 06:27:44 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-12-12 06:27:44 |   (log) <-- POST /user-pools/pool_1765520833094_d9zw2cc/app-clients/client_1765520863636_s9mu9ne/providers
-2025-12-12 06:27:44 | POST https://internalapi.apiblaze.com/user-pools/pool_1765520833094_d9zw2cc/app-clients/client_1765520863636_s9mu9ne/providers - Ok @ 12/12/2025, 6:27:44 AM
-2025-12-12 06:27:43 |   (log) --> POST /user-pools/pool_1765520833094_d9zw2cc/app-clients [32m201[0m 78ms
-2025-12-12 06:27:43 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-12-12 06:27:43 |   (log) <-- POST /user-pools/pool_1765520833094_d9zw2cc/app-clients
-2025-12-12 06:27:43 | POST https://internalapi.apiblaze.com/user-pools/pool_1765520833094_d9zw2cc/app-clients - Ok @ 12/12/2025, 6:27:43 AM
-2025-12-12 06:27:43 |   (log) --> GET /user-pools [32m200[0m 22ms
-2025-12-12 06:27:43 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-12-12 06:27:43 |   (log) <-- GET /user-pools
-2025-12-12 06:27:43 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/12/2025, 6:27:43 AM
-2025-12-12 06:27:20 |   (log) --> POST / [33m409[0m 543ms
-2025-12-12 06:27:20 |   (log) [CreateProxy] Using provided project name: {"name":"pokapi","source":"subdomain"}
-2025-12-12 06:27:20 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
-2025-12-12 06:27:20 |   (log) [CreateProxy] GitHub fetch successful
-2025-12-12 06:27:20 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
-2025-12-12 06:27:20 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"oauth","hasGithub":true,"hasOpenapi":false}
-2025-12-12 06:27:20 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
-2025-12-12 06:27:20 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-12-12 06:27:20 |   (log) <-- POST /
-2025-12-12 06:27:20 | POST https://internalapi.apiblaze.com/ - Ok @ 12/12/2025, 6:27:19 AM
-2025-12-12 06:27:18 |   (log) --> POST /user-pools/pool_1765520833094_d9zw2cc/app-clients/client_1765520833853_x9ppuks/providers [32m201[0m 100ms
-2025-12-12 06:27:18 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-12-12 06:27:18 |   (log) <-- POST /user-pools/pool_1765520833094_d9zw2cc/app-clients/client_1765520833853_x9ppuks/providers
-2025-12-12 06:27:17 | POST https://internalapi.apiblaze.com/user-pools/pool_1765520833094_d9zw2cc/app-clients/client_1765520833853_x9ppuks/providers - Ok @ 12/12/2025, 6:27:17 AM
-2025-12-12 06:27:13 |   (log) --> POST /user-pools/pool_1765520833094_d9zw2cc/app-clients [32m201[0m 85ms
-2025-12-12 06:27:13 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-12-12 06:27:13 |   (log) <-- POST /user-pools/pool_1765520833094_d9zw2cc/app-clients
-2025-12-12 06:27:13 | POST https://internalapi.apiblaze.com/user-pools/pool_1765520833094_d9zw2cc/app-clients - Ok @ 12/12/2025, 6:27:13 AM
-2025-12-12 06:27:13 |   (log) --> POST /user-pools [32m201[0m 78ms
-2025-12-12 06:27:13 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-12-12 06:27:13 |   (log) <-- POST /user-pools
-2025-12-12 06:27:13 | POST https://internalapi.apiblaze.com/user-pools - Ok @ 12/12/2025, 6:27:13 AM
-2025-12-12 06:27:13 |   (log) --> GET /user-pools [32m200[0m 24ms
-2025-12-12 06:27:13 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
-2025-12-12 06:27:13 |   (log) <-- GET /user-pools
-2025-12-12 06:27:13 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/12/2025, 6:27:12 AM
-2025-12-12 06:27:02 | Connected to apiblaze-v2-admin-api-production, waiting for logs...
-2025-12-12 06:27:02 | Successfully created tail, expires at 2025-12-12T12:27:02Z
-2025-12-12 06:27:01 | 
-2025-12-12 06:27:01 | -----------------------------------------------
-2025-12-12 06:27:01 |  ⛅️ wrangler 3.114.15 (update available 4.54.0)
-2025-12-12 06:27:01 | 
+2025-12-12 17:11:32 | Connected to apiblaze-v2-admin-api-production, waiting for logs...
+2025-12-12 17:11:32 | Successfully created tail, expires at 2025-12-12T23:11:31Z
+2025-12-12 17:11:30 | 
+2025-12-12 17:11:30 | -----------------------------------------------
+2025-12-12 17:11:30 |  ⛅️ wrangler 3.114.15 (update available 4.54.0)
+2025-12-12 17:11:30 | 
