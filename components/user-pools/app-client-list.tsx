@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Plus, Key, Settings, Trash2, MoreVertical, ExternalLink } from 'lucide-react';
+import { Loader2, Plus, Key, Settings, Trash2, MoreVertical, ExternalLink, Star } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -199,20 +199,6 @@ export function AppClientList({ poolId, onRefresh }: AppClientListProps) {
                           <DropdownMenuItem onClick={() => handleEdit(client)}>
                             <Settings className="mr-2 h-4 w-4" />
                             Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleSetDefault(client)}
-                            disabled={settingDefault === client.id}
-                          >
-                            {settingDefault === client.id ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : isDefault ? (
-                              <StarOff className="mr-2 h-4 w-4" />
-                            ) : (
-                              <Star className="mr-2 h-4 w-4" />
-                            )}
-                            {isDefault ? 'Remove as Default' : 'Set as Default'}
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem

@@ -93,7 +93,7 @@ export function ProjectConfigDialog({ open, onOpenChange, project }: ProjectConf
   
   // Build portal URL with clientId if available
   const getPortalUrl = () => {
-    let portalUrl = project.urls.portal;
+    const portalUrl = project.urls.portal;
     if (appClient && appClient.clientId) {
       const clientId = (appClient as AppClientResponse).client_id || appClient.clientId;
       if (clientId) {
