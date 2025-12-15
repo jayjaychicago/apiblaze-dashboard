@@ -305,3 +305,4 @@ export function AppClientDetail({ poolId, clientId, onBack }: AppClientDetailPro
 
 
 
+

@@ -67,7 +67,9 @@ export default function DashboardPage() {
         limit: 1, // Just check if any exist
       });
       
-      setHasProjects(response.pagination.total > 0);
+      // Check if there are actually projects in the array, not just pagination total
+      // This handles cases where pagination.total > 0 but projects array is empty
+      setHasProjects(response.projects.length > 0 && response.pagination.total > 0);
     } catch (error) {
       console.error('Error loading projects:', error);
       setHasProjects(false);
