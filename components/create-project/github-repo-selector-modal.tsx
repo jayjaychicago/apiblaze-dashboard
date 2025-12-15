@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import { ProjectConfig } from './types';
 import { fetchGitHubAPI } from '@/lib/github-api';
-import { getCachedGitHubRepos, setCachedGitHubRepos, CachedGitHubRepo } from '@/lib/github-repos-cache';
+import { getCachedGitHubRepos, setCachedGitHubRepos, getCachedOpenAPISpecs, setCachedOpenAPISpecs, CachedGitHubRepo } from '@/lib/github-repos-cache';
 
 interface GitHubRepoSelectorModalProps {
   open: boolean;
@@ -94,12 +94,14 @@ export function GitHubRepoSelectorModal({
   }, [searchQuery, repos]);
 
   const loadRepositories = useCallback(async () => {
+    // Note: We check cache in the useEffect when modal opens, so by the time
+    // this function is called, we know there's no cache. But check again as a safety measure.
     setIsLoading(true);
     try {
-      // Check cache first
+      // Double-check cache (in case it was set between useEffect and this call)
       const cachedRepos = getCachedGitHubRepos();
       if (cachedRepos && cachedRepos.length > 0) {
-        console.log('[GitHub Cache] Using cached repositories:', cachedRepos.length);
+        console.log('[GitHub Cache] Using cached repositories (found during load):', cachedRepos.length);
         setRepos(cachedRepos);
         setFilteredRepos(cachedRepos);
         setIsLoading(false);
@@ -171,19 +173,46 @@ export function GitHubRepoSelectorModal({
     }
   }, [onOpenChange]);
 
-  // Initialize with preloaded repos if available
+  // Update repos when preloaded repos become available (e.g., after preload finishes)
   useEffect(() => {
-    if (preloadedRepos && preloadedRepos.length > 0) {
-      setRepos(preloadedRepos);
-      setFilteredRepos(preloadedRepos);
+    if (preloadedRepos && preloadedRepos.length > 0 && open) {
+      // Only update if we don't already have repos loaded (to avoid overwriting cached data)
+      // But if modal is open and we have no repos or are still loading, use preloaded ones
+      if (repos.length === 0 || isLoading) {
+        console.log('[GitHub Modal] Preloaded repos arrived, updating state');
+        setRepos(preloadedRepos);
+        setFilteredRepos(preloadedRepos);
+        setIsLoading(false);
+        // Also cache them for future use
+        setCachedGitHubRepos(preloadedRepos);
+      }
     }
-  }, [preloadedRepos]);
+  }, [preloadedRepos, open, repos.length, isLoading]);
 
-  // Load repositories when modal opens (only if not preloaded)
+  // Load repositories when modal opens
   useEffect(() => {
     if (open) {
-      // Only load if we don't have preloaded data
-      if (!preloadedRepos || preloadedRepos.length === 0) {
+      // Always try to load repos - check cache first, then preload, then API
+      // This ensures the modal is never blocked
+      const cachedRepos = getCachedGitHubRepos();
+      if (cachedRepos && cachedRepos.length > 0) {
+        // Use cached repos immediately
+        console.log('[GitHub Modal] Using cached repos on open');
+        setRepos(cachedRepos);
+        setFilteredRepos(cachedRepos);
+        setIsLoading(false);
+      } else if (preloadedRepos && preloadedRepos.length > 0) {
+        // Use preloaded repos if available
+        console.log('[GitHub Modal] Using preloaded repos on open');
+        setRepos(preloadedRepos);
+        setFilteredRepos(preloadedRepos);
+        setIsLoading(false);
+        // Also cache them for future use
+        setCachedGitHubRepos(preloadedRepos);
+      } else {
+        // Load from API - show loading state
+        console.log('[GitHub Modal] No cache or preload, loading from API');
+        setIsLoading(true);
         void loadRepositories();
       }
     } else {
@@ -194,6 +223,7 @@ export function GitHubRepoSelectorModal({
       setDetectedSpecs([]);
       setSelectedSpec(null);
       setSearchQuery('');
+      setIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -205,7 +235,17 @@ export function GitHubRepoSelectorModal({
     setSelectedSpec(null);
     
     try {
-      // Call backend API to scan repository for OpenAPI specs (using NextAuth session)
+      // Check cache first
+      const cachedSpecs = getCachedOpenAPISpecs(repo.full_name);
+      if (cachedSpecs && cachedSpecs.length > 0) {
+        console.log('[GitHub Cache] Using cached OpenAPI specs for:', repo.full_name);
+        setDetectedSpecs(cachedSpecs);
+        setIsDetecting(false);
+        return;
+      }
+
+      // No cache, fetch from API
+      console.log('[GitHub Cache] Cache miss, fetching OpenAPI specs for:', repo.full_name);
       const [owner, repoName] = repo.full_name.split('/');
       const response = await fetchGitHubAPI(`/api/github/repos/${owner}/${repoName}/openapi-specs`);
 
@@ -219,6 +259,11 @@ export function GitHubRepoSelectorModal({
       }
 
       const specs = (await response.json()) as OpenAPIFile[];
+      
+      // Cache the results
+      setCachedOpenAPISpecs(repo.full_name, specs);
+      console.log('[GitHub Cache] Cached OpenAPI specs for:', repo.full_name, specs.length);
+      
       setDetectedSpecs(specs);
     } catch (error) {
       console.error('Error detecting specs:', error);

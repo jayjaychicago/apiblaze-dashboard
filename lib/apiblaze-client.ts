@@ -189,6 +189,18 @@ export class APIBlazeClient {
   /**
    * List proxies
    */
+  async checkProjectExists(userClaims: UserAssertionClaims, name?: string, subdomain?: string, apiVersion?: string): Promise<{ exists: boolean; project_id?: string; api_version?: string }> {
+    const queryParams = new URLSearchParams();
+    if (name) queryParams.append('name', name);
+    if (subdomain) queryParams.append('subdomain', subdomain);
+    if (apiVersion) queryParams.append('api_version', apiVersion);
+    
+    return this.request(`/projects/check?${queryParams.toString()}`, {
+      method: 'GET',
+      userClaims,
+    });
+  }
+
   async listProxies(userClaims: UserAssertionClaims, params?: {
     page?: number;
     limit?: number;

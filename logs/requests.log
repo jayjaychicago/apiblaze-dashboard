@@ -1,6 +1,648 @@
-2025-12-12 17:11:32 | Connected to apiblaze-v2-admin-api-production, waiting for logs...
-2025-12-12 17:11:32 | Successfully created tail, expires at 2025-12-12T23:11:31Z
-2025-12-12 17:11:30 | 
-2025-12-12 17:11:30 | -----------------------------------------------
-2025-12-12 17:11:30 |  ⛅️ wrangler 3.114.15 (update available 4.54.0)
-2025-12-12 17:11:30 | 
+2025-12-15 16:42:45 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 11ms
+2025-12-15 16:42:45 |   (log) [listProxies] Returning 1 projects (total: 1, page: 1, limit: 12)
+2025-12-15 16:42:45 |   (warn) [listProxies] No KV data found for project calendar:v3
+2025-12-15 16:42:45 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0
+2025-12-15 16:42:45 |   (warn) [listProxies] No KV data found for project googlecalendarwriteapi:v3
+2025-12-15 16:42:45 |   (log) [listProxies] Found 4 projects in KV for user jayjaychicago
+2025-12-15 16:42:45 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:42:45 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:42:45 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:42:45 PM
+2025-12-15 16:42:45 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 14ms
+2025-12-15 16:42:45 |   (log) [listProxies] Returning 1 projects (total: 1, page: 1, limit: 12)
+2025-12-15 16:42:45 |   (warn) [listProxies] No KV data found for project googlecalendarwriteapi:v3
+2025-12-15 16:42:45 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0
+2025-12-15 16:42:45 |   (warn) [listProxies] No KV data found for project calendar:v3
+2025-12-15 16:42:45 |   (log) [listProxies] Found 4 projects in KV for user jayjaychicago
+2025-12-15 16:42:45 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:42:45 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:42:45 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:42:45 PM
+2025-12-15 16:42:45 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 299ms
+2025-12-15 16:42:45 |   (log) [listProxies] Returning 1 projects (total: 1, page: 1, limit: 1)
+2025-12-15 16:42:45 |   (warn) [listProxies] No KV data found for project googlecalendarwriteapi:v3
+2025-12-15 16:42:45 |   (warn) [listProxies] No KV data found for project calendar:v3
+2025-12-15 16:42:45 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0
+2025-12-15 16:42:45 |   (log) [listProxies] Found 4 projects in KV for user jayjaychicago
+2025-12-15 16:42:45 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:42:45 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:42:45 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:42:44 PM
+2025-12-15 16:42:26 |   (log) --> GET /projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0 [32m200[0m 318ms
+2025-12-15 16:42:26 |   (log) [checkProjectExists] Final result: exists=true, projectId="pokapi", apiVersion="1.0.0"
+2025-12-15 16:42:26 |   (log) [checkProjectExists] Checked direct projectKey="project:pokapi:1.0.0", found: true
+2025-12-15 16:42:26 |   (log) [checkProjectExists] Checked subdomainKey="user:github:jayjaychicago:project-subdomain:pokapi", found projectId="null"
+2025-12-15 16:42:26 |   (log) [checkProjectExists] Checked nameKey="user:github:jayjaychicago:project-name:pokapi", found projectId="null"
+2025-12-15 16:42:26 |   (log) [checkProjectExists] Checking for name="pokapi", subdomain="pokapi", apiVersion="2.7.0", userId="github:jayjaychicago"
+2025-12-15 16:42:26 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:42:26 |   (log) <-- GET /projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0
+2025-12-15 16:42:26 | GET https://internalapi.apiblaze.com/projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0 - Ok @ 12/15/2025, 4:42:25 PM
+2025-12-15 16:42:17 |   (log) --> GET /user-pools [32m200[0m 80ms
+2025-12-15 16:42:17 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:42:17 |   (log) <-- GET /user-pools
+2025-12-15 16:42:17 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:42:16 PM
+2025-12-15 16:42:10 |   (log) --> GET /user-pools [32m200[0m 162ms
+2025-12-15 16:42:10 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:42:10 |   (log) <-- GET /user-pools
+2025-12-15 16:42:10 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:42:09 PM
+2025-12-15 16:42:01 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 65ms
+2025-12-15 16:42:01 |   (log) [listProxies] After filtering: 3 projects
+2025-12-15 16:42:01 |   (log) [listProxies] Processed 3 projects, filtering nulls...
+2025-12-15 16:42:01 |   (warn) [listProxies] No KV data found for project calendar:v3, using D1 data only
+2025-12-15 16:42:01 |   (log) [listProxies] Extracted config for calendar:v3 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:42:01 |   (log) [listProxies] Tried project:calendar:v3, fell back to project:calendar:1.0.0, found: false
+2025-12-15 16:42:01 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0, using D1 data only
+2025-12-15 16:42:01 |   (log) [listProxies] Extracted config for pokapi11:2.7.0 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:42:01 |   (log) [listProxies] Tried project:pokapi11:2.7.0, fell back to project:pokapi11:1.0.0, found: false
+2025-12-15 16:42:01 | }
+2025-12-15 16:42:01 |   ]
+2025-12-15 16:42:01 |     'default_app_client_id'
+2025-12-15 16:42:01 |     'user_pool_id',
+2025-12-15 16:42:01 |     'groups',
+2025-12-15 16:42:01 |     'github_source',
+2025-12-15 16:42:01 |     'environments',
+2025-12-15 16:42:01 |     'auth_config',
+2025-12-15 16:42:01 |     'claim_code_used',
+2025-12-15 16:42:01 |     'claim_code',
+2025-12-15 16:42:01 |     'owner_id',
+2025-12-15 16:42:01 |     'updated_at',
+2025-12-15 16:42:01 |     'created_at',
+2025-12-15 16:42:01 |     'api_version',
+2025-12-15 16:42:01 |     'display_name',
+2025-12-15 16:42:01 |     'username',
+2025-12-15 16:42:01 |     'project_id',
+2025-12-15 16:42:01 |   configKeys: [
+2025-12-15 16:42:01 |   hasConfig: true,
+2025-12-15 16:42:01 |   hasKvData: true,
+2025-12-15 16:42:01 |   (log) [listProxies] Extracted config for pokapi:2.7.0 {
+2025-12-15 16:42:01 |   (log) [listProxies] Found KV data for project:pokapi:2.7.0: true
+2025-12-15 16:42:01 |   (log) [listProxies] Processing 3 projects from D1
+2025-12-15 16:42:01 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:42:01 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:42:01 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:42:00 PM
+2025-12-15 16:42:01 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 270ms
+2025-12-15 16:42:01 |   (log) [listProxies] After filtering: 3 projects
+2025-12-15 16:42:01 |   (log) [listProxies] Processed 3 projects, filtering nulls...
+2025-12-15 16:42:00 |   (warn) [listProxies] No KV data found for project calendar:v3, using D1 data only
+2025-12-15 16:42:00 |   (log) [listProxies] Extracted config for calendar:v3 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:42:00 |   (log) [listProxies] Tried project:calendar:v3, fell back to project:calendar:1.0.0, found: false
+2025-12-15 16:42:00 | }
+2025-12-15 16:42:00 |   ]
+2025-12-15 16:42:00 |     'default_app_client_id'
+2025-12-15 16:42:00 |     'user_pool_id',
+2025-12-15 16:42:00 |     'groups',
+2025-12-15 16:42:00 |     'github_source',
+2025-12-15 16:42:00 |     'environments',
+2025-12-15 16:42:00 |     'auth_config',
+2025-12-15 16:42:00 |     'claim_code_used',
+2025-12-15 16:42:00 |     'claim_code',
+2025-12-15 16:42:00 |     'owner_id',
+2025-12-15 16:42:00 |     'updated_at',
+2025-12-15 16:42:00 |     'created_at',
+2025-12-15 16:42:00 |     'api_version',
+2025-12-15 16:42:00 |     'display_name',
+2025-12-15 16:42:00 |     'username',
+2025-12-15 16:42:00 |     'project_id',
+2025-12-15 16:42:00 |   configKeys: [
+2025-12-15 16:42:00 |   hasConfig: true,
+2025-12-15 16:42:00 |   hasKvData: true,
+2025-12-15 16:42:00 |   (log) [listProxies] Extracted config for pokapi:2.7.0 {
+2025-12-15 16:42:00 |   (log) [listProxies] Found KV data for project:pokapi:2.7.0: true
+2025-12-15 16:42:00 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0, using D1 data only
+2025-12-15 16:42:00 |   (log) [listProxies] Extracted config for pokapi11:2.7.0 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:42:00 |   (log) [listProxies] Tried project:pokapi11:2.7.0, fell back to project:pokapi11:1.0.0, found: false
+2025-12-15 16:42:00 |   (log) [listProxies] Processing 3 projects from D1
+2025-12-15 16:42:00 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:42:00 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:42:00 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:42:00 PM
+2025-12-15 16:42:00 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 247ms
+2025-12-15 16:42:00 |   (log) [listProxies] After filtering: 1 projects
+2025-12-15 16:42:00 |   (log) [listProxies] Processed 1 projects, filtering nulls...
+2025-12-15 16:42:00 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0, using D1 data only
+2025-12-15 16:42:00 |   (log) [listProxies] Extracted config for pokapi11:2.7.0 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:42:00 |   (log) [listProxies] Tried project:pokapi11:2.7.0, fell back to project:pokapi11:1.0.0, found: false
+2025-12-15 16:42:00 |   (log) [listProxies] Processing 1 projects from D1
+2025-12-15 16:42:00 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:42:00 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:42:00 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:41:59 PM
+2025-12-15 16:40:11 |   (log) --> POST / [33m409[0m 531ms
+2025-12-15 16:40:11 |   (log) [CreateProxy] Using provided project name: {"name":"pokapi","source":"subdomain"}
+2025-12-15 16:40:11 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
+2025-12-15 16:40:11 |   (log) [CreateProxy] GitHub fetch successful
+2025-12-15 16:40:11 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
+2025-12-15 16:40:11 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"oauth","hasGithub":true,"hasOpenapi":false,"user_pool_id":"pool_1765816453878_9ebdwuw","app_client_id":"client_1765816808029_ju0jjs5","default_app_client_id":"client_1765816808029_ju0jjs5","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:40:11 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
+2025-12-15 16:40:11 |   (log) [CreateProxy] Received request body: {"hasDefaultAppClientId":true,"defaultAppClientId":"client_1765816808029_ju0jjs5","hasUserPoolId":true,"userPoolId":"pool_1765816453878_9ebdwuw","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:40:11 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:40:11 |   (log) <-- POST /
+2025-12-15 16:40:11 | POST https://internalapi.apiblaze.com/ - Ok @ 12/15/2025, 4:40:10 PM
+2025-12-15 16:40:10 |   (log) --> POST /user-pools/pool_1765816453878_9ebdwuw/app-clients/client_1765816808029_ju0jjs5/providers [32m201[0m 708ms
+2025-12-15 16:40:10 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:40:10 |   (log) <-- POST /user-pools/pool_1765816453878_9ebdwuw/app-clients/client_1765816808029_ju0jjs5/providers
+2025-12-15 16:40:10 | POST https://internalapi.apiblaze.com/user-pools/pool_1765816453878_9ebdwuw/app-clients/client_1765816808029_ju0jjs5/providers - Ok @ 12/15/2025, 4:40:09 PM
+2025-12-15 16:40:08 |   (log) --> POST /user-pools/pool_1765816453878_9ebdwuw/app-clients [32m201[0m 755ms
+2025-12-15 16:40:08 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:40:08 |   (log) <-- POST /user-pools/pool_1765816453878_9ebdwuw/app-clients
+2025-12-15 16:40:08 | POST https://internalapi.apiblaze.com/user-pools/pool_1765816453878_9ebdwuw/app-clients - Ok @ 12/15/2025, 4:40:07 PM
+2025-12-15 16:40:06 |   (log) --> GET /user-pools [32m200[0m 7s
+2025-12-15 16:40:06 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:40:06 |   (log) <-- GET /user-pools
+2025-12-15 16:40:06 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:39:59 PM
+2025-12-15 16:39:59 |   (log) --> GET /projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0 [32m200[0m 211ms
+2025-12-15 16:39:59 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:39:59 |   (log) <-- GET /projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0
+2025-12-15 16:39:59 | GET https://internalapi.apiblaze.com/projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0 - Ok @ 12/15/2025, 4:39:58 PM
+2025-12-15 16:39:48 |   (log) --> GET /user-pools [32m200[0m 56ms
+2025-12-15 16:39:48 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:39:48 |   (log) <-- GET /user-pools
+2025-12-15 16:39:48 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:39:48 PM
+2025-12-15 16:39:40 |   (log) --> GET /user-pools [32m200[0m 249ms
+2025-12-15 16:39:40 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:39:40 |   (log) <-- GET /user-pools
+2025-12-15 16:39:40 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:39:39 PM
+2025-12-15 16:39:15 |   (log) --> DELETE /pokapi11/2.7.0 [33m404[0m 6ms
+2025-12-15 16:39:15 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:39:15 |   (log) <-- DELETE /pokapi11/2.7.0
+2025-12-15 16:39:15 | DELETE https://internalapi.apiblaze.com/pokapi11/2.7.0 - Ok @ 12/15/2025, 4:39:15 PM
+2025-12-15 16:39:10 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 56ms
+2025-12-15 16:39:10 |   (log) [listProxies] After filtering: 3 projects
+2025-12-15 16:39:10 |   (log) [listProxies] Processed 3 projects, filtering nulls...
+2025-12-15 16:39:10 |   (warn) [listProxies] No KV data found for project calendar:v3, using D1 data only
+2025-12-15 16:39:10 |   (log) [listProxies] Extracted config for calendar:v3 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:39:10 |   (log) [listProxies] Tried project:calendar:v3, fell back to project:calendar:1.0.0, found: false
+2025-12-15 16:39:10 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0, using D1 data only
+2025-12-15 16:39:10 |   (log) [listProxies] Extracted config for pokapi11:2.7.0 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:39:10 |   (log) [listProxies] Tried project:pokapi11:2.7.0, fell back to project:pokapi11:1.0.0, found: false
+2025-12-15 16:39:10 | }
+2025-12-15 16:39:10 |   ]
+2025-12-15 16:39:10 |     'default_app_client_id'
+2025-12-15 16:39:10 |     'user_pool_id',
+2025-12-15 16:39:10 |     'groups',
+2025-12-15 16:39:10 |     'github_source',
+2025-12-15 16:39:10 |     'environments',
+2025-12-15 16:39:10 |     'auth_config',
+2025-12-15 16:39:10 |     'claim_code_used',
+2025-12-15 16:39:10 |     'claim_code',
+2025-12-15 16:39:10 |     'owner_id',
+2025-12-15 16:39:10 |     'updated_at',
+2025-12-15 16:39:10 |     'created_at',
+2025-12-15 16:39:10 |     'api_version',
+2025-12-15 16:39:10 |     'display_name',
+2025-12-15 16:39:10 |     'username',
+2025-12-15 16:39:10 |     'project_id',
+2025-12-15 16:39:10 |   configKeys: [
+2025-12-15 16:39:10 |   hasConfig: true,
+2025-12-15 16:39:10 |   hasKvData: true,
+2025-12-15 16:39:10 |   (log) [listProxies] Extracted config for pokapi:2.7.0 {
+2025-12-15 16:39:10 |   (log) [listProxies] Found KV data for project:pokapi:2.7.0: true
+2025-12-15 16:39:10 |   (log) [listProxies] Processing 3 projects from D1
+2025-12-15 16:39:10 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:39:10 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:39:10 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:39:10 PM
+2025-12-15 16:39:10 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 64ms
+2025-12-15 16:39:10 |   (log) [listProxies] After filtering: 3 projects
+2025-12-15 16:39:10 |   (log) [listProxies] Processed 3 projects, filtering nulls...
+2025-12-15 16:39:10 |   (warn) [listProxies] No KV data found for project calendar:v3, using D1 data only
+2025-12-15 16:39:10 |   (log) [listProxies] Extracted config for calendar:v3 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:39:10 |   (log) [listProxies] Tried project:calendar:v3, fell back to project:calendar:1.0.0, found: false
+2025-12-15 16:39:10 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0, using D1 data only
+2025-12-15 16:39:10 |   (log) [listProxies] Extracted config for pokapi11:2.7.0 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:39:10 |   (log) [listProxies] Tried project:pokapi11:2.7.0, fell back to project:pokapi11:1.0.0, found: false
+2025-12-15 16:39:10 | }
+2025-12-15 16:39:10 |   ]
+2025-12-15 16:39:10 |     'default_app_client_id'
+2025-12-15 16:39:10 |     'user_pool_id',
+2025-12-15 16:39:10 |     'groups',
+2025-12-15 16:39:10 |     'github_source',
+2025-12-15 16:39:10 |     'environments',
+2025-12-15 16:39:10 |     'auth_config',
+2025-12-15 16:39:10 |     'claim_code_used',
+2025-12-15 16:39:10 |     'claim_code',
+2025-12-15 16:39:10 |     'owner_id',
+2025-12-15 16:39:10 |     'updated_at',
+2025-12-15 16:39:10 |     'created_at',
+2025-12-15 16:39:10 |     'api_version',
+2025-12-15 16:39:10 |     'display_name',
+2025-12-15 16:39:10 |     'username',
+2025-12-15 16:39:10 |     'project_id',
+2025-12-15 16:39:10 |   configKeys: [
+2025-12-15 16:39:10 |   hasConfig: true,
+2025-12-15 16:39:10 |   hasKvData: true,
+2025-12-15 16:39:09 |   (log) [listProxies] Extracted config for pokapi:2.7.0 {
+2025-12-15 16:39:09 |   (log) [listProxies] Found KV data for project:pokapi:2.7.0: true
+2025-12-15 16:39:09 |   (log) [listProxies] Processing 3 projects from D1
+2025-12-15 16:39:09 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:39:09 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:39:09 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:39:09 PM
+2025-12-15 16:39:09 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 65ms
+2025-12-15 16:39:09 |   (log) [listProxies] After filtering: 1 projects
+2025-12-15 16:39:09 |   (log) [listProxies] Processed 1 projects, filtering nulls...
+2025-12-15 16:39:09 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0, using D1 data only
+2025-12-15 16:39:09 |   (log) [listProxies] Extracted config for pokapi11:2.7.0 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:39:09 |   (log) [listProxies] Tried project:pokapi11:2.7.0, fell back to project:pokapi11:1.0.0, found: false
+2025-12-15 16:39:09 |   (log) [listProxies] Processing 1 projects from D1
+2025-12-15 16:39:09 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:39:09 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:39:09 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:39:09 PM
+2025-12-15 16:39:03 |   (log) --> DELETE /calendar/v3 [33m404[0m 7ms
+2025-12-15 16:39:03 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:39:03 |   (log) <-- DELETE /calendar/v3
+2025-12-15 16:39:03 | DELETE https://internalapi.apiblaze.com/calendar/v3 - Ok @ 12/15/2025, 4:39:03 PM
+2025-12-15 16:38:53 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 53ms
+2025-12-15 16:38:53 |   (log) [listProxies] After filtering: 3 projects
+2025-12-15 16:38:53 |   (log) [listProxies] Processed 3 projects, filtering nulls...
+2025-12-15 16:38:53 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0, using D1 data only
+2025-12-15 16:38:53 |   (log) [listProxies] Extracted config for pokapi11:2.7.0 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:38:53 |   (log) [listProxies] Tried project:pokapi11:2.7.0, fell back to project:pokapi11:1.0.0, found: false
+2025-12-15 16:38:53 |   (warn) [listProxies] No KV data found for project calendar:v3, using D1 data only
+2025-12-15 16:38:53 |   (log) [listProxies] Extracted config for calendar:v3 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:38:53 |   (log) [listProxies] Tried project:calendar:v3, fell back to project:calendar:1.0.0, found: false
+2025-12-15 16:38:53 | }
+2025-12-15 16:38:53 |   ]
+2025-12-15 16:38:53 |     'default_app_client_id'
+2025-12-15 16:38:53 |     'user_pool_id',
+2025-12-15 16:38:53 |     'groups',
+2025-12-15 16:38:53 |     'github_source',
+2025-12-15 16:38:53 |     'environments',
+2025-12-15 16:38:53 |     'auth_config',
+2025-12-15 16:38:53 |     'claim_code_used',
+2025-12-15 16:38:53 |     'claim_code',
+2025-12-15 16:38:53 |     'owner_id',
+2025-12-15 16:38:53 |     'updated_at',
+2025-12-15 16:38:53 |     'created_at',
+2025-12-15 16:38:53 |     'api_version',
+2025-12-15 16:38:53 |     'display_name',
+2025-12-15 16:38:53 |     'username',
+2025-12-15 16:38:53 |     'project_id',
+2025-12-15 16:38:53 |   configKeys: [
+2025-12-15 16:38:53 |   hasConfig: true,
+2025-12-15 16:38:53 |   hasKvData: true,
+2025-12-15 16:38:53 |   (log) [listProxies] Extracted config for pokapi:2.7.0 {
+2025-12-15 16:38:53 |   (log) [listProxies] Found KV data for project:pokapi:2.7.0: true
+2025-12-15 16:38:53 |   (log) [listProxies] Processing 3 projects from D1
+2025-12-15 16:38:53 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:38:53 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:38:53 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:38:52 PM
+2025-12-15 16:38:53 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 222ms
+2025-12-15 16:38:53 |   (log) [listProxies] After filtering: 3 projects
+2025-12-15 16:38:53 |   (log) [listProxies] Processed 3 projects, filtering nulls...
+2025-12-15 16:38:53 |   (warn) [listProxies] No KV data found for project calendar:v3, using D1 data only
+2025-12-15 16:38:53 |   (log) [listProxies] Extracted config for calendar:v3 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:38:53 |   (log) [listProxies] Tried project:calendar:v3, fell back to project:calendar:1.0.0, found: false
+2025-12-15 16:38:53 | }
+2025-12-15 16:38:53 |   ]
+2025-12-15 16:38:53 |     'default_app_client_id'
+2025-12-15 16:38:53 |     'user_pool_id',
+2025-12-15 16:38:53 |     'groups',
+2025-12-15 16:38:53 |     'github_source',
+2025-12-15 16:38:53 |     'environments',
+2025-12-15 16:38:53 |     'auth_config',
+2025-12-15 16:38:53 |     'claim_code_used',
+2025-12-15 16:38:53 |     'claim_code',
+2025-12-15 16:38:53 |     'owner_id',
+2025-12-15 16:38:53 |     'updated_at',
+2025-12-15 16:38:53 |     'created_at',
+2025-12-15 16:38:53 |     'api_version',
+2025-12-15 16:38:53 |     'display_name',
+2025-12-15 16:38:53 |     'username',
+2025-12-15 16:38:53 |     'project_id',
+2025-12-15 16:38:53 |   configKeys: [
+2025-12-15 16:38:53 |   hasConfig: true,
+2025-12-15 16:38:53 |   hasKvData: true,
+2025-12-15 16:38:53 |   (log) [listProxies] Extracted config for pokapi:2.7.0 {
+2025-12-15 16:38:53 |   (log) [listProxies] Found KV data for project:pokapi:2.7.0: true
+2025-12-15 16:38:53 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0, using D1 data only
+2025-12-15 16:38:52 |   (log) [listProxies] Extracted config for pokapi11:2.7.0 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:38:52 |   (log) [listProxies] Tried project:pokapi11:2.7.0, fell back to project:pokapi11:1.0.0, found: false
+2025-12-15 16:38:52 |   (log) [listProxies] Processing 3 projects from D1
+2025-12-15 16:38:52 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:38:52 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:38:52 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:38:52 PM
+2025-12-15 16:38:52 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 399ms
+2025-12-15 16:38:52 |   (log) [listProxies] After filtering: 1 projects
+2025-12-15 16:38:52 |   (log) [listProxies] Processed 1 projects, filtering nulls...
+2025-12-15 16:38:52 |   (warn) [listProxies] No KV data found for project pokapi11:2.7.0, using D1 data only
+2025-12-15 16:38:52 |   (log) [listProxies] Extracted config for pokapi11:2.7.0 { hasKvData: false, hasConfig: false, configKeys: [] }
+2025-12-15 16:38:52 |   (log) [listProxies] Tried project:pokapi11:2.7.0, fell back to project:pokapi11:1.0.0, found: false
+2025-12-15 16:38:52 |   (log) [listProxies] Processing 1 projects from D1
+2025-12-15 16:38:52 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:38:52 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:38:52 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:38:51 PM
+2025-12-15 16:37:16 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 323ms
+2025-12-15 16:37:16 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:37:16 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:37:16 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:37:16 PM
+2025-12-15 16:34:44 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 74ms
+2025-12-15 16:34:44 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:44 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:34:44 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:34:44 PM
+2025-12-15 16:34:35 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 66ms
+2025-12-15 16:34:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:35 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:34:35 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:34:35 PM
+2025-12-15 16:34:35 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 71ms
+2025-12-15 16:34:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:35 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:34:35 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:34:34 PM
+2025-12-15 16:34:25 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 59ms
+2025-12-15 16:34:25 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:25 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:34:25 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:34:24 PM
+2025-12-15 16:34:24 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 155ms
+2025-12-15 16:34:24 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:24 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:34:24 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:34:24 PM
+2025-12-15 16:34:24 |   (log) --> POST / [32m201[0m 2s
+2025-12-15 16:34:24 |   (log) [CreateProxy] Project created successfully: {"tenantName":"pokapi","apiVersion":"2.7.0","endpoints":["default"]}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Stored OpenAPI spec in dedicated key: {"openapiKey":"openapi:pokapi:2.7.0","source":"github"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Storing fallback config in KV: {"fallbackKey":"project:pokapi:1.0.0","hasDefaultAppClientId":true,"defaultAppClientId":"client_1765816456935_acebr58"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Verified stored config: {"hasDefaultAppClientId":true,"defaultAppClientId":"client_1765816456935_acebr58"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Storing project config in KV: {"projectKey":"project:pokapi:2.7.0","hasDefaultAppClientId":true,"defaultAppClientId":"client_1765816456935_acebr58","configKeys":["project_id","username","display_name","api_version","created_at","updated_at","owner_id","claim_code","claim_code_used","auth_config","environments","github_source","groups","user_pool_id","default_app_client_id"]}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Final projectConfig before KV storage: {"hasUserPoolId":true,"hasDefaultAppClientId":true,"defaultAppClientId":"client_1765816456935_acebr58"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] ✅ Confirmed default_app_client_id is in projectConfig: {"default_app_client_id":"client_1765816456935_acebr58"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] ✅ Storing default_app_client_id in config: {"default_app_client_id":"client_1765816456935_acebr58","type":"string","value":"client_1765816456935_acebr58"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Storing user_pool_id in config: {"user_pool_id":"pool_1765816453878_9ebdwuw","default_app_client_id":"client_1765816456935_acebr58","app_client_id":"client_1765816456935_acebr58"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Checking UserPool usage: {"isUsingUserPool":true,"user_pool_id":"pool_1765816453878_9ebdwuw","default_app_client_id":"client_1765816456935_acebr58","app_client_id":"client_1765816456935_acebr58"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Using provided project name: {"name":"pokapi","source":"subdomain"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] GitHub fetch successful
+2025-12-15 16:34:24 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"oauth","hasGithub":true,"hasOpenapi":false,"user_pool_id":"pool_1765816453878_9ebdwuw","app_client_id":"client_1765816456935_acebr58","default_app_client_id":"client_1765816456935_acebr58","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
+2025-12-15 16:34:24 |   (log) [CreateProxy] Received request body: {"hasDefaultAppClientId":true,"defaultAppClientId":"client_1765816456935_acebr58","hasUserPoolId":true,"userPoolId":"pool_1765816453878_9ebdwuw","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:34:24 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:24 |   (log) <-- POST /
+2025-12-15 16:34:24 | POST https://internalapi.apiblaze.com/ - Ok @ 12/15/2025, 4:34:22 PM
+2025-12-15 16:34:20 |   (log) --> POST /user-pools/pool_1765816453878_9ebdwuw/app-clients/client_1765816456935_acebr58/providers [32m201[0m 715ms
+2025-12-15 16:34:20 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:20 |   (log) <-- POST /user-pools/pool_1765816453878_9ebdwuw/app-clients/client_1765816456935_acebr58/providers
+2025-12-15 16:34:20 | POST https://internalapi.apiblaze.com/user-pools/pool_1765816453878_9ebdwuw/app-clients/client_1765816456935_acebr58/providers - Ok @ 12/15/2025, 4:34:20 PM
+2025-12-15 16:34:17 |   (log) --> POST /user-pools/pool_1765816453878_9ebdwuw/app-clients [32m201[0m 576ms
+2025-12-15 16:34:17 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:17 |   (log) <-- POST /user-pools/pool_1765816453878_9ebdwuw/app-clients
+2025-12-15 16:34:17 | POST https://internalapi.apiblaze.com/user-pools/pool_1765816453878_9ebdwuw/app-clients - Ok @ 12/15/2025, 4:34:16 PM
+2025-12-15 16:34:14 |   (log) --> POST /user-pools [32m201[0m 352ms
+2025-12-15 16:34:14 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:14 |   (log) <-- POST /user-pools
+2025-12-15 16:34:14 | POST https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:34:13 PM
+2025-12-15 16:34:13 |   (log) --> GET /user-pools [32m200[0m 4ms
+2025-12-15 16:34:13 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:13 |   (log) <-- GET /user-pools
+2025-12-15 16:34:13 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:34:13 PM
+2025-12-15 16:34:13 |   (log) --> GET /projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0 [33m404[0m 0ms
+2025-12-15 16:34:13 | }
+2025-12-15 16:34:13 |   allRoutes: 'check route registration'
+2025-12-15 16:34:13 |   url: 'https://internalapi.apiblaze.com/projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0',
+2025-12-15 16:34:13 |   path: '/projects/check',
+2025-12-15 16:34:13 |   method: 'GET',
+2025-12-15 16:34:13 |   (error) [404] Route not found {
+2025-12-15 16:34:13 |   (log) <-- GET /projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0
+2025-12-15 16:34:13 | GET https://internalapi.apiblaze.com/projects/check?name=pokapi&subdomain=pokapi&api_version=2.7.0 - Ok @ 12/15/2025, 4:34:13 PM
+2025-12-15 16:34:02 |   (log) --> GET /user-pools [32m200[0m 7ms
+2025-12-15 16:34:02 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:02 |   (log) <-- GET /user-pools
+2025-12-15 16:34:02 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:34:02 PM
+2025-12-15 16:34:00 |   (log) --> GET /user-pools [32m200[0m 3ms
+2025-12-15 16:34:00 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:34:00 |   (log) <-- GET /user-pools
+2025-12-15 16:34:00 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:34:00 PM
+2025-12-15 16:33:59 |   (log) --> GET /user-pools [32m200[0m 5ms
+2025-12-15 16:33:59 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:33:59 |   (log) <-- GET /user-pools
+2025-12-15 16:33:59 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:33:59 PM
+2025-12-15 16:33:47 |   (log) --> GET /user-pools [32m200[0m 104ms
+2025-12-15 16:33:47 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:33:47 |   (log) <-- GET /user-pools
+2025-12-15 16:33:47 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:33:47 PM
+2025-12-15 16:32:32 |   (log) --> GET /user-pools [32m200[0m 75ms
+2025-12-15 16:32:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:32:32 |   (log) <-- GET /user-pools
+2025-12-15 16:32:32 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:32:32 PM
+2025-12-15 16:32:28 |   (log) --> GET /user-pools [32m200[0m 200ms
+2025-12-15 16:32:28 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:32:28 |   (log) <-- GET /user-pools
+2025-12-15 16:32:28 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:32:28 PM
+2025-12-15 16:32:23 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 344ms
+2025-12-15 16:32:23 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:32:23 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:32:23 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:32:22 PM
+2025-12-15 16:27:09 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 996ms
+2025-12-15 16:27:09 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:27:09 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:27:09 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:27:08 PM
+2025-12-15 16:27:09 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 968ms
+2025-12-15 16:27:09 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:27:09 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:27:09 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:27:08 PM
+2025-12-15 16:25:44 |   (log) --> GET /user-pools [32m200[0m 62ms
+2025-12-15 16:25:44 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:44 |   (log) <-- GET /user-pools
+2025-12-15 16:25:44 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:25:44 PM
+2025-12-15 16:25:36 |   (log) --> GET /user-pools [32m200[0m 85ms
+2025-12-15 16:25:36 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:36 |   (log) <-- GET /user-pools
+2025-12-15 16:25:36 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:25:36 PM
+2025-12-15 16:25:36 |   (log) --> GET /user-pools [32m200[0m 64ms
+2025-12-15 16:25:36 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:36 |   (log) <-- GET /user-pools
+2025-12-15 16:25:36 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:25:36 PM
+2025-12-15 16:25:36 |   (log) --> GET /user-pools [32m200[0m 89ms
+2025-12-15 16:25:36 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:36 |   (log) <-- GET /user-pools
+2025-12-15 16:25:36 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:25:36 PM
+2025-12-15 16:25:35 |   (log) --> GET /user-pools [32m200[0m 70ms
+2025-12-15 16:25:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:35 |   (log) <-- GET /user-pools
+2025-12-15 16:25:35 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:25:35 PM
+2025-12-15 16:25:35 |   (log) --> GET /user-pools [32m200[0m 57ms
+2025-12-15 16:25:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:35 |   (log) <-- GET /user-pools
+2025-12-15 16:25:35 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:25:35 PM
+2025-12-15 16:25:35 |   (log) --> GET /user-pools [32m200[0m 69ms
+2025-12-15 16:25:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:35 |   (log) <-- GET /user-pools
+2025-12-15 16:25:35 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:25:35 PM
+2025-12-15 16:25:35 |   (log) --> GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active [32m200[0m 65ms
+2025-12-15 16:25:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:35 |   (log) <-- GET /projects?page=1&limit=1&team_id=team_jayjaychicago&status=active
+2025-12-15 16:25:35 | GET https://internalapi.apiblaze.com/projects?page=1&limit=1&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:25:35 PM
+2025-12-15 16:25:35 |   (log) --> GET /user-pools [32m200[0m 85ms
+2025-12-15 16:25:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:35 |   (log) <-- GET /user-pools
+2025-12-15 16:25:35 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:25:35 PM
+2025-12-15 16:25:31 |   (log) --> GET /user-pools [32m200[0m 159ms
+2025-12-15 16:25:31 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:31 |   (log) <-- GET /user-pools
+2025-12-15 16:25:31 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:25:31 PM
+2025-12-15 16:25:30 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 369ms
+2025-12-15 16:25:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:25:30 |   (log) <-- GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active
+2025-12-15 16:25:30 | GET https://internalapi.apiblaze.com/projects?page=1&limit=12&team_id=team_jayjaychicago&status=active - Ok @ 12/15/2025, 4:25:30 PM
+2025-12-15 16:18:29 |   (log) --> POST / [33m409[0m 499ms
+2025-12-15 16:18:29 |   (log) [CreateProxy] Using provided project name: {"name":"pokapi","source":"subdomain"}
+2025-12-15 16:18:29 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
+2025-12-15 16:18:29 |   (log) [CreateProxy] GitHub fetch successful
+2025-12-15 16:18:29 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
+2025-12-15 16:18:29 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"oauth","hasGithub":true,"hasOpenapi":false,"user_pool_id":"pool_1765814247115_9s99ekq","app_client_id":"client_1765815502916_lg5ed57","default_app_client_id":"client_1765815502916_lg5ed57","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:18:29 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
+2025-12-15 16:18:29 |   (log) [CreateProxy] Received request body: {"hasDefaultAppClientId":true,"defaultAppClientId":"client_1765815502916_lg5ed57","hasUserPoolId":true,"userPoolId":"pool_1765814247115_9s99ekq","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:18:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:18:29 |   (log) <-- POST /
+2025-12-15 16:18:29 | POST https://internalapi.apiblaze.com/ - Ok @ 12/15/2025, 4:18:28 PM
+2025-12-15 16:18:27 |   (log) --> POST /user-pools/pool_1765814247115_9s99ekq/app-clients/client_1765815502916_lg5ed57/providers [32m201[0m 654ms
+2025-12-15 16:18:27 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:18:27 |   (log) <-- POST /user-pools/pool_1765814247115_9s99ekq/app-clients/client_1765815502916_lg5ed57/providers
+2025-12-15 16:18:27 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814247115_9s99ekq/app-clients/client_1765815502916_lg5ed57/providers - Ok @ 12/15/2025, 4:18:26 PM
+2025-12-15 16:18:23 |   (log) --> POST /user-pools/pool_1765814247115_9s99ekq/app-clients [32m201[0m 785ms
+2025-12-15 16:18:23 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:18:23 |   (log) <-- POST /user-pools/pool_1765814247115_9s99ekq/app-clients
+2025-12-15 16:18:23 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814247115_9s99ekq/app-clients - Ok @ 12/15/2025, 4:18:22 PM
+2025-12-15 16:18:19 |   (log) --> GET /user-pools [32m200[0m 82ms
+2025-12-15 16:18:19 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:18:19 |   (log) <-- GET /user-pools
+2025-12-15 16:18:19 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:18:19 PM
+2025-12-15 16:18:03 |   (log) --> GET /user-pools [32m200[0m 87ms
+2025-12-15 16:18:03 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:18:03 |   (log) <-- GET /user-pools
+2025-12-15 16:18:02 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:18:02 PM
+2025-12-15 16:18:00 |   (log) --> GET /user-pools [32m200[0m 71ms
+2025-12-15 16:18:00 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:18:00 |   (log) <-- GET /user-pools
+2025-12-15 16:18:00 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:18:00 PM
+2025-12-15 16:18:00 |   (log) --> GET /user-pools [32m200[0m 79ms
+2025-12-15 16:18:00 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:18:00 |   (log) <-- GET /user-pools
+2025-12-15 16:18:00 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:17:59 PM
+2025-12-15 16:17:58 |   (log) --> GET /user-pools [32m200[0m 355ms
+2025-12-15 16:17:58 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:17:58 |   (log) <-- GET /user-pools
+2025-12-15 16:17:58 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:17:58 PM
+2025-12-15 16:07:51 |   (log) --> DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814866677_4oi5qdg [32m204[0m 837ms
+2025-12-15 16:07:51 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:07:51 |   (log) <-- DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814866677_4oi5qdg
+2025-12-15 16:07:51 | DELETE https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814866677_4oi5qdg - Ok @ 12/15/2025, 4:07:50 PM
+2025-12-15 16:07:50 |   (log) --> DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814866677_4oi5qdg/providers/provider_1765814867965_stjxjy4 [32m200[0m 574ms
+2025-12-15 16:07:50 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:07:50 |   (log) <-- DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814866677_4oi5qdg/providers/provider_1765814867965_stjxjy4
+2025-12-15 16:07:50 | DELETE https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814866677_4oi5qdg/providers/provider_1765814867965_stjxjy4 - Ok @ 12/15/2025, 4:07:49 PM
+2025-12-15 16:07:49 |   (log) --> POST / [33m409[0m 424ms
+2025-12-15 16:07:49 |   (log) [CreateProxy] Using provided project name: {"name":"pokapi","source":"subdomain"}
+2025-12-15 16:07:49 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
+2025-12-15 16:07:49 |   (log) [CreateProxy] GitHub fetch successful
+2025-12-15 16:07:49 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
+2025-12-15 16:07:49 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"oauth","hasGithub":true,"hasOpenapi":false,"user_pool_id":"pool_1765814299947_kqsm5zj","app_client_id":"client_1765814866677_4oi5qdg","default_app_client_id":"client_1765814866677_4oi5qdg","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:07:49 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
+2025-12-15 16:07:49 |   (log) [CreateProxy] Received request body: {"hasDefaultAppClientId":true,"defaultAppClientId":"client_1765814866677_4oi5qdg","hasUserPoolId":true,"userPoolId":"pool_1765814299947_kqsm5zj","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:07:49 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:07:49 |   (log) <-- POST /
+2025-12-15 16:07:49 | POST https://internalapi.apiblaze.com/ - Ok @ 12/15/2025, 4:07:48 PM
+2025-12-15 16:07:48 |   (log) --> POST /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814866677_4oi5qdg/providers [32m201[0m 766ms
+2025-12-15 16:07:48 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:07:48 |   (log) <-- POST /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814866677_4oi5qdg/providers
+2025-12-15 16:07:48 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814866677_4oi5qdg/providers - Ok @ 12/15/2025, 4:07:47 PM
+2025-12-15 16:07:47 |   (log) --> POST /user-pools/pool_1765814299947_kqsm5zj/app-clients [32m201[0m 947ms
+2025-12-15 16:07:47 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:07:47 |   (log) <-- POST /user-pools/pool_1765814299947_kqsm5zj/app-clients
+2025-12-15 16:07:47 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients - Ok @ 12/15/2025, 4:07:46 PM
+2025-12-15 16:07:46 |   (log) --> GET /user-pools [32m200[0m 171ms
+2025-12-15 16:07:46 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:07:46 |   (log) <-- GET /user-pools
+2025-12-15 16:07:46 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:07:46 PM
+2025-12-15 16:06:47 |   (log) --> DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814802324_64wy24i [32m204[0m 771ms
+2025-12-15 16:06:47 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:06:47 |   (log) <-- DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814802324_64wy24i
+2025-12-15 16:06:47 | DELETE https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814802324_64wy24i - Ok @ 12/15/2025, 4:06:46 PM
+2025-12-15 16:06:46 |   (log) --> DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814802324_64wy24i/providers/provider_1765814803278_9dlju81 [32m200[0m 778ms
+2025-12-15 16:06:46 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:06:46 |   (log) <-- DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814802324_64wy24i/providers/provider_1765814803278_9dlju81
+2025-12-15 16:06:46 | DELETE https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814802324_64wy24i/providers/provider_1765814803278_9dlju81 - Ok @ 12/15/2025, 4:06:45 PM
+2025-12-15 16:06:44 |   (log) --> POST / [33m409[0m 519ms
+2025-12-15 16:06:44 |   (log) [CreateProxy] Using provided project name: {"name":"pokapi","source":"subdomain"}
+2025-12-15 16:06:44 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
+2025-12-15 16:06:44 |   (log) [CreateProxy] GitHub fetch successful
+2025-12-15 16:06:44 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
+2025-12-15 16:06:44 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"oauth","hasGithub":true,"hasOpenapi":false,"user_pool_id":"pool_1765814299947_kqsm5zj","app_client_id":"client_1765814802324_64wy24i","default_app_client_id":"client_1765814802324_64wy24i","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:06:44 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
+2025-12-15 16:06:44 |   (log) [CreateProxy] Received request body: {"hasDefaultAppClientId":true,"defaultAppClientId":"client_1765814802324_64wy24i","hasUserPoolId":true,"userPoolId":"pool_1765814299947_kqsm5zj","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:06:44 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:06:44 |   (log) <-- POST /
+2025-12-15 16:06:44 | POST https://internalapi.apiblaze.com/ - Ok @ 12/15/2025, 4:06:44 PM
+2025-12-15 16:06:44 |   (log) --> POST /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814802324_64wy24i/providers [32m201[0m 646ms
+2025-12-15 16:06:44 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:06:43 |   (log) <-- POST /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814802324_64wy24i/providers
+2025-12-15 16:06:43 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814802324_64wy24i/providers - Ok @ 12/15/2025, 4:06:43 PM
+2025-12-15 16:06:43 |   (log) --> POST /user-pools/pool_1765814299947_kqsm5zj/app-clients [32m201[0m 763ms
+2025-12-15 16:06:43 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:06:43 |   (log) <-- POST /user-pools/pool_1765814299947_kqsm5zj/app-clients
+2025-12-15 16:06:43 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients - Ok @ 12/15/2025, 4:06:42 PM
+2025-12-15 16:06:42 |   (log) --> GET /user-pools [32m200[0m 353ms
+2025-12-15 16:06:42 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:06:42 |   (log) <-- GET /user-pools
+2025-12-15 16:06:42 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:06:41 PM
+2025-12-15 16:04:31 |   (log) --> DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814664081_e93heux [31m500[0m 686ms
+2025-12-15 16:04:31 |   (error) Error deleting app client: TypeError: Response with null body status (101, 204, 205, or 304) cannot have a body.
+2025-12-15 16:04:31 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:04:31 |   (log) <-- DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814664081_e93heux
+2025-12-15 16:04:31 | DELETE https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814664081_e93heux - Ok @ 12/15/2025, 4:04:30 PM
+2025-12-15 16:04:29 |   (log) --> DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814664081_e93heux/providers/provider_1765814665697_gjqqpi5 [32m200[0m 579ms
+2025-12-15 16:04:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:04:29 |   (log) <-- DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814664081_e93heux/providers/provider_1765814665697_gjqqpi5
+2025-12-15 16:04:29 | DELETE https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814664081_e93heux/providers/provider_1765814665697_gjqqpi5 - Ok @ 12/15/2025, 4:04:29 PM
+2025-12-15 16:04:28 |   (log) --> POST / [33m409[0m 645ms
+2025-12-15 16:04:28 |   (log) [CreateProxy] Using provided project name: {"name":"pokapi","source":"subdomain"}
+2025-12-15 16:04:28 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
+2025-12-15 16:04:28 |   (log) [CreateProxy] GitHub fetch successful
+2025-12-15 16:04:28 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
+2025-12-15 16:04:28 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"oauth","hasGithub":true,"hasOpenapi":false,"user_pool_id":"pool_1765814299947_kqsm5zj","app_client_id":"client_1765814664081_e93heux","default_app_client_id":"client_1765814664081_e93heux","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:04:28 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
+2025-12-15 16:04:28 |   (log) [CreateProxy] Received request body: {"hasDefaultAppClientId":true,"defaultAppClientId":"client_1765814664081_e93heux","hasUserPoolId":true,"userPoolId":"pool_1765814299947_kqsm5zj","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:04:28 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:04:27 |   (log) <-- POST /
+2025-12-15 16:04:27 | POST https://internalapi.apiblaze.com/ - Ok @ 12/15/2025, 4:04:27 PM
+2025-12-15 16:04:26 |   (log) --> POST /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814664081_e93heux/providers [32m201[0m 677ms
+2025-12-15 16:04:26 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:04:26 |   (log) <-- POST /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814664081_e93heux/providers
+2025-12-15 16:04:26 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814664081_e93heux/providers - Ok @ 12/15/2025, 4:04:25 PM
+2025-12-15 16:04:24 |   (log) --> POST /user-pools/pool_1765814299947_kqsm5zj/app-clients [32m201[0m 787ms
+2025-12-15 16:04:24 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:04:24 |   (log) <-- POST /user-pools/pool_1765814299947_kqsm5zj/app-clients
+2025-12-15 16:04:24 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients - Ok @ 12/15/2025, 4:04:23 PM
+2025-12-15 16:04:19 |   (log) --> GET /user-pools [32m200[0m 364ms
+2025-12-15 16:04:19 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:04:19 |   (log) <-- GET /user-pools
+2025-12-15 16:04:19 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:04:18 PM
+2025-12-15 16:02:33 |   (log) --> DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814537615_4p18cvi [31m500[0m 771ms
+2025-12-15 16:02:33 |   (error) Error deleting app client: TypeError: Response with null body status (101, 204, 205, or 304) cannot have a body.
+2025-12-15 16:02:33 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:02:33 |   (log) <-- DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814537615_4p18cvi
+2025-12-15 16:02:33 | DELETE https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814537615_4p18cvi - Ok @ 12/15/2025, 4:02:33 PM
+2025-12-15 16:02:32 |   (log) --> DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814537615_4p18cvi/providers/provider_1765814546126_by17lhk [32m200[0m 581ms
+2025-12-15 16:02:32 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:02:32 |   (log) <-- DELETE /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814537615_4p18cvi/providers/provider_1765814546126_by17lhk
+2025-12-15 16:02:32 | DELETE https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814537615_4p18cvi/providers/provider_1765814546126_by17lhk - Ok @ 12/15/2025, 4:02:31 PM
+2025-12-15 16:02:28 |   (log) --> POST / [33m409[0m 459ms
+2025-12-15 16:02:28 |   (log) [CreateProxy] Using provided project name: {"name":"pokapi","source":"subdomain"}
+2025-12-15 16:02:28 |   (log) [CreateProxy] OpenAPI spec obtained: {"hasSpec":true,"source":"github"}
+2025-12-15 16:02:28 |   (log) [CreateProxy] GitHub fetch successful
+2025-12-15 16:02:28 |   (log) [CreateProxy] Fetching from GitHub: {"owner":"jayjaychicago","repo":"pokeapi","path":"openapi.yaml"}
+2025-12-15 16:02:28 |   (log) [CreateProxy] Processing request: {"username":"jayjaychicago","auth_type":"oauth","hasGithub":true,"hasOpenapi":false,"user_pool_id":"pool_1765814299947_kqsm5zj","app_client_id":"client_1765814537615_4p18cvi","default_app_client_id":"client_1765814537615_4p18cvi","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:02:28 |   (log) [CreateProxy] Creating project for user: {"username":"jayjaychicago","userId":"julienpmjacquet@gmail.com","verifiedFromJWT":true}
+2025-12-15 16:02:28 |   (log) [CreateProxy] Received request body: {"hasDefaultAppClientId":true,"defaultAppClientId":"client_1765814537615_4p18cvi","hasUserPoolId":true,"userPoolId":"pool_1765814299947_kqsm5zj","bodyKeys":["username","name","display_name","subdomain","github","auth_type","user_pool_id","app_client_id","default_app_client_id"]}
+2025-12-15 16:02:28 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:02:28 |   (log) <-- POST /
+2025-12-15 16:02:28 | POST https://internalapi.apiblaze.com/ - Ok @ 12/15/2025, 4:02:27 PM
+2025-12-15 16:02:27 |   (log) --> POST /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814537615_4p18cvi/providers [32m201[0m 759ms
+2025-12-15 16:02:27 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:02:27 |   (log) <-- POST /user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814537615_4p18cvi/providers
+2025-12-15 16:02:26 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients/client_1765814537615_4p18cvi/providers - Ok @ 12/15/2025, 4:02:26 PM
+2025-12-15 16:02:18 |   (log) --> POST /user-pools/pool_1765814299947_kqsm5zj/app-clients [32m201[0m 756ms
+2025-12-15 16:02:18 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:02:18 |   (log) <-- POST /user-pools/pool_1765814299947_kqsm5zj/app-clients
+2025-12-15 16:02:18 | POST https://internalapi.apiblaze.com/user-pools/pool_1765814299947_kqsm5zj/app-clients - Ok @ 12/15/2025, 4:02:17 PM
+2025-12-15 16:02:15 |   (log) --> GET /user-pools [32m200[0m 357ms
+2025-12-15 16:02:15 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-15 16:02:15 |   (log) <-- GET /user-pools
+2025-12-15 16:02:15 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/15/2025, 4:02:14 PM
+2025-12-15 16:01:50 | Connected to apiblaze-v2-admin-api-production, waiting for logs...
+2025-12-15 16:01:50 | Successfully created tail, expires at 2025-12-15T22:01:49Z
+2025-12-15 16:01:49 | 
+2025-12-15 16:01:49 | -----------------------------------------------
+2025-12-15 16:01:49 |  ⛅️ wrangler 3.114.15 (update available 4.54.0)
+2025-12-15 16:01:49 | 

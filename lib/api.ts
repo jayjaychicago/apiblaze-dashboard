@@ -79,12 +79,31 @@ class ApiClient {
       throw new Error(error.error || 'API request failed');
     }
     
+    // Handle 204 No Content responses (no body)
+    if (response.status === 204) {
+      return undefined as T;
+    }
+    
+    // Check if response has content before trying to parse JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      return undefined as T;
+    }
+    
     return (await response.json()) as T;
   }
   
   // Projects
   async listProjects(): Promise<Project[]> {
     return this.request<Project[]>('/proxies');
+  }
+
+  async checkProjectExists(name?: string, subdomain?: string, apiVersion?: string): Promise<{ exists: boolean; project_id?: string; api_version?: string }> {
+    const queryParams = new URLSearchParams();
+    if (name) queryParams.append('name', name);
+    if (subdomain) queryParams.append('subdomain', subdomain);
+    if (apiVersion) queryParams.append('api_version', apiVersion);
+    return this.request<{ exists: boolean; project_id?: string; api_version?: string }>(`/projects/check?${queryParams.toString()}`);
   }
   
   async getProject(id: string): Promise<Project> {

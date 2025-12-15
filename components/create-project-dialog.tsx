@@ -396,6 +396,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       appClientId: config.appClientId,
       bringOwnProvider: config.bringOwnProvider,
     });
+
     try {
       // Validate required fields
       if (!config.projectName) {
@@ -408,6 +409,33 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         setIsDeploying(false);
         return;
       }
+
+      // Check if project already exists BEFORE creating any resources
+      // This prevents creating userpools/app-clients/providers if project creation will fail
+      const subdomain = config.projectName.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const apiVersion = config.apiVersion || '1.0.0';
+      try {
+        const checkResult = await api.checkProjectExists(config.projectName, subdomain, apiVersion);
+        
+        if (checkResult.exists) {
+          toast({
+            title: 'Project Already Exists',
+            description: `A project with the name "${config.projectName}" and version "${apiVersion}" already exists. Please choose a different name or version.`,
+            variant: 'destructive',
+          });
+          setActiveTab('general');
+          setIsDeploying(false);
+          return;
+        }
+      } catch (checkError) {
+        console.warn('[CreateProject] Could not check for existing projects, proceeding anyway:', checkError);
+        // Continue - if project exists, backend will return 409 anyway
+      }
+
+      let userPoolId: string | undefined;
+      let appClientId: string | undefined;
+      let oauthConfig;
+      let defaultAppClientId: string | undefined = config.defaultAppClient; // Track default app client ID
 
       // Prepare GitHub source data if applicable
       const githubSource = config.sourceType === 'github' && config.githubUser && config.githubRepo && config.githubPath
@@ -429,11 +457,6 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
       // Prepare auth config
       const authType = config.enableSocialAuth ? 'oauth' : (config.enableApiKey ? 'api_key' : 'none');
-      
-      let userPoolId: string | undefined;
-      let appClientId: string | undefined;
-      let oauthConfig;
-      let defaultAppClientId: string | undefined = config.defaultAppClient; // Track default app client ID
 
       // Handle UserPool creation/selection
       // Defensive check: if authType is oauth, we MUST have a UserPool
@@ -544,7 +567,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
           try {
             // 1. Check if UserPool with this name already exists, otherwise create it
             const userPoolName = config.userGroupName || `${config.projectName}-userpool`;
-            let createdUserPoolId: string;
+            let currentUserPoolId: string;
             
             // Check for existing user pool with the same name
             const existingUserPools = await api.listUserPools();
@@ -558,23 +581,24 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
                 id: existingUserPool.id,
                 name: existingUserPool.name,
               });
-              createdUserPoolId = existingUserPool.id;
+              currentUserPoolId = existingUserPool.id;
             } else {
               // Create new user pool
               const userPool = await api.createUserPool({ name: userPoolName });
-              createdUserPoolId = (userPool as { id: string }).id;
+              const newUserPoolId = (userPool as { id: string }).id;
+              currentUserPoolId = newUserPoolId;
               console.log('[CreateProject] Created new UserPool:', {
-                id: createdUserPoolId,
+                id: currentUserPoolId,
                 name: userPoolName,
               });
             }
 
             // 2. Create AppClient
-            const appClient = await api.createAppClient(createdUserPoolId, {
+            const appClient = await api.createAppClient(currentUserPoolId, {
               name: `${config.projectName}-appclient`,
               scopes: config.authorizedScopes,
             });
-            const createdAppClientId = (appClient as { id: string }).id;
+            const newAppClientId = (appClient as { id: string }).id;
             const createdAppClientClientId = (appClient as { clientId: string }).clientId;
 
             // 3. Add Provider(s) to AppClient
@@ -591,7 +615,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
                   : []);
 
             for (const provider of providersToAdd) {
-              await api.addProvider(createdUserPoolId, createdAppClientId, {
+              await api.addProvider(currentUserPoolId, newAppClientId, {
                 type: provider.type,
                 clientId: provider.clientId,
                 clientSecret: provider.clientSecret,
@@ -600,18 +624,18 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             }
 
             // Use the created UserPool and AppClient
-            userPoolId = createdUserPoolId;
-            appClientId = createdAppClientId;
+            userPoolId = currentUserPoolId;
+            appClientId = newAppClientId;
             oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
             
             // Set as default app client in project config (only one was created)
             // CRITICAL: Set this BEFORE project creation
-            defaultAppClientId = createdAppClientId;
+            defaultAppClientId = newAppClientId;
             // Update local config state (for UI, but we use the variable for API call)
             updateConfig({ defaultAppClient: defaultAppClientId });
             console.log('[CreateProject] Set defaultAppClientId for bringOwnProvider:', {
               defaultAppClientId,
-              createdAppClientId,
+              appClientId: newAppClientId,
               userPoolId,
             });
 
@@ -652,6 +676,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             userPoolId = result.userPoolId;
             appClientId = result.appClientId;
             oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
+            
+            // Note: Provider is created server-side, we don't have its ID
             
             // Set as default app client in project config (only one was created)
             // CRITICAL: Set this BEFORE project creation

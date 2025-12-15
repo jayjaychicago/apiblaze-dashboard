@@ -101,7 +101,8 @@ export async function DELETE(
     });
     
     await client.deleteAppClient(userClaims, poolId, clientId);
-    return NextResponse.json({ success: true });
+    // Return 204 No Content - DELETE operations should not have a response body
+    return new NextResponse(null, { status: 204 });
     
   } catch (error: unknown) {
     console.error('Error deleting app client:', error);

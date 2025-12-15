@@ -6,6 +6,7 @@
  */
 
 const CACHE_KEY = 'github_repos_cache';
+const OPENAPI_SPECS_CACHE_KEY = 'github_openapi_specs_cache';
 
 export interface CachedGitHubRepo {
   id: number;
@@ -76,8 +77,60 @@ export function clearGitHubReposCache(): void {
 
   try {
     localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(OPENAPI_SPECS_CACHE_KEY);
   } catch (error) {
     console.error('[GitHub Cache] Error clearing cache:', error);
+  }
+}
+
+export interface CachedOpenAPIFile {
+  name: string;
+  path: string;
+  type: 'openapi' | 'swagger';
+  version?: string;
+}
+
+/**
+ * Get cached OpenAPI specs for a repository
+ * @param repoFullName - Full name of the repo (owner/repo)
+ * @returns Cached OpenAPI specs array or null if cache doesn't exist
+ */
+export function getCachedOpenAPISpecs(repoFullName: string): CachedOpenAPIFile[] | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const cached = localStorage.getItem(OPENAPI_SPECS_CACHE_KEY);
+    if (!cached) {
+      return null;
+    }
+
+    const parsed = JSON.parse(cached) as Record<string, CachedOpenAPIFile[]>;
+    return parsed[repoFullName] || null;
+  } catch (error) {
+    console.error('[GitHub Cache] Error reading OpenAPI specs cache:', error);
+    return null;
+  }
+}
+
+/**
+ * Cache OpenAPI specs for a repository
+ * @param repoFullName - Full name of the repo (owner/repo)
+ * @param specs - Array of OpenAPI spec files
+ */
+export function setCachedOpenAPISpecs(repoFullName: string, specs: CachedOpenAPIFile[]): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const cached = localStorage.getItem(OPENAPI_SPECS_CACHE_KEY);
+    const allSpecs = cached ? (JSON.parse(cached) as Record<string, CachedOpenAPIFile[]>) : {};
+    allSpecs[repoFullName] = specs;
+    localStorage.setItem(OPENAPI_SPECS_CACHE_KEY, JSON.stringify(allSpecs));
+  } catch (error) {
+    console.error('[GitHub Cache] Error writing OpenAPI specs cache:', error);
   }
 }
 
