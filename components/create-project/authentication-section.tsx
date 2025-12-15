@@ -281,53 +281,192 @@ function EditModeManagementUI({
   // Track initial UserPool to avoid clearing data on first load
   const initialUserPoolIdRef = useRef<string | undefined>(getInitialUserPoolId());
   const isInitialLoadRef = useRef(true);
+  const previousUserGroupNameRef = useRef<string | undefined>(config.userGroupName);
+  const selectedUserPoolIdRef = useRef<string | undefined>(selectedUserPoolId);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    selectedUserPoolIdRef.current = selectedUserPoolId;
+  }, [selectedUserPoolId]);
+
+  // Watch userGroupName changes and look up userPool by name
+  // This handles both manual changes and automatic defaults
+  useEffect(() => {
+    const currentUserGroupName = config.userGroupName?.trim();
+    const previousUserGroupName = previousUserGroupNameRef.current;
+    const currentSelectedUserPoolId = selectedUserPoolIdRef.current;
+    
+    // Skip if name hasn't changed and userPools haven't changed
+    // We need to check again when userPools load in case the name matches a newly loaded pool
+    if (currentUserGroupName === previousUserGroupName && userPools.length > 0) {
+      // If userPools are loaded and name hasn't changed, only check if we need to sync
+      // (e.g., if userPools just loaded and we have a name but no selectedUserPoolId)
+      if (currentUserGroupName && !currentSelectedUserPoolId) {
+        const matchingPool = userPools.find(pool => pool.name === currentUserGroupName);
+        if (matchingPool && matchingPool.id !== currentSelectedUserPoolId) {
+          setSelectedUserPoolId(matchingPool.id);
+          // Don't call updateConfig here - let the selectedUserPoolId useEffect handle it
+        }
+      }
+      return;
+    }
+    
+    // Only proceed if name actually changed
+    if (currentUserGroupName === previousUserGroupName) {
+      return;
+    }
+    
+    previousUserGroupNameRef.current = currentUserGroupName;
+    
+    // If userGroupName is empty, clear selection
+    if (!currentUserGroupName) {
+      if (currentSelectedUserPoolId !== undefined) {
+        setSelectedUserPoolId(undefined);
+        setAppClients([]);
+        setAppClientDetails({});
+        setProviders({});
+        // Don't call updateConfig here - let the selectedUserPoolId useEffect handle it
+      }
+      return;
+    }
+    
+    // Look up userPool by name
+    const matchingPool = userPools.find(pool => pool.name === currentUserGroupName);
+    
+    if (matchingPool) {
+      // Found matching userPool - set it if different
+      // The selectedUserPoolId useEffect will also watch userGroupName and reload if needed
+      if (matchingPool.id !== currentSelectedUserPoolId) {
+        setSelectedUserPoolId(matchingPool.id);
+        // Don't call updateConfig here - let the selectedUserPoolId useEffect handle it
+      }
+    } else {
+      // No matching userPool found
+      // If userPools are loaded (length > 0), we know for sure there's no match, so clear
+      // If userPools aren't loaded yet, wait for them to load before clearing
+      if (userPools.length > 0) {
+        // UserPools are loaded and no match found - clear to blank state
+        // Only clear if we're not on initial load or if we had a selectedUserPoolId before
+        if (!isInitialLoadRef.current && currentSelectedUserPoolId !== undefined) {
+          setSelectedUserPoolId(undefined);
+          setAppClients([]);
+          setAppClientDetails({});
+          setProviders({});
+          // Don't call updateConfig here - let the selectedUserPoolId useEffect handle it
+        }
+      }
+      // If userPools.length === 0, they might not be loaded yet, so don't clear yet
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.userGroupName, userPools]);
+
+  // Also reload userPools when userGroupName changes to ensure we have the latest list
+  // This is important for the automatic default case (e.g., "my-api-users")
+  const lastUserGroupNameRef = useRef<string | undefined>(config.userGroupName);
+  useEffect(() => {
+    const currentName = config.userGroupName?.trim();
+    // Only reload if the name actually changed
+    if (currentName && currentName !== lastUserGroupNameRef.current) {
+      lastUserGroupNameRef.current = currentName;
+      // Refresh user pools in background to catch newly created pools
+      loadUserPools();
+    }
+  }, [config.userGroupName]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+  // Sync selectedUserPoolId when userPools load and we have a userGroupName but no selectedUserPoolId
+  // Use a ref to track the last userPools length to avoid unnecessary checks
+  const lastUserPoolsLengthRef = useRef<number>(userPools.length);
+  useEffect(() => {
+    // Only check if userPools length actually increased (new pools loaded)
+    if (userPools.length > lastUserPoolsLengthRef.current) {
+      lastUserPoolsLengthRef.current = userPools.length;
+      const currentUserGroupName = config.userGroupName?.trim();
+      if (currentUserGroupName && !selectedUserPoolIdRef.current) {
+        const matchingPool = userPools.find(pool => pool.name === currentUserGroupName);
+        if (matchingPool) {
+          setSelectedUserPoolId(matchingPool.id);
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPools]);
+
+  // Track previous selectedUserPoolId and userGroupName to detect changes
+  // Initialize to undefined so we always detect the first change
+  const previousSelectedUserPoolIdRef = useRef<string | undefined>(undefined);
+  const previousUserGroupNameForPoolRef = useRef<string | undefined>(undefined);
 
   // Load AppClients when UserPool is selected
   useEffect(() => {
+    const previousPoolId = previousSelectedUserPoolIdRef.current;
+    const currentUserGroupName = config.userGroupName?.trim();
+    const previousUserGroupName = previousUserGroupNameForPoolRef.current;
+    const poolChanged = previousPoolId !== selectedUserPoolId;
+    const userGroupNameChanged = previousUserGroupName !== currentUserGroupName;
+    
+    // If userGroupName changed, we need to reload even if pool ID is the same
+    // (this handles switching back to original pool after changing it)
+    const needsReload = poolChanged || (selectedUserPoolId && userGroupNameChanged && previousPoolId === selectedUserPoolId);
+    
     if (selectedUserPoolId) {
-      // Use preloaded data if available, otherwise load
-      const hasPreloaded = preloadedAppClients?.[selectedUserPoolId] && preloadedAppClients[selectedUserPoolId].length > 0;
-      if (hasPreloaded && appClients.length === 0) {
-        // Use preloaded data immediately
-        const clients = preloadedAppClients[selectedUserPoolId];
-        setAppClients(clients);
-        // Load providers for all app clients
-        clients.forEach((client) => {
-          const key = `${selectedUserPoolId}-${client.id}`;
-          if (preloadedProviders?.[key]) {
-            setProviders(prev => ({
-              ...prev,
-              [client.id]: preloadedProviders[key] as SocialProviderResponse[]
-            }));
-          } else {
-            // Load providers from API if not preloaded
-            loadProviders(selectedUserPoolId, client.id, false);
-          }
-          // Load app client details
-          loadAppClientDetails(selectedUserPoolId, client.id);
-        });
-      } else if (!hasPreloaded) {
-        // Load if not preloaded
+      // Always clear old data when pool changes or userGroupName changes (unless it's the initial load)
+      if (needsReload) {
+        if (isInitialLoadRef.current) {
+          isInitialLoadRef.current = false;
+        } else {
+          // Clear all data when switching pools (including switching back to original)
+          setAppClients([]);
+          setAppClientDetails({});
+          setProviders({});
+        }
+        // Update the refs AFTER we've handled the change
+        previousSelectedUserPoolIdRef.current = selectedUserPoolId;
+        previousUserGroupNameForPoolRef.current = currentUserGroupName;
+        
+        // Pool changed or userGroupName changed - always load fresh data
         loadAppClients(selectedUserPoolId, true);
+      } else {
+        // Pool hasn't changed - check if we can use preloaded data
+        const hasPreloaded = preloadedAppClients?.[selectedUserPoolId] && preloadedAppClients[selectedUserPoolId].length > 0;
+        const hasClients = appClients.length > 0;
+        
+        if (hasPreloaded && !hasClients) {
+          // Use preloaded data immediately
+          const clients = preloadedAppClients[selectedUserPoolId];
+          setAppClients(clients);
+          // Load providers for all app clients
+          clients.forEach((client) => {
+            const key = `${selectedUserPoolId}-${client.id}`;
+            if (preloadedProviders?.[key]) {
+              setProviders(prev => ({
+                ...prev,
+                [client.id]: preloadedProviders[key] as SocialProviderResponse[]
+              }));
+            } else {
+              // Load providers from API if not preloaded
+              loadProviders(selectedUserPoolId, client.id, false);
+            }
+            // Load app client details
+            loadAppClientDetails(selectedUserPoolId, client.id);
+          });
+        } else if (!hasClients) {
+          // No preloaded data and no clients - load fresh
+          loadAppClients(selectedUserPoolId, true);
+        }
       }
-      updateConfig({ userPoolId: selectedUserPoolId });
       
-      // Only clear data if UserPool actually changed (not on initial load)
-      if (isInitialLoadRef.current) {
-        isInitialLoadRef.current = false;
-      } else if (selectedUserPoolId !== initialUserPoolIdRef.current) {
-        // UserPool changed, clear all data
-        setAppClientDetails({});
-        setProviders({});
-      }
+      updateConfig({ userPoolId: selectedUserPoolId });
     } else {
       setAppClients([]);
       setAppClientDetails({});
       setProviders({});
       updateConfig({ userPoolId: undefined, appClientId: undefined });
+      previousSelectedUserPoolIdRef.current = undefined;
+      previousUserGroupNameForPoolRef.current = undefined;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedUserPoolId]);
+  }, [selectedUserPoolId, config.userGroupName]);
 
 
   const loadUserPools = async () => {
@@ -694,47 +833,7 @@ function EditModeManagementUI({
       <div>
         <Label className="text-base font-semibold">OAuth Configuration</Label>
         <p className="text-sm text-muted-foreground">
-          Manage UserPool, AppClients, and Providers for this project
-        </p>
-      </div>
-
-      {/* UserPool Selection */}
-      <div>
-        <Label htmlFor="userPoolSelect" className="text-sm font-medium">
-          UserPool
-        </Label>
-        <div className="flex gap-2 mt-1">
-          <Select
-            value={selectedUserPoolId || ''}
-            onValueChange={(value) => setSelectedUserPoolId(value || undefined)}
-            disabled={loadingUserPools}
-          >
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder={loadingUserPools ? "Loading..." : "Select a UserPool"} />
-            </SelectTrigger>
-            <SelectContent>
-              {userPools.map((pool) => (
-                <SelectItem key={pool.id} value={pool.id}>
-                  {pool.name} ({pool.id})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              loadUserPools();
-              // The select dropdown will show the refreshed list
-            }}
-            title="Refresh user pools"
-          >
-            <Search className="h-4 w-4" />
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          Note: Changing UserPool will change the AppClient selection
+          Manage AppClients and Providers for this project. The UserPool is selected via the "User Pool Name" field above.
         </p>
       </div>
 
@@ -1285,8 +1384,10 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
   }, [preloadedUserPools]);
 
   // In edit mode, populate userGroupName from project's user pool
+  // Only sync on initial load, not when existingUserPools changes (to avoid reverting user changes)
+  const hasSyncedUserGroupNameRef = useRef(false);
   useEffect(() => {
-    if (isEditMode && project?.config) {
+    if (isEditMode && project?.config && !hasSyncedUserGroupNameRef.current) {
       const projectConfig = project.config as Record<string, unknown>;
       const userPoolId = projectConfig.user_pool_id as string | undefined;
       
@@ -1300,11 +1401,23 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
         if (userPool && userPool.name !== config.userGroupName) {
           // Only update if the name is different to avoid unnecessary updates
           updateConfig({ userGroupName: userPool.name });
+          hasSyncedUserGroupNameRef.current = true;
+        } else if (userPool) {
+          // Even if names match, mark as synced
+          hasSyncedUserGroupNameRef.current = true;
         }
+      } else {
+        // No userPoolId in project config, mark as synced anyway
+        hasSyncedUserGroupNameRef.current = true;
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEditMode, project, preloadedUserPools, existingUserPools]);
+  }, [isEditMode, project, preloadedUserPools]);
+  
+  // Reset sync flag when project changes
+  useEffect(() => {
+    hasSyncedUserGroupNameRef.current = false;
+  }, [project]);
 
   // Load AppClient details when UserPool is configured (either from selection or from existing config)
   useEffect(() => {
@@ -1553,13 +1666,6 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                 size="icon"
                 className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                 title="Select existing user pool"
-                onMouseEnter={() => {
-                  // Preload/refresh on hover for even faster response
-                  // Always refresh in background (silently) to ensure fresh data
-                  if (!loadingUserPools) {
-                    loadUserPools(false);
-                  }
-                }}
               >
                 <Search className="h-4 w-4 text-muted-foreground" />
               </Button>
