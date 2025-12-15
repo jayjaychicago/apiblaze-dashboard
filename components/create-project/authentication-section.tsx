@@ -833,7 +833,7 @@ function EditModeManagementUI({
       <div>
         <Label className="text-base font-semibold">OAuth Configuration</Label>
         <p className="text-sm text-muted-foreground">
-          Manage AppClients and Providers for this project. The UserPool is selected via the "User Pool Name" field above.
+          Manage AppClients and Providers for this project. The UserPool is selected via the &quot;User Pool Name&quot; field above.
         </p>
       </div>
 
