@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { ProjectConfig } from './types';
 import { fetchGitHubAPI } from '@/lib/github-api';
+import { getCachedGitHubRepos, setCachedGitHubRepos, CachedGitHubRepo } from '@/lib/github-repos-cache';
 
 interface GitHubRepoSelectorModalProps {
   open: boolean;
@@ -95,7 +96,18 @@ export function GitHubRepoSelectorModal({
   const loadRepositories = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Call backend API to get user's GitHub repositories (using NextAuth session)
+      // Check cache first
+      const cachedRepos = getCachedGitHubRepos();
+      if (cachedRepos && cachedRepos.length > 0) {
+        console.log('[GitHub Cache] Using cached repositories:', cachedRepos.length);
+        setRepos(cachedRepos);
+        setFilteredRepos(cachedRepos);
+        setIsLoading(false);
+        return;
+      }
+
+      // No cache, fetch from API
+      console.log('[GitHub Cache] Cache miss, fetching from API...');
       const response = await fetchGitHubAPI('/api/github/repos');
 
       if (!response.ok) {
@@ -103,7 +115,7 @@ export function GitHubRepoSelectorModal({
         if (response.status === 401) {
           // Close modal - user will be redirected to login
           onOpenChange(false);
-          // Clear installation status
+          // Clear installation status and cache
           localStorage.removeItem('github_app_installed');
           return;
         }
@@ -111,7 +123,7 @@ export function GitHubRepoSelectorModal({
         if (response.status === 403) {
           // Close modal and trigger reinstall
           onOpenChange(false);
-          // Clear installation status
+          // Clear installation status and cache
           localStorage.removeItem('github_app_installed');
           // User will need to reinstall
           throw new Error('GitHub App not installed or access revoked');
@@ -142,6 +154,10 @@ export function GitHubRepoSelectorModal({
           return;
         }
       }
+      
+      // Cache the results for future use
+      setCachedGitHubRepos(data);
+      console.log('[GitHub Cache] Cached repositories:', data.length);
       
       setRepos(data);
       setFilteredRepos(data);

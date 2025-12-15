@@ -113,22 +113,12 @@ export function GeneralSection({ config, updateConfig, validationError, preloade
   };
 
   const handleBrowseGitHub = () => {
-    // Open modal immediately if we have preloaded repos (non-blocking)
-    if (preloadedGitHubRepos && preloadedGitHubRepos.length > 0) {
-      setGithubAppInstalled(true);
-      setRepoSelectorOpen(true);
-      // Check installation in background (non-blocking)
-      void checkInstallationInBackground();
-      return;
-    }
-
-    // If no preloaded repos, check installation first (but don't block UI)
-    // Open modal optimistically if we think it's installed
-    if (githubAppInstalled) {
-      setRepoSelectorOpen(true);
-    }
+    // Always open modal immediately - don't wait for preload or installation check
+    // The modal will handle loading states internally (using cache or API)
+    setRepoSelectorOpen(true);
     
     // Check installation in background (non-blocking)
+    // This will update the state but won't block the modal from opening
     void checkInstallationInBackground();
   };
 
