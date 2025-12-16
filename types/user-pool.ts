@@ -7,6 +7,9 @@ export interface UserPool {
   users_count?: number;
   groups_count?: number;
   default_app_client_id?: string;
+  enableSocialAuth?: boolean;
+  enableApiKeyAuth?: boolean;
+  bringMyOwnOAuth?: boolean;
 }
 
 export interface AppClient {
