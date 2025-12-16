@@ -103,6 +103,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   const [preloadedGitHubRepos, setPreloadedGitHubRepos] = useState<Array<{ id: number; name: string; full_name: string; description: string; default_branch: string; updated_at: string; language: string; stargazers_count: number }>>([]);
   const [preloadedAppClients, setPreloadedAppClients] = useState<Record<string, AppClient[]>>({}); // keyed by userPoolId
   const [preloadedProviders, setPreloadedProviders] = useState<Record<string, UserPoolSocialProvider[]>>({}); // keyed by `${userPoolId}-${appClientId}`
+  const [loadingAuthData, setLoadingAuthData] = useState(false); // Track loading state for auth data
 
   // Initialize config from project if in edit mode
   const getInitialConfig = (): ProjectConfig => {
@@ -243,6 +244,79 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
     }
   }, [open, currentProject, project]);
 
+  // Preload auth data when project is selected (even if dialog is not open yet)
+  // This ensures data is ready when user switches to auth tab
+  useEffect(() => {
+    const projectForEdit = currentProject || project;
+    if (!projectForEdit) {
+      setLoadingAuthData(false);
+      return;
+    }
+
+    const loadAuthData = async () => {
+      setLoadingAuthData(true);
+      try {
+        const projectConfig = projectForEdit.config as Record<string, unknown> | undefined;
+        const userPoolId = projectConfig?.user_pool_id as string | undefined;
+        
+        if (userPoolId) {
+          // Load user pools first (if not already loaded)
+          // Note: We check preloadedUserPools.length inside the effect but don't include it in deps
+          // to avoid re-running when pools are loaded. We only want to run when project changes.
+          if (preloadedUserPools.length === 0) {
+            try {
+              const pools = await api.listUserPools();
+              setPreloadedUserPools(Array.isArray(pools) ? pools : []);
+            } catch (error) {
+              console.error('Error preloading user pools:', error);
+            }
+          }
+
+          // Preload ALL AppClients for this userPool
+          try {
+            const clients = await api.listAppClients(userPoolId);
+            const clientsArray = Array.isArray(clients) ? clients : [];
+            setPreloadedAppClients(prev => ({
+              ...prev,
+              [userPoolId]: clientsArray,
+            }));
+            
+            // Preload providers for ALL app clients (not just one)
+            const providerPromises = clientsArray.map(async (client) => {
+              try {
+                const providers = await api.listProviders(userPoolId, client.id);
+                const providersArray = Array.isArray(providers) ? providers : [];
+                setPreloadedProviders(prev => ({
+                  ...prev,
+                  [`${userPoolId}-${client.id}`]: providersArray,
+                }));
+              } catch (error) {
+                console.error(`Error preloading providers for app client ${client.id}:`, error);
+                // Set empty array on error
+                setPreloadedProviders(prev => ({
+                  ...prev,
+                  [`${userPoolId}-${client.id}`]: [],
+                }));
+              }
+            });
+            
+            // Wait for all provider loads to complete
+            await Promise.all(providerPromises);
+          } catch (error) {
+            console.error('Error preloading app clients:', error);
+          }
+        }
+      } catch (error) {
+        console.error('Error preloading auth data:', error);
+      } finally {
+        setLoadingAuthData(false);
+      }
+    };
+
+    void loadAuthData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentProject, project]); // Run when project changes, not when dialog opens
+
   // Preload data when dialog opens - this ensures instant response
   useEffect(() => {
     if (open) {
@@ -282,60 +356,18 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         }
       };
 
-      // Preload AppClients and Providers for edit mode if project has userPoolId and appClientId
-      const loadEditModeData = async () => {
-        const projectForEdit = currentProject || project;
-        if (!projectForEdit) return;
-        
-        try {
-          const projectConfig = projectForEdit.config as Record<string, unknown> | undefined;
-          const userPoolId = projectConfig?.user_pool_id as string | undefined;
-          const appClientId = projectConfig?.app_client_id as string | undefined;
-          
-          if (userPoolId) {
-            // Preload AppClients for this userPool
-            try {
-              const clients = await api.listAppClients(userPoolId);
-              const clientsArray = Array.isArray(clients) ? clients : [];
-              setPreloadedAppClients(prev => ({
-                ...prev,
-                [userPoolId]: clientsArray,
-              }));
-              
-              // If we also have an appClientId, preload providers
-              if (appClientId && clientsArray.length > 0) {
-                try {
-                  const providers = await api.listProviders(userPoolId, appClientId);
-                  const providersArray = Array.isArray(providers) ? providers : [];
-                  setPreloadedProviders(prev => ({
-                    ...prev,
-                    [`${userPoolId}-${appClientId}`]: providersArray,
-                  }));
-                } catch (error) {
-                  console.error('Error preloading providers:', error);
-                }
-              }
-            } catch (error) {
-              console.error('Error preloading app clients:', error);
-            }
-          }
-        } catch (error) {
-          console.error('Error preloading edit mode data:', error);
-        }
-      };
-
       // Load all data in parallel
       void loadUserPools();
       void loadGitHubRepos();
-      void loadEditModeData();
     } else {
       // Clear preloaded data when dialog closes
       setPreloadedUserPools([]);
       setPreloadedGitHubRepos([]);
       setPreloadedAppClients({});
       setPreloadedProviders({});
+      setLoadingAuthData(false);
     }
-  }, [open, currentProject, project]);
+  }, [open]);
 
   const updateConfig = (updates: Partial<ProjectConfig>) => {
     setConfig(prev => ({ ...prev, ...updates }));
@@ -887,6 +919,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
                 preloadedUserPools={preloadedUserPools}
                 preloadedAppClients={preloadedAppClients}
                 preloadedProviders={preloadedProviders}
+                loadingAuthData={loadingAuthData}
               />
             </TabsContent>
 

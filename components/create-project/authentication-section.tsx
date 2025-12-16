@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { AlertCircle, Plus, X, Users, Key, Copy, Check, Trash2, Search, ChevronDown, Star, ExternalLink } from 'lucide-react';
+import { AlertCircle, Plus, X, Users, Key, Copy, Check, Trash2, Search, ChevronDown, Star, ExternalLink, Loader2 } from 'lucide-react';
 import { ProjectConfig, SocialProvider } from './types';
 import { useState, useEffect, useRef } from 'react';
 import { UserPoolModal } from '@/components/user-pool/user-pool-modal';
@@ -39,6 +39,7 @@ interface AuthenticationSectionProps {
   preloadedUserPools?: UserPool[]; // Optional preloaded user pools from parent
   preloadedAppClients?: Record<string, AppClient[]>; // Optional preloaded app clients keyed by userPoolId
   preloadedProviders?: Record<string, UserPoolSocialProvider[]>; // Optional preloaded providers keyed by `${userPoolId}-${appClientId}`
+  loadingAuthData?: boolean; // Loading state for auth data preloading
 }
 
 const PROVIDER_DOMAINS: Record<SocialProvider, string> = {
@@ -111,7 +112,8 @@ function EditModeManagementUI({
   initialUserPoolId,
   preloadedUserPools,
   preloadedAppClients,
-  preloadedProviders
+  preloadedProviders,
+  loadingAuthData
 }: { 
   config: ProjectConfig; 
   updateConfig: (updates: Partial<ProjectConfig>) => void; 
@@ -121,6 +123,7 @@ function EditModeManagementUI({
   preloadedUserPools?: UserPool[];
   preloadedAppClients?: Record<string, AppClient[]>;
   preloadedProviders?: Record<string, UserPoolSocialProvider[]>;
+  loadingAuthData?: boolean;
 }) {
   // Save config changes immediately to backend (without redeployment)
   const saveConfigImmediately = async (updates: Partial<ProjectConfig>) => {
@@ -828,6 +831,15 @@ function EditModeManagementUI({
     }
   };
 
+  // Determine if we're still loading initial data
+  const userPoolId = getInitialUserPoolId();
+  const effectiveUserPoolId = userPoolId || selectedUserPoolId;
+  const isLoadingInitialData = loadingAuthData || 
+    (effectiveUserPoolId && 
+     (!preloadedAppClients?.[effectiveUserPoolId] || 
+      preloadedAppClients[effectiveUserPoolId].length === 0) &&
+     appClients.length === 0 && !loadingAppClients);
+
   return (
     <div className="space-y-6">
       <div>
@@ -836,6 +848,14 @@ function EditModeManagementUI({
           Manage AppClients and Providers for this project. The UserPool is selected via the &quot;User Pool Name&quot; field above.
         </p>
       </div>
+
+      {/* Simple Loading Indicator */}
+      {isLoadingInitialData && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span>Loading authentication configuration...</span>
+        </div>
+      )}
 
       {/* AppClient Management */}
       {selectedUserPoolId && (
@@ -894,10 +914,10 @@ function EditModeManagementUI({
             </Card>
           )}
 
-          {loadingAppClients ? (
-            <div className="text-sm text-muted-foreground">Loading AppClients...</div>
+          {loadingAppClients && appClients.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-4">Loading AppClients...</div>
           ) : appClients.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No AppClients found. Create one to continue.</div>
+            <div className="text-sm text-muted-foreground py-4">No AppClients found. Create one to continue.</div>
           ) : (
             <div className="space-y-6">
               {appClients.map((client) => {
@@ -1291,7 +1311,7 @@ function EditModeManagementUI({
                         </div>
                       )}
 
-                      {isLoadingProviders ? (
+                      {isLoadingProviders && clientProviders.length === 0 ? (
                         <div className="text-xs text-muted-foreground py-2">Loading providers...</div>
                       ) : clientProviders.length === 0 ? (
                         <div className="text-xs text-muted-foreground italic py-2">No providers configured. The default APIBlaze Github login will be used.</div>
@@ -1343,7 +1363,7 @@ function EditModeManagementUI({
   );
 }
 
-export function AuthenticationSection({ config, updateConfig, isEditMode = false, project, onProjectUpdate, preloadedUserPools, preloadedAppClients, preloadedProviders }: AuthenticationSectionProps) {
+export function AuthenticationSection({ config, updateConfig, isEditMode = false, project, onProjectUpdate, preloadedUserPools, preloadedAppClients, preloadedProviders, loadingAuthData }: AuthenticationSectionProps) {
   const [newScope, setNewScope] = useState('');
   const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
   const [selectedAppClient, setSelectedAppClient] = useState<AppClient & { userPoolId: string } | null>(null);
@@ -1647,7 +1667,13 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
             value={config.userGroupName}
             onChange={(e) => updateConfig({ userGroupName: e.target.value })}
             className="pr-10"
+            disabled={loadingAuthData && !config.userGroupName}
           />
+          {loadingUserPools || (loadingAuthData && !config.userGroupName) ? (
+            <div className="absolute right-10 top-1/2 -translate-y-1/2">
+              <Loader2 className="h-4 w-4 text-muted-foreground animate-spin" />
+            </div>
+          ) : null}
           <DropdownMenu
             onOpenChange={(open) => {
               // Refresh user pools in background when dropdown opens
@@ -1750,6 +1776,7 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                 preloadedUserPools={preloadedUserPools}
                 preloadedAppClients={preloadedAppClients}
                 preloadedProviders={preloadedProviders}
+                loadingAuthData={loadingAuthData}
               />
             ) : (
               /* Create Mode: Third-party OAuth Provider Configuration */
