@@ -46,7 +46,7 @@ export async function PATCH(
   try {
     const userClaims = await getUserClaims();
     const { poolId } = await params;
-    const body = (await request.json()) as { name?: string; default_app_client_id?: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean };
+    const body = (await request.json()) as { name?: string; default_app_client_id?: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean; bringMyOwnOAuth?: boolean };
     
     const client = createAPIBlazeClient({
       apiKey: INTERNAL_API_KEY,

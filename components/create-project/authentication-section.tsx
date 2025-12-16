@@ -1510,9 +1510,10 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
     }
   }, [config.enableSocialAuth]);
 
-  // Track initial enableSocialAuth and enableApiKey to avoid updating on mount
+  // Track initial enableSocialAuth, enableApiKey, and bringOwnProvider to avoid updating on mount
   const previousEnableSocialAuthRef = useRef<boolean | undefined>(config.enableSocialAuth);
   const previousEnableApiKeyRef = useRef<boolean | undefined>(config.enableApiKey);
+  const previousBringOwnProviderRef = useRef<boolean | undefined>(config.bringOwnProvider);
 
   // Update userPool's enable_social_auth when enableSocialAuth changes
   useEffect(() => {
@@ -1573,6 +1574,36 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
     updateUserPoolApiKey();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.enableApiKey, config.userPoolId, isEditMode, project]);
+
+  // Update userPool's bringMyOwnOAuth when bringOwnProvider changes
+  useEffect(() => {
+    // Only update if we have a userPoolId and we're in edit mode
+    if (!isEditMode || !config.userPoolId || !project) {
+      previousBringOwnProviderRef.current = config.bringOwnProvider;
+      return;
+    }
+
+    // Skip if this is the initial load (value hasn't changed)
+    if (previousBringOwnProviderRef.current === config.bringOwnProvider) {
+      return;
+    }
+
+    // Update the userPool with the new bringOwnProvider value
+    const updateUserPoolBringOwnOAuth = async () => {
+      try {
+        await api.updateUserPool(config.userPoolId!, {
+          bringMyOwnOAuth: config.bringOwnProvider,
+        });
+        console.log('[AuthSection] ✅ Updated userPool bringMyOwnOAuth:', config.bringOwnProvider);
+        previousBringOwnProviderRef.current = config.bringOwnProvider;
+      } catch (error) {
+        console.error('[AuthSection] ❌ Error updating userPool bringMyOwnOAuth:', error);
+      }
+    };
+
+    updateUserPoolBringOwnOAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.bringOwnProvider, config.userPoolId, isEditMode, project]);
 
   // Initialize with preloaded user pools if provided
   useEffect(() => {

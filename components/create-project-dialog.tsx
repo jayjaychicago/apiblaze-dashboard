@@ -679,6 +679,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
                 name: userPoolName,
                 enableSocialAuth: config.enableSocialAuth,
                 enableApiKeyAuth: config.enableApiKey,
+                bringMyOwnOAuth: config.bringOwnProvider,
               });
               const newUserPoolId = (userPool as { id: string }).id;
               currentUserPoolId = newUserPoolId;
@@ -769,6 +770,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               scopes: config.authorizedScopes,
               enableSocialAuth: config.enableSocialAuth,
               enableApiKeyAuth: config.enableApiKey,
+              bringMyOwnOAuth: config.bringOwnProvider,
             });
 
             // Use the created UserPool and AppClient

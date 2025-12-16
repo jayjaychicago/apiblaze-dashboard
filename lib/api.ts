@@ -236,14 +236,14 @@ class ApiClient {
     return this.request<UserPool>(`/user-pools/${poolId}`);
   }
 
-  async createUserPool(data: { name: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean }) {
+  async createUserPool(data: { name: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean; bringMyOwnOAuth?: boolean }) {
     return this.request('/user-pools', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateUserPool(poolId: string, data: { name?: string; default_app_client_id?: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean }) {
+  async updateUserPool(poolId: string, data: { name?: string; default_app_client_id?: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean; bringMyOwnOAuth?: boolean }) {
     return this.request(`/user-pools/${poolId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
@@ -348,6 +348,7 @@ class ApiClient {
     scopes?: string[];
     enableSocialAuth?: boolean;
     enableApiKeyAuth?: boolean;
+    bringMyOwnOAuth?: boolean;
   }) {
     return this.request<{ userPoolId: string; appClientId: string }>('/user-pools/create-with-default-github', {
       method: 'POST',

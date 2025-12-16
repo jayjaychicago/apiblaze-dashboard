@@ -40,6 +40,7 @@ export interface CreateUserPoolRequest {
   name: string;
   enableSocialAuth?: boolean;
   enableApiKeyAuth?: boolean;
+  bringMyOwnOAuth?: boolean;
 }
 
 export interface CreateAppClientRequest {

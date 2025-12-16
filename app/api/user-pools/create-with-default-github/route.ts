@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     const userClaims = await getUserClaims();
     const body = await request.json();
-    const { userPoolName, appClientName, scopes, enableSocialAuth, enableApiKeyAuth } = body;
+    const { userPoolName, appClientName, scopes, enableSocialAuth, enableApiKeyAuth, bringMyOwnOAuth } = body;
 
     if (!userPoolName || !appClientName) {
       return NextResponse.json(
@@ -58,6 +58,7 @@ export async function POST(request: NextRequest) {
         name: userPoolName,
         enableSocialAuth: enableSocialAuth,
         enableApiKeyAuth: enableApiKeyAuth,
+        bringMyOwnOAuth: bringMyOwnOAuth,
       });
       userPoolId = (userPool as { id: string }).id;
       console.log('[create-with-default-github] Created new UserPool:', {
