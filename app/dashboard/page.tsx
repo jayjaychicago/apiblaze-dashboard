@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Zap, Plus, GitBranch, Globe, Users, Rocket, Bot, UserCog } from 'lucide-react';
@@ -8,7 +8,7 @@ import { UserMenu } from '@/components/user-menu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreateProjectDialog } from '@/components/create-project-dialog';
-import { ProjectList } from '@/components/project-list';
+import { ProjectList, ProjectListRef } from '@/components/project-list';
 import { listProjects } from '@/lib/api/projects';
 import { ProjectConfigDialog } from '@/components/project-config-dialog';
 import { Project } from '@/types/project';
@@ -21,6 +21,7 @@ export default function DashboardPage() {
   const [checkingProjects, setCheckingProjects] = useState(true);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const projectListRef = useRef<ProjectListRef>(null);
   
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -84,9 +85,13 @@ export default function DashboardPage() {
     }
   }, [status, loadProjects]);
 
-  const handleProjectCreated = () => {
+  const handleProjectCreated = async () => {
     setCreateDialogOpen(false);
     setHasProjects(true);
+    // Refresh the project list to show the newly created/updated project
+    if (projectListRef.current) {
+      await projectListRef.current.refresh();
+    }
   };
   
   if (status === 'loading' || status === 'unauthenticated' || checkingProjects) {
@@ -259,6 +264,7 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <ProjectList 
+          ref={projectListRef}
           teamId={user?.githubHandle ? `team_${user.githubHandle}` : undefined}
           onRefresh={loadProjects}
           onUpdateConfig={(project) => {

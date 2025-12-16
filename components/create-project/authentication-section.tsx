@@ -337,7 +337,7 @@ function EditModeManagementUI({
   const initialUserPoolIdRef = useRef<string | undefined>(getInitialUserPoolId());
   const isInitialLoadRef = useRef(true); // Track if we've done the initial load from project config
   const userManuallyChangedUserPoolRef = useRef(false); // Track if user has manually changed the userPool
-  const previousUserGroupNameRef = useRef<string | undefined>(config.userGroupName);
+  const previousUserGroupNameRef = useRef<string | undefined>(undefined); // Start undefined to ensure lookup happens on first render
   const selectedUserPoolIdRef = useRef<string | undefined>(selectedUserPoolId);
 
   // Keep ref in sync with state
@@ -352,27 +352,13 @@ function EditModeManagementUI({
     const previousUserGroupName = previousUserGroupNameRef.current;
     const currentSelectedUserPoolId = selectedUserPoolIdRef.current;
     
-    // Skip if name hasn't changed and userPools haven't changed
-    // We need to check again when userPools load in case the name matches a newly loaded pool
-    if (currentUserGroupName === previousUserGroupName && userPools.length > 0) {
-      // If userPools are loaded and name hasn't changed, only check if we need to sync
-      // (e.g., if userPools just loaded and we have a name but no selectedUserPoolId)
-      if (currentUserGroupName && !currentSelectedUserPoolId) {
-        const matchingPool = userPools.find(pool => pool.name === currentUserGroupName);
-        if (matchingPool && matchingPool.id !== currentSelectedUserPoolId) {
-          setSelectedUserPoolId(matchingPool.id);
-          // Don't call updateConfig here - let the selectedUserPoolId useEffect handle it
-        }
-      }
-      return;
-    }
-    
-    // Only proceed if name actually changed
-    if (currentUserGroupName === previousUserGroupName) {
-      return;
-    }
-    
-    previousUserGroupNameRef.current = currentUserGroupName;
+    console.log('[AuthSection] 🔍 userGroupName lookup effect:', {
+      currentUserGroupName,
+      previousUserGroupName,
+      currentSelectedUserPoolId,
+      userPoolsCount: userPools.length,
+      userPoolNames: userPools.map(p => p.name),
+    });
     
     // If userGroupName is empty, clear selection
     if (!currentUserGroupName) {
@@ -383,36 +369,71 @@ function EditModeManagementUI({
         setProviders({});
         // Don't call updateConfig here - let the selectedUserPoolId useEffect handle it
       }
+      previousUserGroupNameRef.current = currentUserGroupName;
       return;
     }
     
-    // Look up userPool by name
+    // Look up userPool by name (always check, even if name hasn't changed, in case userPools just loaded)
+    // This is critical for the default "my-api-users" case when creating a new project
     const matchingPool = userPools.find(pool => pool.name === currentUserGroupName);
+    
+    console.log('[AuthSection] 🔍 Lookup result:', {
+      userGroupName: currentUserGroupName,
+      matchingPool: matchingPool ? { id: matchingPool.id, name: matchingPool.name } : null,
+      currentSelectedUserPoolId,
+      shouldSet: matchingPool && matchingPool.id !== currentSelectedUserPoolId,
+      userPoolsLoaded: userPools.length > 0,
+    });
     
     if (matchingPool) {
       // Found matching userPool - set it if different
-      // The selectedUserPoolId useEffect will also watch userGroupName and reload if needed
+      // This handles both:
+      // 1. User manually changed the name to match an existing pool
+      // 2. UserPools loaded and we have a name that matches (e.g., default "my-api-users")
       if (matchingPool.id !== currentSelectedUserPoolId) {
+        console.log('[AuthSection] ✅ Setting selectedUserPoolId from name lookup:', {
+          userGroupName: currentUserGroupName,
+          userPoolId: matchingPool.id,
+          userPoolName: matchingPool.name,
+          previousUserPoolId: currentSelectedUserPoolId,
+          nameChanged: currentUserGroupName !== previousUserGroupName,
+          reason: currentUserGroupName !== previousUserGroupName ? 'name changed' : 'userPools loaded',
+        });
         setSelectedUserPoolId(matchingPool.id);
         // Don't call updateConfig here - let the selectedUserPoolId useEffect handle it
+      } else {
+        console.log('[AuthSection] ℹ️ Matching pool already selected:', matchingPool.id);
       }
     } else {
       // No matching userPool found
-      // If userPools are loaded (length > 0), we know for sure there's no match, so clear
+      // If userPools are loaded (length > 0), we know for sure there's no match
       // If userPools aren't loaded yet, wait for them to load before clearing
       if (userPools.length > 0) {
         // UserPools are loaded and no match found - clear to blank state
-        // Only clear if we're not on initial load or if we had a selectedUserPoolId before
-        if (!isInitialLoadRef.current && currentSelectedUserPoolId !== undefined) {
+        // Only clear if name actually changed (user typed a new name) or if we had a selectedUserPoolId before
+        const nameChanged = currentUserGroupName !== previousUserGroupName;
+        if (nameChanged || (!isInitialLoadRef.current && currentSelectedUserPoolId !== undefined)) {
+          console.log('[AuthSection] ⚠️ No matching userPool found for name:', {
+            userGroupName: currentUserGroupName,
+            userPoolsCount: userPools.length,
+            userPoolNames: userPools.map(p => p.name),
+            nameChanged,
+            hadSelectedPool: currentSelectedUserPoolId !== undefined,
+          });
           setSelectedUserPoolId(undefined);
           setAppClients([]);
           setAppClientDetails({});
           setProviders({});
           // Don't call updateConfig here - let the selectedUserPoolId useEffect handle it
         }
+      } else {
+        console.log('[AuthSection] ⏳ Waiting for userPools to load...');
       }
       // If userPools.length === 0, they might not be loaded yet, so don't clear yet
     }
+    
+    // Update the ref after processing
+    previousUserGroupNameRef.current = currentUserGroupName;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.userGroupName, userPools]);
 
@@ -434,19 +455,56 @@ function EditModeManagementUI({
   // Use a ref to track the last userPools length to avoid unnecessary checks
   const lastUserPoolsLengthRef = useRef<number>(userPools.length);
   useEffect(() => {
-    // Only check if userPools length actually increased (new pools loaded)
-    if (userPools.length > lastUserPoolsLengthRef.current) {
+    // Check if userPools length changed (either increased or loaded for first time)
+    const poolsChanged = userPools.length !== lastUserPoolsLengthRef.current;
+    const currentUserGroupName = config.userGroupName?.trim();
+    
+    console.log('[AuthSection] 🔄 userPools sync effect:', {
+      poolsChanged,
+      userPoolsCount: userPools.length,
+      lastCount: lastUserPoolsLengthRef.current,
+      currentUserGroupName,
+      currentSelectedUserPoolId: selectedUserPoolIdRef.current,
+      userPoolNames: userPools.map(p => p.name),
+    });
+    
+    if (poolsChanged && userPools.length > 0) {
       lastUserPoolsLengthRef.current = userPools.length;
-      const currentUserGroupName = config.userGroupName?.trim();
+      
+      // If we have a userGroupName but no selectedUserPoolId, try to find matching pool
+      // This handles both initial load and when userPools load after userGroupName is set
       if (currentUserGroupName && !selectedUserPoolIdRef.current) {
         const matchingPool = userPools.find(pool => pool.name === currentUserGroupName);
         if (matchingPool) {
+          console.log('[AuthSection] ✅ Found matching userPool by name after userPools loaded:', {
+            userGroupName: currentUserGroupName,
+            userPoolId: matchingPool.id,
+            userPoolName: matchingPool.name,
+          });
+          setSelectedUserPoolId(matchingPool.id);
+        } else {
+          console.log('[AuthSection] ⚠️ No matching pool found for userGroupName:', {
+            userGroupName: currentUserGroupName,
+            availableNames: userPools.map(p => p.name),
+          });
+        }
+      }
+      // Also check if selectedUserPoolId exists but userGroupName doesn't match - update it
+      else if (currentUserGroupName && selectedUserPoolIdRef.current) {
+        const matchingPool = userPools.find(pool => pool.name === currentUserGroupName);
+        // If we found a matching pool but selectedUserPoolId is different, update it
+        if (matchingPool && matchingPool.id !== selectedUserPoolIdRef.current) {
+          console.log('[AuthSection] 🔄 Updating selectedUserPoolId to match userGroupName:', {
+            userGroupName: currentUserGroupName,
+            oldUserPoolId: selectedUserPoolIdRef.current,
+            newUserPoolId: matchingPool.id,
+          });
           setSelectedUserPoolId(matchingPool.id);
         }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userPools]);
+  }, [userPools, config.userGroupName]);
 
   // Track previous selectedUserPoolId and userGroupName to detect changes
   // Initialize to undefined so we always detect the first change
@@ -1432,6 +1490,7 @@ function EditModeManagementUI({
 }
 
 export function AuthenticationSection({ config, updateConfig, isEditMode = false, project, onProjectUpdate, preloadedUserPools, preloadedAppClients, preloadedProviders, loadingAuthData }: AuthenticationSectionProps) {
+  
   const [newScope, setNewScope] = useState('');
   const [userPoolModalOpen, setUserPoolModalOpen] = useState(false);
   const [selectedAppClient, setSelectedAppClient] = useState<AppClient & { userPoolId: string } | null>(null);
@@ -1462,14 +1521,104 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
   // Preload user pools in the background when component mounts (if not already preloaded)
   // This ensures the dropdown feels instant when opened
   useEffect(() => {
-    // Only load if we don't have preloaded data
-    if (!preloadedUserPools || preloadedUserPools.length === 0) {
-      // Start loading user pools immediately in the background
-      // Don't wait for enableSocialAuth to be true
-      // Pass false to avoid showing loading state on mount
+    console.log('[AuthSection] 🟢 Preload effect:', {
+      hasPreloaded: !!(preloadedUserPools && preloadedUserPools.length > 0),
+      preloadedCount: preloadedUserPools?.length || 0,
+      existingUserPoolsCount: existingUserPools.length,
+    });
+    
+    // Initialize with preloaded pools if available
+    if (preloadedUserPools && preloadedUserPools.length > 0) {
+      console.log('[AuthSection] ✅ Using preloaded user pools:', preloadedUserPools.length);
+      setExistingUserPools(preloadedUserPools);
+    } else if (existingUserPools.length === 0) {
+      // Only load if we don't have preloaded data and existing pools are empty
+      console.log('[AuthSection] 📥 Loading user pools from API...');
       loadUserPools(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preloadedUserPools]);
+
+  // Track selected userPoolId (like edit mode)
+  const [selectedUserPoolId, setSelectedUserPoolId] = useState<string | undefined>(config.userPoolId);
+  
+  // Look up userPool by name when userPools load or userGroupName changes
+  // This handles the default "my-api-users" case when creating a new project
+  useEffect(() => {
+    const currentUserGroupName = config.userGroupName?.trim();
+    
+    if (!currentUserGroupName || existingUserPools.length === 0) {
+      return;
+    }
+    
+    // Look for matching userPool by name
+    const matchingPool = existingUserPools.find(pool => pool.name === currentUserGroupName);
+    
+    if (matchingPool && matchingPool.id !== selectedUserPoolId) {
+      // Set selectedUserPoolId and immediately update config and load data
+      setSelectedUserPoolId(matchingPool.id);
+      
+      // Update config immediately - enable social auth since userPools are for OAuth
+      updateConfig({ 
+        userPoolId: matchingPool.id, 
+        useUserPool: true,
+        enableSocialAuth: true, // Auto-enable social auth when userPool is selected
+      });
+      
+      // Load ALL data immediately (don't wait for state update)
+      const loadAllData = async () => {
+        try {
+          // Get AppClients (use preloaded if available)
+          let clients: AppClient[] = [];
+          if (preloadedAppClients?.[matchingPool.id]) {
+            clients = preloadedAppClients[matchingPool.id];
+          } else {
+            const clientsResponse = await api.listAppClients(matchingPool.id);
+            clients = Array.isArray(clientsResponse) ? clientsResponse : [];
+          }
+          
+          // Auto-select first AppClient if none selected
+          if (clients.length > 0 && !config.appClientId) {
+            const defaultClient = clients.find(c => c.id === config.defaultAppClient) || clients[0];
+            updateConfig({ 
+              appClientId: defaultClient.id,
+              defaultAppClient: config.defaultAppClient || defaultClient.id,
+            });
+          }
+          
+          // Load details and providers for all AppClients
+          for (const client of clients) {
+            // Load AppClient details
+            loadAppClientDetails(matchingPool.id, client.id);
+            
+            // Load providers (use preloaded if available)
+            const providerKey = `${matchingPool.id}-${client.id}`;
+            if (preloadedProviders?.[providerKey]) {
+              const providers = preloadedProviders[providerKey];
+              if (providers.length > 0 && (client.id === config.appClientId || (!config.appClientId && client === clients[0]))) {
+                const provider = providers[0] as SocialProviderResponse;
+                setThirdPartyProvider(provider);
+                updateConfig({
+                  bringOwnProvider: true,
+                  socialProvider: (provider.type || 'github') as 'github' | 'google' | 'microsoft' | 'facebook' | 'auth0' | 'other',
+                  identityProviderDomain: provider.domain || '',
+                  identityProviderClientId: provider.client_id || provider.clientId || '',
+                });
+              }
+            } else if ((isEditMode || config.useUserPool) && !config.bringOwnProvider) {
+              // Load providers from API
+              loadThirdPartyProvider(matchingPool.id, client.id);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading AppClients and providers:', error);
+        }
+      };
+      
+      loadAllData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.userGroupName, existingUserPools]);
 
   // In edit mode, populate userGroupName from project's user pool
   // Only sync on initial load, not when existingUserPools changes (to avoid reverting user changes)
@@ -1507,23 +1656,84 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
     hasSyncedUserGroupNameRef.current = false;
   }, [project]);
 
-  // Load AppClient details when UserPool is configured (either from selection or from existing config)
+  // When selectedUserPoolId changes, update config and load ALL data (exactly like edit mode)
   useEffect(() => {
-    // Load details if we have userPoolId and appClientId (either from selection or from existing config)
-    if (config.userPoolId && config.appClientId) {
-      loadAppClientDetails(config.userPoolId, config.appClientId);
-      // Only load third-party provider from API if bringOwnProvider is not already set
-      // If bringOwnProvider is true, it means third_party_provider_config was already loaded from config
-      // and we don't want to override it by fetching from the API
-      if ((isEditMode || config.useUserPool) && !config.bringOwnProvider) {
-        loadThirdPartyProvider(config.userPoolId, config.appClientId);
-      }
+    if (selectedUserPoolId) {
+      console.log('[AuthSection] 📥 selectedUserPoolId changed, loading all data:', selectedUserPoolId);
+      
+      // Update config - enable social auth since userPools are for OAuth
+      updateConfig({ 
+        userPoolId: selectedUserPoolId, 
+        useUserPool: true,
+        enableSocialAuth: true, // Auto-enable social auth when userPool is selected
+      });
+      
+      // Load ALL data for this pool (AppClients, details, providers)
+      const loadAllData = async () => {
+        try {
+          console.log('[AuthSection] 📥 Loading AppClients for pool:', selectedUserPoolId);
+          
+          // Get AppClients (use preloaded if available)
+          let clients: AppClient[] = [];
+          if (preloadedAppClients?.[selectedUserPoolId]) {
+            clients = preloadedAppClients[selectedUserPoolId];
+            console.log('[AuthSection] ✅ Using preloaded AppClients:', clients.length);
+          } else {
+            console.log('[AuthSection] 📥 Fetching AppClients from API...');
+            const clientsResponse = await api.listAppClients(selectedUserPoolId);
+            clients = Array.isArray(clientsResponse) ? clientsResponse : [];
+            console.log('[AuthSection] ✅ AppClients loaded from API:', clients.length);
+          }
+          
+          // Auto-select first AppClient if none selected
+          if (clients.length > 0 && !config.appClientId) {
+            const defaultClient = clients.find(c => c.id === config.defaultAppClient) || clients[0];
+            console.log('[AuthSection] ✅ Auto-selecting AppClient:', defaultClient.id);
+            updateConfig({ 
+              appClientId: defaultClient.id,
+              defaultAppClient: config.defaultAppClient || defaultClient.id,
+            });
+          }
+          
+          // Load details and providers for all AppClients
+          for (const client of clients) {
+            console.log('[AuthSection] 📥 Loading details and providers for AppClient:', client.id);
+            
+            // Load AppClient details
+            loadAppClientDetails(selectedUserPoolId, client.id);
+            
+            // Load providers (use preloaded if available)
+            const providerKey = `${selectedUserPoolId}-${client.id}`;
+            if (preloadedProviders?.[providerKey]) {
+              const providers = preloadedProviders[providerKey];
+              console.log('[AuthSection] ✅ Using preloaded providers:', providers.length);
+              if (providers.length > 0 && (client.id === config.appClientId || (!config.appClientId && client === clients[0]))) {
+                const provider = providers[0] as SocialProviderResponse;
+                setThirdPartyProvider(provider);
+                updateConfig({
+                  bringOwnProvider: true,
+                  socialProvider: (provider.type || 'github') as 'github' | 'google' | 'microsoft' | 'facebook' | 'auth0' | 'other',
+                  identityProviderDomain: provider.domain || '',
+                  identityProviderClientId: provider.client_id || provider.clientId || '',
+                });
+              }
+            } else if ((isEditMode || config.useUserPool) && !config.bringOwnProvider) {
+              console.log('[AuthSection] 📥 Loading providers from API...');
+              // Load providers from API
+              loadThirdPartyProvider(selectedUserPoolId, client.id);
+            }
+          }
+        } catch (error) {
+          console.error('[AuthSection] ❌ Error loading AppClients and providers:', error);
+        }
+      };
+      
+      loadAllData();
     } else {
-      setAppClientDetails(null);
-      setThirdPartyProvider(null);
+      console.log('[AuthSection] ⏭️ No selectedUserPoolId, skipping data load');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.userPoolId, config.appClientId, isEditMode, config.useUserPool, config.bringOwnProvider]);
+  }, [selectedUserPoolId, preloadedAppClients, preloadedProviders]);
 
   const loadUserPools = async (showLoading = false) => {
     // Only show loading state if explicitly requested (e.g., first load)
@@ -1532,10 +1742,16 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
       setLoadingUserPools(true);
     }
     try {
+      console.log('[AuthSection] 📥 Fetching user pools from API...');
       const pools = await api.listUserPools();
-      setExistingUserPools(Array.isArray(pools) ? pools : []);
+      const poolsArray = Array.isArray(pools) ? pools : [];
+      console.log('[AuthSection] ✅ User pools loaded:', {
+        count: poolsArray.length,
+        names: poolsArray.map(p => p.name),
+      });
+      setExistingUserPools(poolsArray);
     } catch (error) {
-      console.error('Error loading user pools:', error);
+      console.error('[AuthSection] ❌ Error loading user pools:', error);
       // Only clear pools if this was the initial load
       if (showLoading) {
         setExistingUserPools([]);
@@ -1731,7 +1947,11 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
         <div className="relative">
           <Input
             id="userGroupName"
-            placeholder="Enter a unique name (e.g., my-api-users)"
+            placeholder={
+              loadingUserPools || (loadingAuthData && !config.userGroupName)
+                ? "Loading..."
+                : "Enter a unique name (e.g., my-api-users)"
+            }
             value={config.userGroupName}
             onChange={(e) => updateConfig({ userGroupName: e.target.value })}
             className="pr-10"
@@ -1847,27 +2067,41 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                 loadingAuthData={loadingAuthData}
               />
             ) : (
-              /* Create Mode: Third-party OAuth Provider Configuration */
+              /* Create Mode: Show UserPool data if selected, otherwise show third-party provider config */
               <div className="space-y-4">
-                {/* Bring Your Own Provider Toggle */}
-                <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                  <div className="space-y-1">
-                    <Label htmlFor="bringOwnProvider" className="text-sm font-medium">
-                      Bring My Own OAuth Provider
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Use your own Google, Auth0, or other OAuth provider 
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Leave off to use default APIBlaze GitHub
-                    </p>
-                  </div>
-                  <Switch
-                    id="bringOwnProvider"
-                    checked={config.bringOwnProvider}
-                    onCheckedChange={(checked) => updateConfig({ bringOwnProvider: checked })}
+                {/* Show UserPool/AppClient/Provider info when useUserPool is true */}
+                {config.useUserPool && config.userPoolId ? (
+                  <EditModeManagementUI
+                    config={config}
+                    updateConfig={updateConfig}
+                    project={project}
+                    onProjectUpdate={onProjectUpdate}
+                    preloadedUserPools={preloadedUserPools}
+                    preloadedAppClients={preloadedAppClients}
+                    preloadedProviders={preloadedProviders}
+                    loadingAuthData={loadingAuthData}
                   />
-                </div>
+                ) : (
+                  <>
+                    {/* Bring Your Own Provider Toggle */}
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                      <div className="space-y-1">
+                        <Label htmlFor="bringOwnProvider" className="text-sm font-medium">
+                          Bring My Own OAuth Provider
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Use your own Google, Auth0, or other OAuth provider 
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Leave off to use default APIBlaze GitHub
+                        </p>
+                      </div>
+                      <Switch
+                        id="bringOwnProvider"
+                        checked={config.bringOwnProvider}
+                        onCheckedChange={(checked) => updateConfig({ bringOwnProvider: checked })}
+                      />
+                    </div>
 
                 {/* Provider Configuration - Two Column Layout */}
                 {config.bringOwnProvider && (
@@ -2035,6 +2269,8 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                       </Card>
                     </div>
                   </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
