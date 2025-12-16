@@ -64,8 +64,9 @@ export async function POST(request: NextRequest) {
       console.log('[create-with-default-github] Created new UserPool:', {
         id: userPoolId,
         name: userPoolName,
-        enable_social_auth: enable_social_auth,
-        enable_api_key_auth: enable_api_key_auth,
+        enableSocialAuth: enableSocialAuth,
+        enableApiKeyAuth: enableApiKeyAuth,
+        bringMyOwnOAuth: bringMyOwnOAuth,
       });
     }
 
