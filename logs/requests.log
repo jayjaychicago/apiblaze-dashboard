@@ -1,3 +1,139 @@
+2025-12-16 06:09:36 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers [32m200[0m 9ms
+2025-12-16 06:09:36 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:36 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers
+2025-12-16 06:09:36 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers - Ok @ 12/16/2025, 6:09:36 AM
+2025-12-16 06:09:36 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj [32m200[0m 6ms
+2025-12-16 06:09:36 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:36 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj
+2025-12-16 06:09:36 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj - Ok @ 12/16/2025, 6:09:36 AM
+2025-12-16 06:09:35 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw [32m200[0m 82ms
+2025-12-16 06:09:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:35 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw
+2025-12-16 06:09:35 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw - Ok @ 12/16/2025, 6:09:35 AM
+2025-12-16 06:09:35 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers [32m200[0m 11ms
+2025-12-16 06:09:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:35 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers
+2025-12-16 06:09:35 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers - Ok @ 12/16/2025, 6:09:35 AM
+2025-12-16 06:09:35 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj [32m200[0m 7ms
+2025-12-16 06:09:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:35 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj
+2025-12-16 06:09:35 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj - Ok @ 12/16/2025, 6:09:35 AM
+2025-12-16 06:09:35 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients [32m200[0m 6ms
+2025-12-16 06:09:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:35 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients
+2025-12-16 06:09:35 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients - Ok @ 12/16/2025, 6:09:35 AM
+2025-12-16 06:09:35 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw [32m200[0m 46ms
+2025-12-16 06:09:35 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:35 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw
+2025-12-16 06:09:35 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw - Ok @ 12/16/2025, 6:09:34 AM
+2025-12-16 06:09:34 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers [32m200[0m 10ms
+2025-12-16 06:09:34 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:34 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers
+2025-12-16 06:09:34 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers - Ok @ 12/16/2025, 6:09:34 AM
+2025-12-16 06:09:34 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj [32m200[0m 6ms
+2025-12-16 06:09:34 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:34 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj
+2025-12-16 06:09:34 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj - Ok @ 12/16/2025, 6:09:34 AM
+2025-12-16 06:09:34 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients [32m200[0m 6ms
+2025-12-16 06:09:34 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:34 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients
+2025-12-16 06:09:34 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients - Ok @ 12/16/2025, 6:09:34 AM
+2025-12-16 06:09:34 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw [32m200[0m 47ms
+2025-12-16 06:09:34 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:34 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw
+2025-12-16 06:09:34 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw - Ok @ 12/16/2025, 6:09:33 AM
+2025-12-16 06:09:34 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers [32m200[0m 102ms
+2025-12-16 06:09:34 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:34 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers
+2025-12-16 06:09:33 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj/providers - Ok @ 12/16/2025, 6:09:33 AM
+2025-12-16 06:09:33 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj [32m200[0m 8ms
+2025-12-16 06:09:33 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:33 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj
+2025-12-16 06:09:33 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj - Ok @ 12/16/2025, 6:09:33 AM
+2025-12-16 06:09:33 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients [32m200[0m 6ms
+2025-12-16 06:09:33 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:33 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients
+2025-12-16 06:09:33 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients - Ok @ 12/16/2025, 6:09:33 AM
+2025-12-16 06:09:31 |   (log) --> GET /user-pools [32m200[0m 66ms
+2025-12-16 06:09:31 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:31 |   (log) <-- GET /user-pools
+2025-12-16 06:09:31 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/16/2025, 6:09:31 AM
+2025-12-16 06:09:31 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw [32m200[0m 49ms
+2025-12-16 06:09:31 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:31 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw
+2025-12-16 06:09:31 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw - Ok @ 12/16/2025, 6:09:31 AM
+2025-12-16 06:09:31 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj [32m200[0m 5ms
+2025-12-16 06:09:31 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:30 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj
+2025-12-16 06:09:30 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj - Ok @ 12/16/2025, 6:09:30 AM
+2025-12-16 06:09:30 |   (log) --> GET /user-pools/pool_1765863317172_45ixlug/app-clients/client_1765863320178_1j358lb [32m200[0m 8ms
+2025-12-16 06:09:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:30 |   (log) <-- GET /user-pools/pool_1765863317172_45ixlug/app-clients/client_1765863320178_1j358lb
+2025-12-16 06:09:30 | GET https://internalapi.apiblaze.com/user-pools/pool_1765863317172_45ixlug/app-clients/client_1765863320178_1j358lb - Ok @ 12/16/2025, 6:09:30 AM
+2025-12-16 06:09:30 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients [32m200[0m 5ms
+2025-12-16 06:09:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:30 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients
+2025-12-16 06:09:30 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients - Ok @ 12/16/2025, 6:09:30 AM
+2025-12-16 06:09:30 |   (log) --> GET /user-pools [32m200[0m 73ms
+2025-12-16 06:09:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:30 |   (log) <-- GET /user-pools
+2025-12-16 06:09:30 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/16/2025, 6:09:30 AM
+2025-12-16 06:09:30 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw [32m200[0m 45ms
+2025-12-16 06:09:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:30 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw
+2025-12-16 06:09:30 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw - Ok @ 12/16/2025, 6:09:30 AM
+2025-12-16 06:09:30 |   (log) --> GET /user-pools/pool_1765863317172_45ixlug [32m200[0m 48ms
+2025-12-16 06:09:30 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:30 |   (log) <-- GET /user-pools/pool_1765863317172_45ixlug
+2025-12-16 06:09:30 | GET https://internalapi.apiblaze.com/user-pools/pool_1765863317172_45ixlug - Ok @ 12/16/2025, 6:09:30 AM
+2025-12-16 06:09:29 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj [32m200[0m 100ms
+2025-12-16 06:09:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:29 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj
+2025-12-16 06:09:29 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients/client_1765865044701_d1xx3pj - Ok @ 12/16/2025, 6:09:29 AM
+2025-12-16 06:09:29 |   (log) --> GET /user-pools/pool_1765863317172_45ixlug/app-clients/client_1765863320178_1j358lb [32m200[0m 78ms
+2025-12-16 06:09:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:29 |   (log) <-- GET /user-pools/pool_1765863317172_45ixlug/app-clients/client_1765863320178_1j358lb
+2025-12-16 06:09:29 | GET https://internalapi.apiblaze.com/user-pools/pool_1765863317172_45ixlug/app-clients/client_1765863320178_1j358lb - Ok @ 12/16/2025, 6:09:29 AM
+2025-12-16 06:09:29 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients [32m200[0m 6ms
+2025-12-16 06:09:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:29 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients
+2025-12-16 06:09:29 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients - Ok @ 12/16/2025, 6:09:29 AM
+2025-12-16 06:09:29 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw [32m200[0m 43ms
+2025-12-16 06:09:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:29 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw
+2025-12-16 06:09:29 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw - Ok @ 12/16/2025, 6:09:29 AM
+2025-12-16 06:09:29 |   (log) --> GET /user-pools/pool_1765863317172_45ixlug [32m200[0m 41ms
+2025-12-16 06:09:29 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:29 |   (log) <-- GET /user-pools/pool_1765863317172_45ixlug
+2025-12-16 06:09:29 | GET https://internalapi.apiblaze.com/user-pools/pool_1765863317172_45ixlug - Ok @ 12/16/2025, 6:09:29 AM
+2025-12-16 06:09:27 |   (log) --> GET /user-pools [32m200[0m 93ms
+2025-12-16 06:09:27 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:27 |   (log) <-- GET /user-pools
+2025-12-16 06:09:27 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/16/2025, 6:09:27 AM
+2025-12-16 06:09:27 |   (log) --> GET /user-pools/pool_1765863317172_45ixlug/app-clients [32m200[0m 6ms
+2025-12-16 06:09:27 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:27 |   (log) <-- GET /user-pools/pool_1765863317172_45ixlug/app-clients
+2025-12-16 06:09:27 | GET https://internalapi.apiblaze.com/user-pools/pool_1765863317172_45ixlug/app-clients - Ok @ 12/16/2025, 6:09:27 AM
+2025-12-16 06:09:27 |   (log) --> GET /user-pools/pool_1765865044203_zwbgwnw/app-clients [32m200[0m 179ms
+2025-12-16 06:09:27 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:27 |   (log) <-- GET /user-pools/pool_1765865044203_zwbgwnw/app-clients
+2025-12-16 06:09:27 | GET https://internalapi.apiblaze.com/user-pools/pool_1765865044203_zwbgwnw/app-clients - Ok @ 12/16/2025, 6:09:26 AM
+2025-12-16 06:09:27 |   (log) --> GET /user-pools [32m200[0m 72ms
+2025-12-16 06:09:27 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:27 |   (log) <-- GET /user-pools
+2025-12-16 06:09:27 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/16/2025, 6:09:26 AM
+2025-12-16 06:09:27 |   (log) --> GET /user-pools/pool_1765863317172_45ixlug/app-clients [32m200[0m 138ms
+2025-12-16 06:09:26 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:26 |   (log) <-- GET /user-pools/pool_1765863317172_45ixlug/app-clients
+2025-12-16 06:09:26 | GET https://internalapi.apiblaze.com/user-pools/pool_1765863317172_45ixlug/app-clients - Ok @ 12/16/2025, 6:09:26 AM
+2025-12-16 06:09:23 |   (log) --> GET /user-pools [32m200[0m 85ms
+2025-12-16 06:09:23 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:23 |   (log) <-- GET /user-pools
+2025-12-16 06:09:23 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/16/2025, 6:09:23 AM
+2025-12-16 06:09:21 |   (log) --> GET /user-pools [32m200[0m 375ms
+2025-12-16 06:09:21 |   (log) [Auth] JWT verified for user: jayjaychicago (julienpmjacquet@gmail.com)
+2025-12-16 06:09:21 |   (log) <-- GET /user-pools
+2025-12-16 06:09:21 | GET https://internalapi.apiblaze.com/user-pools - Ok @ 12/16/2025, 6:09:21 AM
 2025-12-16 06:04:08 |   (log) --> GET /projects?page=1&limit=12&team_id=team_jayjaychicago&status=active [32m200[0m 105ms
 2025-12-16 06:04:08 |   (log) [listProxies] Returning 8 projects (total: 8, page: 1, limit: 12)
 2025-12-16 06:04:08 |   (log) [listProxies] Found 8 projects in KV for user jayjaychicago

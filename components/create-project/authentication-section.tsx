@@ -339,6 +339,11 @@ function EditModeManagementUI({
   const userManuallyChangedUserPoolRef = useRef(false); // Track if user has manually changed the userPool
   const previousUserGroupNameRef = useRef<string | undefined>(undefined); // Start undefined to ensure lookup happens on first render
   const selectedUserPoolIdRef = useRef<string | undefined>(selectedUserPoolId);
+  
+  // Track previous toggle values to prevent triggering update useEffects when syncing from userPool
+  const previousEnableSocialAuthRef = useRef<boolean | undefined>(config.enableSocialAuth);
+  const previousEnableApiKeyRef = useRef<boolean | undefined>(config.enableApiKey);
+  const previousBringOwnProviderRef = useRef<boolean | undefined>(config.bringOwnProvider);
 
   // Keep ref in sync with state
   useEffect(() => {
@@ -576,11 +581,49 @@ function EditModeManagementUI({
         isChange: config.userPoolId !== selectedUserPoolId,
         timestamp: new Date().toISOString(),
       });
+      
+      // Fetch userPool details to sync toggles
+      const loadUserPoolAndSyncToggles = async () => {
+        try {
+          const userPool = await api.getUserPool(selectedUserPoolId);
+          console.log('[AuthSection] 📥 Loaded userPool details:', {
+            id: userPool.id,
+            enableSocialAuth: userPool.enableSocialAuth,
+            enableApiKeyAuth: userPool.enableApiKeyAuth,
+            bringMyOwnOAuth: userPool.bringMyOwnOAuth,
+          });
+          
+          // Sync toggles with userPool values
+          updateConfig({ 
+            userPoolId: selectedUserPoolId, 
+            useUserPool: true,
+            enableSocialAuth: userPool.enableSocialAuth || false,
+            enableApiKeyAuth: userPool.enableApiKeyAuth || false,
+            bringOwnProvider: userPool.bringMyOwnOAuth || false,
+          });
+          
+          // Update refs to prevent triggering the update useEffects
+          previousEnableSocialAuthRef.current = userPool.enableSocialAuth || false;
+          previousEnableApiKeyRef.current = userPool.enableApiKeyAuth || false;
+          previousBringOwnProviderRef.current = userPool.bringMyOwnOAuth || false;
+          
+          console.log('[AuthSection] ✅ Synced toggles from userPool:', {
+            enableSocialAuth: userPool.enableSocialAuth || false,
+            enableApiKeyAuth: userPool.enableApiKeyAuth || false,
+            bringOwnProvider: userPool.bringMyOwnOAuth || false,
+          });
+        } catch (error) {
+          console.error('[AuthSection] ❌ Error loading userPool details:', error);
+          // Still update config with userPoolId even if fetch fails
+          updateConfig({ userPoolId: selectedUserPoolId, useUserPool: true });
+        }
+      };
+      
+      loadUserPoolAndSyncToggles();
+      
       // Mark that user has made a change - prevent project config from overwriting
       isInitialLoadRef.current = false;
       userManuallyChangedUserPoolRef.current = true; // CRITICAL: Mark that user manually changed it
-      updateConfig({ userPoolId: selectedUserPoolId, useUserPool: true });
-      console.log('[AuthSection] ✅ Config updated with userPoolId:', selectedUserPoolId, '- User manually changed, will not be overwritten by project config');
     } else {
       console.log('[AuthSection] 🔄 USERPOOL CLEARED - Removing userPoolId from config:', {
         previousConfigUserPoolId: config.userPoolId,
@@ -1511,6 +1554,7 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
   }, [config.enableSocialAuth]);
 
   // Track initial enableSocialAuth, enableApiKey, and bringOwnProvider to avoid updating on mount
+  // These refs are used to prevent triggering update useEffects when syncing from userPool
   const previousEnableSocialAuthRef = useRef<boolean | undefined>(config.enableSocialAuth);
   const previousEnableApiKeyRef = useRef<boolean | undefined>(config.enableApiKey);
   const previousBringOwnProviderRef = useRef<boolean | undefined>(config.bringOwnProvider);
@@ -1652,12 +1696,36 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
       // Set selectedUserPoolId and immediately update config and load data
       setSelectedUserPoolId(matchingPool.id);
       
-      // Update config immediately - set useUserPool but don't force enableSocialAuth
-      // User can toggle enableSocialAuth themselves if they want to use the userPool
-      updateConfig({ 
-        userPoolId: matchingPool.id, 
-        useUserPool: true,
-      });
+      // Load userPool details to sync toggles
+      const loadUserPoolAndSyncToggles = async () => {
+        try {
+          const userPool = await api.getUserPool(matchingPool.id);
+          console.log('[AuthSection] 📥 Loaded userPool details from name match:', {
+            id: userPool.id,
+            enableSocialAuth: userPool.enableSocialAuth,
+            enableApiKeyAuth: userPool.enableApiKeyAuth,
+            bringMyOwnOAuth: userPool.bringMyOwnOAuth,
+          });
+          
+          // Update config with userPoolId and sync toggles
+          updateConfig({ 
+            userPoolId: matchingPool.id, 
+            useUserPool: true,
+            enableSocialAuth: userPool.enableSocialAuth || false,
+            enableApiKeyAuth: userPool.enableApiKeyAuth || false,
+            bringOwnProvider: userPool.bringMyOwnOAuth || false,
+          });
+        } catch (error) {
+          console.error('[AuthSection] ❌ Error loading userPool details:', error);
+          // Still update config with userPoolId even if fetch fails
+          updateConfig({ 
+            userPoolId: matchingPool.id, 
+            useUserPool: true,
+          });
+        }
+      };
+      
+      loadUserPoolAndSyncToggles();
       
       // Load ALL data immediately (don't wait for state update)
       const loadAllData = async () => {
@@ -1729,12 +1797,41 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
           : existingUserPools;
         
         const userPool = allPools.find(pool => pool.id === userPoolId);
-        if (userPool && userPool.name !== config.userGroupName) {
-          // Only update if the name is different to avoid unnecessary updates
-          updateConfig({ userGroupName: userPool.name });
-          hasSyncedUserGroupNameRef.current = true;
-        } else if (userPool) {
-          // Even if names match, mark as synced
+        if (userPool) {
+          // Load full userPool details to sync toggles
+          const loadUserPoolDetails = async () => {
+            try {
+              const fullUserPool = await api.getUserPool(userPoolId);
+              console.log('[AuthSection] 📥 Loaded userPool details in edit mode:', {
+                id: fullUserPool.id,
+                enableSocialAuth: fullUserPool.enableSocialAuth,
+                enableApiKeyAuth: fullUserPool.enableApiKeyAuth,
+                bringMyOwnOAuth: fullUserPool.bringMyOwnOAuth,
+              });
+              
+              // Sync toggles and userGroupName
+              const updates: Partial<ProjectConfig> = {
+                userGroupName: userPool.name !== config.userGroupName ? userPool.name : config.userGroupName,
+                enableSocialAuth: fullUserPool.enableSocialAuth || false,
+                enableApiKeyAuth: fullUserPool.enableApiKeyAuth || false,
+                bringOwnProvider: fullUserPool.bringMyOwnOAuth || false,
+              };
+              updateConfig(updates);
+              
+              // Update refs to prevent triggering the update useEffects
+              previousEnableSocialAuthRef.current = fullUserPool.enableSocialAuth || false;
+              previousEnableApiKeyRef.current = fullUserPool.enableApiKeyAuth || false;
+              previousBringOwnProviderRef.current = fullUserPool.bringMyOwnOAuth || false;
+            } catch (error) {
+              console.error('[AuthSection] ❌ Error loading userPool details in edit mode:', error);
+              // Still update userGroupName even if fetch fails
+              if (userPool.name !== config.userGroupName) {
+                updateConfig({ userGroupName: userPool.name });
+              }
+            }
+          };
+          
+          loadUserPoolDetails();
           hasSyncedUserGroupNameRef.current = true;
         }
       } else {
@@ -1755,11 +1852,36 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
     if (selectedUserPoolId) {
       console.log('[AuthSection] 📥 selectedUserPoolId changed, loading all data:', selectedUserPoolId);
       
-      // Update config - set useUserPool but don't force enableSocialAuth
-      updateConfig({ 
-        userPoolId: selectedUserPoolId, 
-        useUserPool: true,
-      });
+      // Load userPool details to sync toggles
+      const loadUserPoolAndSyncToggles = async () => {
+        try {
+          const userPool = await api.getUserPool(selectedUserPoolId);
+          console.log('[AuthSection] 📥 Loaded userPool details:', {
+            id: userPool.id,
+            enableSocialAuth: userPool.enableSocialAuth,
+            enableApiKeyAuth: userPool.enableApiKeyAuth,
+            bringMyOwnOAuth: userPool.bringMyOwnOAuth,
+          });
+          
+          // Update config with userPoolId and sync toggles
+          updateConfig({ 
+            userPoolId: selectedUserPoolId, 
+            useUserPool: true,
+            enableSocialAuth: userPool.enableSocialAuth || false,
+            enableApiKeyAuth: userPool.enableApiKeyAuth || false,
+            bringOwnProvider: userPool.bringMyOwnOAuth || false,
+          });
+        } catch (error) {
+          console.error('[AuthSection] ❌ Error loading userPool details:', error);
+          // Still update config with userPoolId even if fetch fails
+          updateConfig({ 
+            userPoolId: selectedUserPoolId, 
+            useUserPool: true,
+          });
+        }
+      };
+      
+      loadUserPoolAndSyncToggles();
       
       // Load ALL data for this pool (AppClients, details, providers)
       const loadAllData = async () => {
