@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Zap, Plus, GitBranch, Globe, Users, Rocket, Bot, UserCog } from 'lucide-react';
+import { Zap, Plus, GitBranch, Globe, Users, Rocket, Bot, UserCog, Shield } from 'lucide-react';
 import { UserMenu } from '@/components/user-menu';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -202,12 +202,12 @@ export default function DashboardPage() {
             
             <Card>
               <CardHeader>
-                <Users className="w-8 h-8 text-green-600 mb-2" />
-                <CardTitle className="text-lg">Team Collaboration</CardTitle>
+                <Shield className="w-8 h-8 text-green-600 mb-2" />
+                <CardTitle className="text-lg">Fine-Grained Policies</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  Invite team members and manage API projects together with role-based access.
+                  Easily enforce policies allowing fine-grained authorization. For example: POST book/id/123 with {"user":"John"} allows John to book, but GET book/id/123 with {"user":"Bob"} returns "Sorry, only John or an admin can access book id 123".
                 </CardDescription>
               </CardContent>
             </Card>
