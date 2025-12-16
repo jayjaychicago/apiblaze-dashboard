@@ -598,7 +598,7 @@ function EditModeManagementUI({
             userPoolId: selectedUserPoolId, 
             useUserPool: true,
             enableSocialAuth: userPool.enableSocialAuth || false,
-            enableApiKeyAuth: userPool.enableApiKeyAuth || false,
+            enableApiKey: userPool.enableApiKeyAuth || false,
             bringOwnProvider: userPool.bringMyOwnOAuth || false,
           });
           
@@ -1712,7 +1712,7 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
             userPoolId: matchingPool.id, 
             useUserPool: true,
             enableSocialAuth: userPool.enableSocialAuth || false,
-            enableApiKeyAuth: userPool.enableApiKeyAuth || false,
+            enableApiKey: userPool.enableApiKeyAuth || false,
             bringOwnProvider: userPool.bringMyOwnOAuth || false,
           });
         } catch (error) {
@@ -1813,7 +1813,7 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
               const updates: Partial<ProjectConfig> = {
                 userGroupName: userPool.name !== config.userGroupName ? userPool.name : config.userGroupName,
                 enableSocialAuth: fullUserPool.enableSocialAuth || false,
-                enableApiKeyAuth: fullUserPool.enableApiKeyAuth || false,
+                enableApiKey: fullUserPool.enableApiKeyAuth || false,
                 bringOwnProvider: fullUserPool.bringMyOwnOAuth || false,
               };
               updateConfig(updates);
@@ -1868,7 +1868,7 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
             userPoolId: selectedUserPoolId, 
             useUserPool: true,
             enableSocialAuth: userPool.enableSocialAuth || false,
-            enableApiKeyAuth: userPool.enableApiKeyAuth || false,
+            enableApiKey: userPool.enableApiKeyAuth || false,
             bringOwnProvider: userPool.bringMyOwnOAuth || false,
           });
         } catch (error) {
