@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { 
   Dialog, 
@@ -24,6 +24,7 @@ import { ProjectConfig } from './create-project/types';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { fetchGitHubAPI } from '@/lib/github-api';
+import { deleteProject } from '@/lib/api/projects';
 import type { Project } from '@/types/project';
 import type { UserPool, AppClient, SocialProvider as UserPoolSocialProvider } from '@/types/user-pool';
 
@@ -99,6 +100,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   const [activeTab, setActiveTab] = useState('general');
   const [isDeploying, setIsDeploying] = useState(false);
   const [currentProject, setCurrentProject] = useState<Project | null>(project || null);
+  const isDeployingRef = useRef(false); // Track deployment state to prevent config reset
   const [preloadedUserPools, setPreloadedUserPools] = useState<UserPool[]>([]);
   const [preloadedGitHubRepos, setPreloadedGitHubRepos] = useState<Array<{ id: number; name: string; full_name: string; description: string; default_branch: string; updated_at: string; language: string; stargazers_count: number }>>([]);
   const [preloadedAppClients, setPreloadedAppClients] = useState<Record<string, AppClient[]>>({}); // keyed by userPoolId
@@ -238,8 +240,9 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
   }, [project]);
 
   // Reset config when project changes or dialog opens/closes
+  // BUT NOT during deployment (to preserve user's changes)
   useEffect(() => {
-    if (open) {
+    if (open && !isDeployingRef.current) {
       setConfig(getInitialConfig());
     }
   }, [open, currentProject, project]);
@@ -420,13 +423,27 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
 
   const handleDeploy = async () => {
     setIsDeploying(true);
-    console.log('[CreateProject] Starting deployment with config:', {
+    isDeployingRef.current = true; // Prevent config reset during deployment
+    
+    // CRITICAL: Log the config state BEFORE deployment starts
+    console.log('[CreateProject] 🚀 DEPLOYMENT STARTING - Config state snapshot:', {
       projectName: config.projectName,
       enableSocialAuth: config.enableSocialAuth,
       useUserPool: config.useUserPool,
       userPoolId: config.userPoolId,
       appClientId: config.appClientId,
       bringOwnProvider: config.bringOwnProvider,
+      currentProjectExists: !!currentProject,
+      currentProjectUserPoolId: currentProject ? (currentProject.config as Record<string, unknown>)?.user_pool_id : undefined,
+      projectPropUserPoolId: project ? (project.config as Record<string, unknown>)?.user_pool_id : undefined,
+      timestamp: new Date().toISOString(),
+    });
+    
+    console.log('[CreateProject] 🔍 COMPARISON - userPoolId values:', {
+      'config.userPoolId (should be NEW)': config.userPoolId,
+      'currentProject.config.user_pool_id (OLD)': currentProject ? (currentProject.config as Record<string, unknown>)?.user_pool_id : 'N/A',
+      'project.config.user_pool_id (OLD)': project ? (project.config as Record<string, unknown>)?.user_pool_id : 'N/A',
+      'Are they different?': config.userPoolId !== (currentProject ? (currentProject.config as Record<string, unknown>)?.user_pool_id : undefined),
     });
 
     try {
@@ -442,26 +459,51 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         return;
       }
 
-      // Check if project already exists BEFORE creating any resources
-      // This prevents creating userpools/app-clients/providers if project creation will fail
       const subdomain = config.projectName.toLowerCase().replace(/[^a-z0-9]/g, '');
       const apiVersion = config.apiVersion || '1.0.0';
-      try {
-        const checkResult = await api.checkProjectExists(config.projectName, subdomain, apiVersion);
-        
-        if (checkResult.exists) {
+
+      // If editing an existing project, delete it first before recreating with new config
+      // This allows updating the userPool and other settings
+      if (currentProject) {
+        try {
+          console.log('[CreateProject] Deleting existing project before recreating:', {
+            projectId: currentProject.project_id,
+            apiVersion: currentProject.api_version,
+          });
+          await deleteProject(currentProject.project_id, currentProject.api_version);
+          console.log('[CreateProject] Project deleted successfully');
+          // Don't clear currentProject during deployment - it would trigger config reset
+          // We'll clear it after successful deployment instead
+        } catch (deleteError) {
+          console.error('[CreateProject] Error deleting project:', deleteError);
           toast({
-            title: 'Project Already Exists',
-            description: `A project with the name "${config.projectName}" and version "${apiVersion}" already exists. Please choose a different name or version.`,
+            title: 'Deployment Failed',
+            description: `Failed to delete existing project: ${deleteError instanceof Error ? deleteError.message : 'Unknown error'}`,
             variant: 'destructive',
           });
-          setActiveTab('general');
           setIsDeploying(false);
           return;
         }
-      } catch (checkError) {
-        console.warn('[CreateProject] Could not check for existing projects, proceeding anyway:', checkError);
-        // Continue - if project exists, backend will return 409 anyway
+      } else {
+        // Only check if project exists when creating a NEW project (not editing)
+        // This prevents creating userpools/app-clients/providers if project creation will fail
+        try {
+          const checkResult = await api.checkProjectExists(config.projectName, subdomain, apiVersion);
+          
+          if (checkResult.exists) {
+            toast({
+              title: 'Project Already Exists',
+              description: `A project with the name "${config.projectName}" and version "${apiVersion}" already exists. Please choose a different name or version.`,
+              variant: 'destructive',
+            });
+            setActiveTab('general');
+            setIsDeploying(false);
+            return;
+          }
+        } catch (checkError) {
+          console.warn('[CreateProject] Could not check for existing projects, proceeding anyway:', checkError);
+          // Continue - if project exists, backend will return 409 anyway
+        }
       }
 
       let userPoolId: string | undefined;
@@ -501,6 +543,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         userPoolId: config.userPoolId,
         appClientId: config.appClientId,
         bringOwnProvider: config.bringOwnProvider,
+        currentProjectExists: !!currentProject,
+        currentProjectUserPoolId: currentProject ? (currentProject.config as Record<string, unknown>)?.user_pool_id : undefined,
       });
       
       if (needsUserPool) {
@@ -513,17 +557,31 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         });
 
         // Check if we should use an existing UserPool
+        // IMPORTANT: Always use config.userPoolId from the current config state (which reflects UI changes)
+        // Do NOT use currentProject.config.user_pool_id as it may contain the old value
+        // During deployment, config.userPoolId should reflect the user's latest selection from the UI
         const hasExistingUserPool = config.useUserPool && config.userPoolId;
         
+        console.log('[CreateProject] 🔍 Checking existing UserPool:', {
+          hasExistingUserPool,
+          configUseUserPool: config.useUserPool,
+          configUserPoolId: config.userPoolId,
+          currentProjectUserPoolId: currentProject ? (currentProject.config as Record<string, unknown>)?.user_pool_id : undefined,
+          isDeploying: isDeployingRef.current,
+        });
+        
         if (hasExistingUserPool) {
-          // Use existing UserPool
+          // Use existing UserPool - CRITICAL: Use config.userPoolId (from UI state), NOT currentProject.config.user_pool_id
+          const selectedUserPoolId = config.userPoolId; // Capture from config state to ensure we use the latest value
+          console.log('[CreateProject] ✅ Using existing UserPool from config state:', selectedUserPoolId);
+          
           // Use appClientId from config, or defaultAppClient if set
           let selectedAppClientId = config.appClientId || config.defaultAppClient;
           
           // If no app client is selected, automatically pick the first one from the user pool
-          if (!selectedAppClientId && config.userPoolId) {
+          if (!selectedAppClientId && selectedUserPoolId) {
             try {
-              const appClients = await api.listAppClients(config.userPoolId);
+              const appClients = await api.listAppClients(selectedUserPoolId);
               const clientsArray = Array.isArray(appClients) ? appClients : [];
               
               if (clientsArray.length === 0) {
@@ -543,7 +601,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               updateConfig({ defaultAppClient: defaultAppClientId });
               
               console.log('[CreateProject] Auto-selected first app client as default:', {
-                userPoolId: config.userPoolId,
+                userPoolId: selectedUserPoolId,
                 appClientId: selectedAppClientId,
                 totalClients: clientsArray.length,
               });
@@ -568,13 +626,14 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
             }
           }
           
-          console.log('[CreateProject] Using existing UserPool:', {
-            userPoolId: config.userPoolId,
+          console.log('[CreateProject] ✅ Using existing UserPool (from config state):', {
+            userPoolId: selectedUserPoolId,
             appClientId: selectedAppClientId,
             defaultAppClientId,
             isDefault: defaultAppClientId === selectedAppClientId,
+            note: 'Using selectedUserPoolId from config state, NOT from currentProject',
           });
-          userPoolId = config.userPoolId;
+          userPoolId = selectedUserPoolId; // Use the captured value from config state
           appClientId = selectedAppClientId;
           oauthConfig = undefined; // Will be handled via user_pool_id and app_client_id
         } else if (config.bringOwnProvider) {
@@ -781,6 +840,9 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         defaultAppClientId,
         authType,
         hasOauthConfig: !!oauthConfig,
+        configUserPoolId: config.userPoolId,
+        configUseUserPool: config.useUserPool,
+        currentProjectUserPoolId: currentProject ? (currentProject.config as Record<string, unknown>)?.user_pool_id : undefined,
       });
       
       // defaultAppClientId is tracked in the function scope (may have been set during app client creation)
@@ -798,6 +860,20 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
         default_app_client_id: defaultAppClientId, // Default app client ID stored in project config
         environments: Object.keys(environments).length > 0 ? environments : undefined,
       };
+      
+      console.log('[CreateProject] ⚠️ CRITICAL: Project data being sent to API:', {
+        ...projectData,
+        oauth_config: oauthConfig ? '[present]' : undefined,
+      });
+      
+      console.log('[CreateProject] 🎯 FINAL CHECK - user_pool_id in projectData:', {
+        'projectData.user_pool_id (what will be sent)': projectData.user_pool_id,
+        'config.userPoolId (from config state)': config.userPoolId,
+        'userPoolId variable (from deployment logic)': userPoolId,
+        'currentProject.config.user_pool_id (OLD)': currentProject ? (currentProject.config as Record<string, unknown>)?.user_pool_id : 'N/A',
+        'MATCH?': projectData.user_pool_id === config.userPoolId ? '✅ YES' : '❌ NO - MISMATCH!',
+        timestamp: new Date().toISOString(),
+      });
 
       console.log('[CreateProject] Project data being sent:', {
         ...projectData,
@@ -810,11 +886,15 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       console.log('[CreateProject] Success:', response);
 
       // Success!
+      const isUpdate = !!currentProject;
       toast({
-        title: 'Project Created! 🎉',
-        description: `${config.projectName} has been successfully deployed.`,
+        title: isUpdate ? 'Project Updated! 🎉' : 'Project Created! 🎉',
+        description: `${config.projectName} has been successfully ${isUpdate ? 'updated' : 'deployed'}.`,
       });
       
+      // Clear currentProject after successful deployment
+      setCurrentProject(null);
+      isDeployingRef.current = false; // Re-enable config reset
       onOpenChange(false);
       onSuccess?.();
     } catch (error) {
@@ -868,6 +948,7 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
       });
     } finally {
       setIsDeploying(false);
+      isDeployingRef.current = false; // Re-enable config reset even on error
     }
   };
 

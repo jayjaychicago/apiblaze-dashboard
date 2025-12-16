@@ -261,29 +261,82 @@ function EditModeManagementUI({
   // In edit mode, load UserPool from project config and prepopulate
   // Or use initialUserPoolId if provided (for create mode)
   // This must run before the UserPool selection effect
+  // CRITICAL: Only run on initial load, NOT when user manually changes the userPool
   useEffect(() => {
+    // Only load from project config on initial mount, not after user changes
+    // Also check if config.userPoolId differs from project config - if so, user has changed it
+    const projectUserPoolId = project?.config ? (project.config as Record<string, unknown>)?.user_pool_id as string | undefined : undefined;
+    const configDiffersFromProject = projectUserPoolId && config.userPoolId && config.userPoolId !== projectUserPoolId;
+    
+    if (!isInitialLoadRef.current || userManuallyChangedUserPoolRef.current || configDiffersFromProject) {
+      console.log('[AuthSection] ⏭️ SKIPPING project config load:', {
+        isInitialLoadRef: isInitialLoadRef.current,
+        userManuallyChanged: userManuallyChangedUserPoolRef.current,
+        configDiffersFromProject,
+        configUserPoolId: config.userPoolId,
+        projectUserPoolId,
+        reason: userManuallyChangedUserPoolRef.current 
+          ? 'user manually changed userPool' 
+          : configDiffersFromProject 
+            ? 'config.userPoolId differs from project config (user changed it)'
+            : 'initial load already done',
+      });
+      return;
+    }
+    
     if (initialUserPoolId && initialUserPoolId !== selectedUserPoolId) {
+      console.log('[AuthSection] 📥 INITIAL LOAD - Setting userPoolId from initialUserPoolId:', {
+        initialUserPoolId,
+        currentSelectedUserPoolId: selectedUserPoolId,
+        timestamp: new Date().toISOString(),
+      });
       setSelectedUserPoolId(initialUserPoolId);
+      isInitialLoadRef.current = false; // Mark as loaded - don't run again
     } else if (project?.config) {
       const projectConfig = project.config as Record<string, unknown>;
       const userPoolId = projectConfig.user_pool_id as string | undefined;
       const defaultAppClientId = (projectConfig.default_app_client_id || projectConfig.defaultAppClient) as string | undefined;
       
+      console.log('[AuthSection] 📥 INITIAL LOAD FROM PROJECT - Project config userPoolId:', {
+        projectUserPoolId: userPoolId,
+        currentSelectedUserPoolId: selectedUserPoolId,
+        projectId: project?.project_id,
+        willSet: userPoolId && userPoolId !== selectedUserPoolId,
+        timestamp: new Date().toISOString(),
+      });
+      
+      // CRITICAL: Only set from project config if config.userPoolId matches (user hasn't changed it)
+      // If config.userPoolId differs, user has manually changed it, so don't overwrite
       if (userPoolId && userPoolId !== selectedUserPoolId) {
-        setSelectedUserPoolId(userPoolId);
+        // Check if config.userPoolId already differs from project config
+        if (config.userPoolId && config.userPoolId !== userPoolId) {
+          console.log('[AuthSection] ⚠️ SKIPPING setting userPoolId from project config - config.userPoolId differs (user changed it):', {
+            projectUserPoolId: userPoolId,
+            configUserPoolId: config.userPoolId,
+            selectedUserPoolId,
+          });
+        } else {
+          console.log('[AuthSection] ⚠️ SETTING userPoolId FROM OLD PROJECT CONFIG (initial load only):', userPoolId);
+          setSelectedUserPoolId(userPoolId);
+        }
       }
       
       // Load defaultAppClient from project config
       if (defaultAppClientId && config.defaultAppClient !== defaultAppClientId) {
         updateConfig({ defaultAppClient: defaultAppClientId });
       }
+      
+      isInitialLoadRef.current = false; // Mark as loaded - don't run again
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project, initialUserPoolId, selectedUserPoolId]);
+    // CRITICAL: Removed selectedUserPoolId from deps to prevent re-running when user changes it
+    // This effect should ONLY run on initial mount or when project/initialUserPoolId changes
+  }, [project, initialUserPoolId]);
 
   // Track initial UserPool to avoid clearing data on first load
   const initialUserPoolIdRef = useRef<string | undefined>(getInitialUserPoolId());
-  const isInitialLoadRef = useRef(true);
+  const isInitialLoadRef = useRef(true); // Track if we've done the initial load from project config
+  const userManuallyChangedUserPoolRef = useRef(false); // Track if user has manually changed the userPool
   const previousUserGroupNameRef = useRef<string | undefined>(config.userGroupName);
   const selectedUserPoolIdRef = useRef<string | undefined>(selectedUserPoolId);
 
@@ -459,12 +512,27 @@ function EditModeManagementUI({
         }
       }
       
-      updateConfig({ userPoolId: selectedUserPoolId });
+      console.log('[AuthSection] 🔄 USERPOOL CHANGED - Updating config with new userPoolId:', {
+        selectedUserPoolId,
+        previousConfigUserPoolId: config.userPoolId,
+        isChange: config.userPoolId !== selectedUserPoolId,
+        timestamp: new Date().toISOString(),
+      });
+      // Mark that user has made a change - prevent project config from overwriting
+      isInitialLoadRef.current = false;
+      userManuallyChangedUserPoolRef.current = true; // CRITICAL: Mark that user manually changed it
+      updateConfig({ userPoolId: selectedUserPoolId, useUserPool: true });
+      console.log('[AuthSection] ✅ Config updated with userPoolId:', selectedUserPoolId, '- User manually changed, will not be overwritten by project config');
     } else {
+      console.log('[AuthSection] 🔄 USERPOOL CLEARED - Removing userPoolId from config:', {
+        previousConfigUserPoolId: config.userPoolId,
+        timestamp: new Date().toISOString(),
+      });
       setAppClients([]);
       setAppClientDetails({});
       setProviders({});
-      updateConfig({ userPoolId: undefined, appClientId: undefined });
+      updateConfig({ userPoolId: undefined, appClientId: undefined, useUserPool: false });
+      console.log('[AuthSection] ✅ Config updated - userPoolId cleared');
       previousSelectedUserPoolIdRef.current = undefined;
       previousUserGroupNameForPoolRef.current = undefined;
     }
