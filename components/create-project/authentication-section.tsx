@@ -1558,11 +1558,11 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
       // Set selectedUserPoolId and immediately update config and load data
       setSelectedUserPoolId(matchingPool.id);
       
-      // Update config immediately - enable social auth since userPools are for OAuth
+      // Update config immediately - set useUserPool but don't force enableSocialAuth
+      // User can toggle enableSocialAuth themselves if they want to use the userPool
       updateConfig({ 
         userPoolId: matchingPool.id, 
         useUserPool: true,
-        enableSocialAuth: true, // Auto-enable social auth when userPool is selected
       });
       
       // Load ALL data immediately (don't wait for state update)
@@ -1661,11 +1661,10 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
     if (selectedUserPoolId) {
       console.log('[AuthSection] 📥 selectedUserPoolId changed, loading all data:', selectedUserPoolId);
       
-      // Update config - enable social auth since userPools are for OAuth
+      // Update config - set useUserPool but don't force enableSocialAuth
       updateConfig({ 
         userPoolId: selectedUserPoolId, 
         useUserPool: true,
-        enableSocialAuth: true, // Auto-enable social auth when userPool is selected
       });
       
       // Load ALL data for this pool (AppClients, details, providers)
@@ -2067,10 +2066,10 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                 loadingAuthData={loadingAuthData}
               />
             ) : (
-              /* Create Mode: Show UserPool data if selected, otherwise show third-party provider config */
+              /* Create Mode: Show UserPool data if selected AND social auth enabled, otherwise show third-party provider config */
               <div className="space-y-4">
-                {/* Show UserPool/AppClient/Provider info when useUserPool is true */}
-                {config.useUserPool && config.userPoolId ? (
+                {/* Show UserPool/AppClient/Provider info when useUserPool is true AND social auth is enabled */}
+                {config.useUserPool && config.userPoolId && config.enableSocialAuth ? (
                   <EditModeManagementUI
                     config={config}
                     updateConfig={updateConfig}
