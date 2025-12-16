@@ -675,12 +675,18 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               currentUserPoolId = existingUserPool.id;
             } else {
               // Create new user pool
-              const userPool = await api.createUserPool({ name: userPoolName });
+              const userPool = await api.createUserPool({ 
+                name: userPoolName,
+                enableSocialAuth: config.enableSocialAuth,
+                enableApiKeyAuth: config.enableApiKey,
+              });
               const newUserPoolId = (userPool as { id: string }).id;
               currentUserPoolId = newUserPoolId;
               console.log('[CreateProject] Created new UserPool:', {
                 id: currentUserPoolId,
                 name: userPoolName,
+                enable_social_auth: config.enableSocialAuth,
+                enable_api_key_auth: config.enableApiKey,
               });
             }
 
@@ -761,6 +767,8 @@ export function CreateProjectDialog({ open, onOpenChange, onSuccess, openToGitHu
               userPoolName,
               appClientName,
               scopes: config.authorizedScopes,
+              enableSocialAuth: config.enableSocialAuth,
+              enableApiKeyAuth: config.enableApiKey,
             });
 
             // Use the created UserPool and AppClient

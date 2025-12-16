@@ -136,7 +136,7 @@ export default function DashboardPage() {
           {/* Welcome Section */}
           <div className="mb-8">
             <h2 className="text-3xl font-bold mb-2">
-              Welcome back, {user?.name || user?.githubHandle}! 👋
+              Welcome, {user?.name || user?.githubHandle}! 👋
             </h2>
             <p className="text-muted-foreground">
               You haven&apos;t created any API proxies yet. Let&apos;s get started!

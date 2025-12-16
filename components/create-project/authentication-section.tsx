@@ -597,7 +597,6 @@ function EditModeManagementUI({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUserPoolId, config.userGroupName]);
 
-
   const loadUserPools = async () => {
     setLoadingUserPools(true);
     try {
@@ -1511,6 +1510,70 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
     }
   }, [config.enableSocialAuth]);
 
+  // Track initial enableSocialAuth and enableApiKey to avoid updating on mount
+  const previousEnableSocialAuthRef = useRef<boolean | undefined>(config.enableSocialAuth);
+  const previousEnableApiKeyRef = useRef<boolean | undefined>(config.enableApiKey);
+
+  // Update userPool's enable_social_auth when enableSocialAuth changes
+  useEffect(() => {
+    // Only update if we have a userPoolId and we're in edit mode
+    if (!isEditMode || !config.userPoolId || !project) {
+      previousEnableSocialAuthRef.current = config.enableSocialAuth;
+      return;
+    }
+
+    // Skip if this is the initial load (value hasn't changed)
+    if (previousEnableSocialAuthRef.current === config.enableSocialAuth) {
+      return;
+    }
+
+    // Update the userPool with the new enableSocialAuth value
+    const updateUserPoolSocialAuth = async () => {
+      try {
+        await api.updateUserPool(config.userPoolId!, {
+          enableSocialAuth: config.enableSocialAuth,
+        });
+        console.log('[AuthSection] ✅ Updated userPool enable_social_auth:', config.enableSocialAuth);
+        previousEnableSocialAuthRef.current = config.enableSocialAuth;
+      } catch (error) {
+        console.error('[AuthSection] ❌ Error updating userPool enable_social_auth:', error);
+      }
+    };
+
+    updateUserPoolSocialAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.enableSocialAuth, config.userPoolId, isEditMode, project]);
+
+  // Update userPool's enable_api_key_auth when enableApiKey changes
+  useEffect(() => {
+    // Only update if we have a userPoolId and we're in edit mode
+    if (!isEditMode || !config.userPoolId || !project) {
+      previousEnableApiKeyRef.current = config.enableApiKey;
+      return;
+    }
+
+    // Skip if this is the initial load (value hasn't changed)
+    if (previousEnableApiKeyRef.current === config.enableApiKey) {
+      return;
+    }
+
+    // Update the userPool with the new enableApiKey value
+    const updateUserPoolApiKey = async () => {
+      try {
+        await api.updateUserPool(config.userPoolId!, {
+          enableApiKeyAuth: config.enableApiKey,
+        });
+        console.log('[AuthSection] ✅ Updated userPool enable_api_key_auth:', config.enableApiKey);
+        previousEnableApiKeyRef.current = config.enableApiKey;
+      } catch (error) {
+        console.error('[AuthSection] ❌ Error updating userPool enable_api_key_auth:', error);
+      }
+    };
+
+    updateUserPoolApiKey();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.enableApiKey, config.userPoolId, isEditMode, project]);
+
   // Initialize with preloaded user pools if provided
   useEffect(() => {
     if (preloadedUserPools && preloadedUserPools.length > 0) {
@@ -2246,7 +2309,7 @@ export function AuthenticationSection({ config, updateConfig, isEditMode = false
                         </CardHeader>
                         <CardContent>
                           <code className="text-xs bg-white px-2 py-1 rounded border block">
-                            callback.apiblaze.com
+                            https://callback.apiblaze.com
                           </code>
                         </CardContent>
                       </Card>

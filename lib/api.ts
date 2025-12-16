@@ -64,33 +64,57 @@ class ApiClient {
       ...options.headers,
     };
     
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
+    // Add timeout for fetch requests (30 seconds default)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
     
-    if (!response.ok) {
-      let error: ApiError = { error: `HTTP ${response.status}: ${response.statusText}` };
-      try {
-        error = (await response.json()) as ApiError;
-      } catch {
-        // Ignore JSON parse errors – default error message already set
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+    
+      if (!response.ok) {
+        let error: ApiError = { error: `HTTP ${response.status}: ${response.statusText}` };
+        try {
+          error = (await response.json()) as ApiError;
+        } catch {
+          // Ignore JSON parse errors – default error message already set
+        }
+        throw new Error(error.error || 'API request failed');
       }
-      throw new Error(error.error || 'API request failed');
+      
+      // Handle 204 No Content responses (no body)
+      if (response.status === 204) {
+        return undefined as T;
+      }
+      
+      // Check if response has content before trying to parse JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        return undefined as T;
+      }
+      
+      return (await response.json()) as T;
+    } catch (error: unknown) {
+      clearTimeout(timeoutId);
+      
+      // Handle abort (timeout) errors
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Request timeout: The request took too long to complete');
+      }
+      
+      // Handle network errors (Failed to fetch)
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error('Network error: Unable to reach the server. Please check your connection.');
+      }
+      
+      // Re-throw other errors as-is
+      throw error;
     }
-    
-    // Handle 204 No Content responses (no body)
-    if (response.status === 204) {
-      return undefined as T;
-    }
-    
-    // Check if response has content before trying to parse JSON
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      return undefined as T;
-    }
-    
-    return (await response.json()) as T;
   }
   
   // Projects
@@ -212,14 +236,14 @@ class ApiClient {
     return this.request<UserPool>(`/user-pools/${poolId}`);
   }
 
-  async createUserPool(data: { name: string }) {
+  async createUserPool(data: { name: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean }) {
     return this.request('/user-pools', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updateUserPool(poolId: string, data: { name?: string; default_app_client_id?: string }) {
+  async updateUserPool(poolId: string, data: { name?: string; default_app_client_id?: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean }) {
     return this.request(`/user-pools/${poolId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
@@ -322,6 +346,8 @@ class ApiClient {
     userPoolName: string;
     appClientName: string;
     scopes?: string[];
+    enableSocialAuth?: boolean;
+    enableApiKeyAuth?: boolean;
   }) {
     return this.request<{ userPoolId: string; appClientId: string }>('/user-pools/create-with-default-github', {
       method: 'POST',

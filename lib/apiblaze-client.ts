@@ -267,7 +267,7 @@ export class APIBlazeClient {
    */
   async createUserPool(
     userClaims: UserAssertionClaims,
-    data: { name: string }
+    data: { name: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean }
   ) {
     return this.request('/user-pools', {
       method: 'POST',
@@ -293,7 +293,7 @@ export class APIBlazeClient {
   async updateUserPool(
     userClaims: UserAssertionClaims,
     poolId: string,
-    data: { name?: string; default_app_client_id?: string }
+    data: { name?: string; default_app_client_id?: string; enableSocialAuth?: boolean; enableApiKeyAuth?: boolean }
   ) {
     return this.request(`/user-pools/${poolId}`, {
       method: 'PATCH',

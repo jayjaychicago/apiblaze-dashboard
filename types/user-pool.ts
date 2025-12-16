@@ -38,6 +38,8 @@ export interface SocialProvider {
 
 export interface CreateUserPoolRequest {
   name: string;
+  enableSocialAuth?: boolean;
+  enableApiKeyAuth?: boolean;
 }
 
 export interface CreateAppClientRequest {
